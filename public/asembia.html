@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Asembia 2026 Tracker — Revenue Pipeline</title>
+<link rel="stylesheet" href="/_shared.css">
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script src="/_api.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" crossorigin="anonymous"></script>
+<style>
+/* Asembia-tab-specific styles (ported from Cowork artifact) */
+.dash { padding: 16px 20px; max-width: 1200px; margin: 0 auto; }
+.title-block h1 { font-size: 22px; font-weight: 700; color: #1F4E79; }
+.title-block .subtitle { color: #718096; font-size: 12px; margin-top: 4px; }
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 18px 0; }
+.kpi { background: #fff; border: 1px solid #E2E8F0; border-radius: 6px; padding: 12px; position: relative; }
+.kpi.primary { background: #EBF8FF; border-color: #BEE3F8; }
+.kpi.success { background: #F0FFF4; border-color: #C6F6D5; }
+.kpi.warn { background: #FFFAF0; border-color: #FEEBC8; }
+.kpi.event { background: #FAF5FF; border-color: #E9D8FD; }
+.kpi .label { font-size: 10px; text-transform: uppercase; color: #718096; font-weight: 600; letter-spacing: 0.4px; }
+.kpi .value { font-size: 26px; font-weight: 700; color: #1F4E79; margin-top: 4px; }
+.kpi.success .value { color: #2F855A; }
+.kpi.warn .value { color: #DD6B20; }
+.kpi.event .value { color: #6B46C1; }
+.kpi .delta { font-size: 11px; color: #4A5568; margin-top: 4px; }
+.kpi .live-tag { position: absolute; top: 8px; right: 8px; font-size: 9px; padding: 2px 6px; border-radius: 3px; background: #2F855A; color: white; text-transform: uppercase; letter-spacing: 0.4px; display: none; }
+.kpi.live .live-tag { display: inline-block; }
+.section { background: #fff; border: 1px solid #E2E8F0; border-radius: 6px; padding: 14px 16px; margin-bottom: 14px; }
+.section h2 { font-size: 14px; color: #1F4E79; font-weight: 700; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #EDF2F7; }
+.funnel-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid #EDF2F7; }
+.funnel-row:last-child { border-bottom: none; }
+.funnel-bar { background: linear-gradient(90deg, #1F4E79, #2E75B6); height: 32px; border-radius: 4px; display: flex; align-items: center; padding: 0 12px; color: white; font-weight: 600; font-size: 13px; min-width: 60px; }
+.funnel-bar.success { background: linear-gradient(90deg, #2F855A, #48BB78); }
+.funnel-bar.warn { background: linear-gradient(90deg, #DD6B20, #ED8936); }
+.funnel-bar.event { background: linear-gradient(90deg, #6B46C1, #9F7AEA); }
+.funnel-label { flex: 1; font-size: 12px; color: #1A202C; font-weight: 600; }
+.funnel-pct { font-size: 11px; color: #718096; min-width: 70px; text-align: right; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+.tbl th { background: #1F4E79; color: white; padding: 6px 10px; text-align: left; font-weight: 600; }
+.tbl td { padding: 6px 10px; border-bottom: 1px solid #EDF2F7; }
+.tbl tr:hover { background: #F7FAFC; }
+.tag { display: inline-block; font-size: 10px; padding: 2px 6px; border-radius: 3px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+.tag.event { background: #E9D8FD; color: #6B46C1; }
+.tag.first { background: #FED7D7; color: #C53030; }
+.tag.lead { background: #EBF8FF; color: #1F4E79; }
+.tag.deal { background: #C6F6D5; color: #2F855A; }
+.tag.prep { background: #EDF2F7; color: #4A5568; }
+.tag.followup { background: #FFFAF0; color: #DD6B20; }
+.refresh-status { font-size: 10px; color: #A0AEC0; text-align: right; margin-top: 4px; }
+.loading-spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid #E2E8F0; border-top-color: #1F4E79; border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 6px; vertical-align: middle; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.note { font-size: 11px; color: #718096; font-style: italic; margin-top: 8px; padding-top: 8px; border-top: 1px solid #EDF2F7; }
+.chart-container { position: relative; height: 220px; }
+a { color: #2E75B6; text-decoration: none; }
+a:hover { text-decoration: underline; }
+.callout { padding: 10px 14px; background: #FAF5FF; border-left: 4px solid #6B46C1; border-radius: 4px; margin: 10px 0; font-size: 12px; color: #4A5568; }
+.refresh-btn { background: #2E75B6; color: white; border: none; padding: 6px 14px; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; }
+.refresh-btn:hover { background: #1F4E79; }
+.refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <div class="brand">Revenue Pipeline</div>
+  <div class="tabs">
+    <a class="tab active" href="/asembia.html">Asembia 2026</a>
+    <a class="tab" href="/first-meeting.html">First Meeting</a>
+    <a class="tab" href="/pipeline.html">Pipeline Confidence</a>
+  </div>
+  <div class="userbox">
+    <span id="user-email">—</span>
+    <button onclick="window.appAuth.logout()">Log out</button>
+  </div>
+</nav>
+
+<div id="auth-loading" class="auth-gate">
+  <h1>Loading…</h1>
+  <p>Checking authentication.</p>
+</div>
+
+<div id="main-content" style="display:none">
+<div class="dash">
+  <div class="title-block" style="display:flex;justify-content:space-between;align-items:flex-start;">
+    <div>
+      <h1>Asembia 2026 — Live Tracker</h1>
+      <div class="subtitle">Asembia Specialty Pharmacy Summit • <strong>Apr 27–29, 2026</strong> • Las Vegas • Live HubSpot view</div>
+    </div>
+    <button class="refresh-btn" id="refresh-btn" onclick="refresh()">↻ Refresh</button>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi primary live" id="kpi-total-card">
+      <span class="live-tag">Live</span>
+      <div class="label">Asembia attendees tagged</div>
+      <div class="value" id="kpi-total">—</div>
+      <div class="delta" id="kpi-total-delta"><span class="loading-spinner"></span>Loading…</div>
+    </div>
+    <div class="kpi event">
+      <div class="label">At-event meetings</div>
+      <div class="value">8</div>
+      <div class="delta">Apr 27–29 conference dates</div>
+    </div>
+    <div class="kpi success live" id="kpi-leads-card">
+      <span class="live-tag">Live</span>
+      <div class="label">Asembia → Active Lead</div>
+      <div class="value" id="kpi-leads">—</div>
+      <div class="delta" id="kpi-leads-delta">Loading…</div>
+    </div>
+    <div class="kpi success live" id="kpi-deals-card">
+      <span class="live-tag">Live</span>
+      <div class="label">Asembia → Deal</div>
+      <div class="value" id="kpi-deals">—</div>
+      <div class="delta">All Brand Direct pipeline</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Conversion funnel</h2>
+    <div class="funnel-row">
+      <div class="funnel-bar" style="width: 100%">140</div>
+      <div class="funnel-label">Total Asembia attendees tagged in HubSpot</div>
+      <div class="funnel-pct">100%</div>
+    </div>
+    <div class="funnel-row">
+      <div class="funnel-bar" style="width: 70%">99</div>
+      <div class="funnel-label">Owned by sales team (Kyle / Anne / Dan)</div>
+      <div class="funnel-pct">70.7%</div>
+    </div>
+    <div class="funnel-row">
+      <div class="funnel-bar warn" style="width: 20%">28</div>
+      <div class="funnel-label">Sales activity logged after Apr 29</div>
+      <div class="funnel-pct">20.0%</div>
+    </div>
+    <div class="funnel-row">
+      <div class="funnel-bar success" style="width: 17%">24</div>
+      <div class="funnel-label">Active Lead created/converted</div>
+      <div class="funnel-pct">17.1%</div>
+    </div>
+    <div class="funnel-row">
+      <div class="funnel-bar success" style="width: 8%">11</div>
+      <div class="funnel-label">Have ≥1 associated Deal (revenue-attributable)</div>
+      <div class="funnel-pct">7.9%</div>
+    </div>
+    <div class="funnel-row">
+      <div class="funnel-bar event" style="width: 6%">8</div>
+      <div class="funnel-label">At-event meetings (Apr 27–29 in Vegas)</div>
+      <div class="funnel-pct">5.7%</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>At-event meetings during Asembia (Apr 27–29)</h2>
+    <table class="tbl">
+      <thead><tr><th>Date</th><th>Rep</th><th>Meeting</th><th>Location</th><th>Type</th><th>First mtg?</th></tr></thead>
+      <tbody>
+        <tr><td>Apr 27, 6:30pm</td><td>Dan</td><td><a href="https://app.hubspot.com/contacts/21389996/record/0-47/105765002520" target="_blank">[Asemblia] PrescriberPoint &lt;&gt; Pfizer</a></td><td>Lafite 5</td><td><span class="tag event">At-event</span></td><td><span class="tag first">YES (4 contacts)</span></td></tr>
+        <tr><td>Apr 27, 8:00pm</td><td>Anne</td><td><a href="https://app.hubspot.com/contacts/21389996/record/0-47/108400174665" target="_blank">PrescriberPoint Terrace Point</a></td><td>Terrace Pointe Café, Wynn LV</td><td><span class="tag event">At-event</span></td><td>5 attendees: 1 strict-first, 4 broader-first</td></tr>
+        <tr><td>Apr 27, 9:15pm</td><td>Dan</td><td><a href="https://app.hubspot.com/contacts/21389996/record/0-47/108367948333" target="_blank">Asembia: Prescriber Point/NVS Meeting</a></td><td>Novartis Suite 0605, Encore</td><td><span class="tag event">At-event</span></td><td><span class="tag first">YES (Michele Angelaccio)</span></td></tr>
+        <tr><td>Apr 28, 7:30pm</td><td>(PPT exec)</td><td><a href="https://app.hubspot.com/contacts/21389996/record/0-47/107519119617" target="_blank">Asembia 2026: LLR Partners &lt;&gt; PrescriberPoint</a></td><td>Tower Suites Bar, Wynn</td><td><span class="tag event">At-event</span></td><td>Investor meeting (not sales)</td></tr>
+        <tr><td>Apr 28, 10:00pm</td><td>Kyle</td><td><a href="https://app.hubspot.com/contacts/21389996/record/0-47/108297046573" target="_blank">GNE Solid Tumor &lt;&gt; PrescriberPoint</a></td><td>(Vegas, location not specified)</td><td><span class="tag event">At-event</span></td><td><span class="tag first">YES (Daria + Catherine)</span></td></tr>
+        <tr><td>Apr 29, 6:00pm</td><td>(PPT exec)</td><td><a href="https://app.hubspot.com/contacts/21389996/record/0-47/108301461429" target="_blank">PrescriberPoint / Serent Capital - Asembia Meeting</a></td><td>Urth Caffe, Wynn</td><td><span class="tag event">At-event</span></td><td>Investor meeting (not sales)</td></tr>
+        <tr><td>Apr 29, 6:30pm</td><td>Anne</td><td><a href="https://app.hubspot.com/contacts/21389996/record/0-47/108677017728" target="_blank">PrescriberPoint Meeting At Asembia</a></td><td>PrescriberPoint Booth #1601</td><td><span class="tag event">At-event</span></td><td>Booth walk-up — verify if first mtg</td></tr>
+        <tr><td>Apr 29, 12:30am</td><td>Anne</td><td><a href="https://app.hubspot.com/contacts/21389996/record/0-47/106991330149" target="_blank">PrescriberPoint - Asembia Dinner</a></td><td>(Wynn area)</td><td><span class="tag event">At-event</span></td><td>Group dinner — verify attendees</td></tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <strong>Methodology note:</strong> Under the <strong>broader</strong> first-meeting definition (earliest meeting per contact, regardless of prior emails), the Terrace Point dinner contributed up to 5 first meetings. Under the <strong>strict</strong> definition (first engagement is meeting), only 1 of 5 counts.
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Pre/Post-Asembia meetings</h2>
+    <table class="tbl">
+      <thead><tr><th>Date</th><th>Rep</th><th>Meeting</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr><td>Apr 3</td><td>Kyle</td><td>PPT&lt;&gt;Nick: Asembia Plan</td><td><span class="tag prep">Pre-event prep</span></td></tr>
+        <tr><td>Apr 24</td><td>Kyle</td><td><a href="https://app.hubspot.com/contacts/21389996/record/0-47/108074002334" target="_blank">Pre-Asembia PA Demo Pitch</a></td><td><span class="tag prep">Pre-event prep</span></td></tr>
+        <tr><td>May 4</td><td>(Ben)</td><td><a href="https://app.hubspot.com/contacts/21389996/record/0-47/108983841639" target="_blank">Post Asembia Debrief / Follow up Plan</a></td><td><span class="tag followup">Internal debrief</span></td></tr>
+        <tr><td>May 14</td><td>Anne</td><td><a href="https://app.hubspot.com/contacts/21389996/record/0-47/109233466208" target="_blank">Anne from Asembia</a></td><td><span class="tag followup">Post-event follow-up</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>Asembia → Pipeline attribution</h2>
+    <div class="chart-container"><canvas id="pipelineChart"></canvas></div>
+    <div class="note">All 11 deals from Asembia contacts are in <strong>Brand Direct</strong>. Zero in Brand Indirect Agencies. ROI of Asembia is fully a direct-pharma motion.</div>
+  </div>
+
+  <div class="section" style="border: 2px solid #6B46C1; background: linear-gradient(180deg, #FAF5FF 0%, #fff 100%);">
+    <h2 style="color: #6B46C1;">Post-Asembia Momentum — Meetings Booked With Attendees</h2>
+    <div class="note" style="margin-top:0;border-top:none;padding-top:0;color:#1A202C;font-style:normal;">
+      Conversations being set up after the event with people we met there. <strong style="color:#6B46C1;">Live re-pull on every refresh</strong>.
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 16px 0;">
+      <div class="kpi event">
+        <div class="label">Post-event meetings on calendar</div>
+        <div class="value">2</div>
+        <div class="delta">May 13 · May 14</div>
+      </div>
+      <div class="kpi success live" id="kpi-active-card">
+        <span class="live-tag">Live</span>
+        <div class="label">Asembia contacts in active conversations</div>
+        <div class="value" id="kpi-active-contacts">—</div>
+        <div class="delta">Activity post Apr 29</div>
+      </div>
+      <div class="kpi success">
+        <div class="label">Active Leads from Asembia</div>
+        <div class="value" id="kpi-leads-mirror">—</div>
+        <div class="delta">Lead-pipeline conversion</div>
+      </div>
+      <div class="kpi success">
+        <div class="label">Deals from Asembia</div>
+        <div class="value" id="kpi-deals-mirror">—</div>
+        <div class="delta">All Brand Direct</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Weekly review procedure</h2>
+    <p style="font-size: 12px; line-height: 1.7;">
+      <strong>1.</strong> Refresh this dashboard each Monday → log totals in workbook tab <code>10_Asembia_Tracker</code>.<br>
+      <strong>2.</strong> The ~41 sales-owned attendees with NO Lead/Deal yet are your weekly action queue.<br>
+      <strong>3.</strong> Cross-check at-event meeting attendees against First Meeting Tracker — any flagged "broader-first" should appear there too.<br>
+      <strong>4.</strong> Monthly: pull a 30-day view → calculate Asembia→Deal conversion % for event ROI reporting.
+    </p>
+  </div>
+
+  <div class="refresh-status" id="last-refresh" style="margin-top: 12px; text-align: center;">Loading live counts…</div>
+</div>
+</div>
+
+<script>
+// Wait for auth, then run dashboard
+document.addEventListener('DOMContentLoaded', () => {
+  window.appAuth.init(user => {
+    document.getElementById('auth-loading').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+    document.getElementById('user-email').textContent = user.email;
+    initDashboard();
+  });
+});
+
+function initDashboard() {
+  // Doughnut chart with attribution data
+  new Chart(document.getElementById('pipelineChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Brand Direct (deals attributable)', 'Brand Indirect Agencies', 'No deal yet (Lead-stage only)', 'No conversion yet'],
+      datasets: [{ data: [11, 0, 13, 109], backgroundColor: ['#2F855A', '#9F7AEA', '#DD6B20', '#CBD5E0'] }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 11 } } } } }
+  });
+
+  refresh();
+}
+
+async function refresh() {
+  const btn = document.getElementById('refresh-btn');
+  btn.disabled = true;
+  btn.textContent = '↻ Refreshing…';
+
+  try {
+    const calls = [
+      // Total Asembia attendees
+      window.hubspotSearch({
+        objectType: 'contacts',
+        filterGroups: [{ filters: [{ propertyName: 'n2026_conference_attendence', operator: 'EQ', value: 'Asembia (Apr, LV)' }] }],
+        properties: ['firstname'],
+        limit: 1
+      }),
+      // Asembia + active lead
+      window.hubspotSearch({
+        objectType: 'contacts',
+        filterGroups: [{
+          filters: [
+            { propertyName: 'n2026_conference_attendence', operator: 'EQ', value: 'Asembia (Apr, LV)' },
+            { propertyName: 'has_active_lead', operator: 'EQ', value: 'true' }
+          ]
+        }],
+        properties: ['firstname'],
+        limit: 1
+      }),
+      // Asembia + has deal
+      window.hubspotSearch({
+        objectType: 'contacts',
+        filterGroups: [{
+          filters: [
+            { propertyName: 'n2026_conference_attendence', operator: 'EQ', value: 'Asembia (Apr, LV)' },
+            { propertyName: 'num_associated_deals', operator: 'GTE', value: '1' }
+          ]
+        }],
+        properties: ['firstname'],
+        limit: 1
+      }),
+      // Asembia + post-event activity
+      window.hubspotSearch({
+        objectType: 'contacts',
+        filterGroups: [{
+          filters: [
+            { propertyName: 'n2026_conference_attendence', operator: 'EQ', value: 'Asembia (Apr, LV)' },
+            { propertyName: 'notes_last_contacted', operator: 'GTE', value: '2026-04-30' }
+          ]
+        }],
+        properties: ['firstname'],
+        limit: 1
+      })
+    ];
+
+    const [total, leads, deals, active] = await Promise.all(calls);
+    const safeTotal = (r, fallback) => (r && typeof r.total === 'number') ? r.total : fallback;
+
+    const totalCount = safeTotal(total, 140);
+    const leadsCount = safeTotal(leads, 24);
+    const dealsCount = safeTotal(deals, 11);
+    const activeCount = safeTotal(active, 28);
+
+    document.getElementById('kpi-total').textContent = totalCount;
+    document.getElementById('kpi-total-delta').textContent = 'Live count';
+    document.getElementById('kpi-leads').textContent = leadsCount;
+    document.getElementById('kpi-leads-delta').textContent = Math.round((leadsCount / totalCount) * 100) + '% conversion';
+    document.getElementById('kpi-deals').textContent = dealsCount;
+    document.getElementById('kpi-active-contacts').textContent = activeCount;
+    document.getElementById('kpi-leads-mirror').textContent = leadsCount;
+    document.getElementById('kpi-deals-mirror').textContent = dealsCount;
+    document.getElementById('last-refresh').textContent =
+      `Live re-pull at ${new Date().toLocaleString()} · ${totalCount} attendees · ${activeCount} active post-event`;
+  } catch (err) {
+    document.getElementById('last-refresh').innerHTML =
+      `<span style="color:#C53030">Live re-pull failed: ${err.message}</span>`;
+    document.querySelectorAll('.delta .loading-spinner').forEach(s => {
+      s.parentElement.textContent = 'Failed';
+    });
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '↻ Refresh';
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pipeline Confidence — Revenue Pipeline</title>
+  <link rel="stylesheet" href="/_shared.css">
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <script src="/_api.js" defer></script>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="brand">Revenue Pipeline</div>
+    <div class="tabs">
+      <a class="tab" href="/asembia.html">Asembia 2026</a>
+      <a class="tab" href="/first-meeting.html">First Meeting</a>
+      <a class="tab active" href="/pipeline.html">Pipeline Confidence</a>
+    </div>
+    <div class="userbox">
+      <span id="user-email">—</span>
+      <button onclick="window.appAuth.logout()">Log out</button>
+    </div>
+  </nav>
+
+  <div id="auth-loading" class="auth-gate">
+    <h1>Loading…</h1>
+    <p>Checking authentication.</p>
+  </div>
+
+  <div id="main-content" style="display:none">
+    <div class="placeholder">
+      <h1>Pipeline Confidence Scorecard — coming soon</h1>
+      <p>This tab will be the live port of the Pipeline Confidence Scorecard from Cowork.</p>
+      <p>Includes: team rollup hero, 3 rep cards with coverage/forecast color-coding, deal drill-down, stale-closedate flags, $4M ARR gap progress.</p>
+      <p>Until then, use the Cowork artifact directly.</p>
+      <p style="margin-top: 20px; font-size: 11px; color: #718096;">
+        v0.2 will replace this placeholder with the full port.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      window.appAuth.init(user => {
+        document.getElementById('auth-loading').style.display = 'none';
+        document.getElementById('main-content').style.display = 'block';
+        document.getElementById('user-email').textContent = user.email;
+      });
+    });
+  </script>
+</body>
+</html>
