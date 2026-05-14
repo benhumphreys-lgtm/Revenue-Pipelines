@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Brand Direct Pipeline — Revenue Pipeline</title>
+<link rel="stylesheet" href="/_shared.css">
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script src="/_api.js" defer></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridjs@5.0.2/dist/theme/mermaid.min.css" integrity="sha384-jZvDSsmGB9oGGT/4l9bHXGoAv1OxvG/cFmSo0dZaSqmBgvQTKDBFAMftlXTmMbNW" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/gridjs@5.0.2/dist/gridjs.umd.js" integrity="sha384-/XXDzxe4FsGiAe50i/u9pY/Vy/uX654MHB1xoc1BJNnH1WXHhqHga9g3q5tF4gj7" crossorigin="anonymous"></script>
+<style>
+  html, body { background:#f6f7f9; color:#0f172a; }
+  body { font-size:14px; }
+  .page { max-width: 1280px; margin: 0 auto; padding: 24px; }
+  h1 { font-size: 22px; margin: 0 0 4px; letter-spacing:-0.01em; }
+  .sub { color:#64748b; margin-bottom: 18px; font-size: 13px; }
+  .freshness { display:inline-block; background:#ecfdf5; color:#065f46; border: 1px solid #a7f3d0; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; margin-left: 8px; }
+  .freshness.stale { background:#fef3c7; color:#92400e; border-color:#fde68a; }
+  .subtabs { display:flex; gap:4px; border-bottom: 1px solid #e2e8f0; margin-bottom: 20px; }
+  .subtab { padding: 10px 16px; cursor: pointer; border-bottom: 2px solid transparent; color:#475569; font-weight: 500; }
+  .subtab.active { color:#0f172a; border-bottom-color: #2563eb; }
+  .pane { display:none; }
+  .pane.active { display:block; }
+  .kpi-row { display:grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 22px; }
+  .kpi { background:#fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; }
+  .kpi .lbl { font-size: 11px; color:#64748b; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+  .kpi .val { font-size: 22px; font-weight: 600; color:#0f172a; }
+  .kpi .sublbl { font-size: 11px; color:#94a3b8; margin-top:4px; font-variant-numeric: tabular-nums; }
+  .panel { background:#fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 18px; margin-bottom: 18px; }
+  .panel h2 { font-size: 14px; margin: 0 0 12px; text-transform: uppercase; letter-spacing: 0.04em; color:#475569; }
+  table.rollup { width:100%; border-collapse: collapse; font-size: 13px; }
+  table.rollup th, table.rollup td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #f1f5f9; }
+  table.rollup th { background:#f8fafc; color:#475569; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+  table.rollup td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  table.rollup tr.total td { font-weight: 600; background:#f8fafc; border-top: 2px solid #cbd5e1; }
+  .three-col { display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+  .note { font-size: 12px; color:#64748b; margin-top: 6px; }
+  .grid-wrap { background:#fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px; }
+  .badge { display:inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; }
+  .badge.likely { background:#dcfce7; color:#166534; }
+  .badge.possible { background:#fef3c7; color:#92400e; }
+  .badge.other { background:#e0e7ff; color:#3730a3; }
+  .source { font-size: 11px; color:#94a3b8; margin-top: 8px; }
+  .loading { padding: 24px; text-align: center; color:#64748b; }
+  .error { padding: 16px; background:#fef2f2; color:#991b1b; border-radius: 8px; font-size: 13px; }
+  .gridjs-wrapper { box-shadow: none !important; }
+  .gridjs-table { font-size: 12px; }
+  .gridjs-th, .gridjs-td { padding: 8px 10px; }
+  .gridjs-th { background:#f8fafc; color:#475569; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <div class="brand">Revenue Pipeline</div>
+  <div class="tabs">
+    <a class="tab" href="/asembia.html">Asembia 2026</a>
+    <a class="tab" href="/first-meeting.html">First Meeting</a>
+    <a class="tab" href="/pipeline.html">Pipeline Confidence</a>
+    <a class="tab active" href="/brand-direct.html">Brand Direct</a>
+  </div>
+  <div class="userbox">
+    <span id="user-email">—</span>
+    <button onclick="window.appAuth.logout()">Log out</button>
+  </div>
+</nav>
+
+<div id="auth-loading" class="auth-gate">
+  <h1>Loading…</h1>
+  <p>Checking authentication.</p>
+</div>
+
+<div id="main-content" style="display:none">
+<div class="page">
+  <h1>Brand Direct Pipeline <span class="freshness" id="freshness">Loading…</span></h1>
+  <div class="sub">Live executive view of the Brand (Direct) pipeline. Every panel below — Summary KPIs, rollups, deal tables — pulls fresh from HubSpot on each refresh.</div>
+
+  <div class="subtabs">
+    <div class="subtab active" data-tab="summary">Summary</div>
+    <div class="subtab" data-tab="pipeline">Pipeline</div>
+    <div class="subtab" data-tab="rollover">Existing (Roll-Over)</div>
+  </div>
+
+  <!-- ===================== SUMMARY ===================== -->
+  <div class="pane active" id="pane-summary">
+    <div class="panel">
+      <h2>Headline · Live From HubSpot</h2>
+      <div class="kpi-row">
+        <div class="kpi"><div class="lbl">Total Deals</div><div class="val" id="kpi-deals">—</div><div class="sublbl">Pipeline scope</div></div>
+        <div class="kpi"><div class="lbl">Brands</div><div class="val" id="kpi-brands">—</div><div class="sublbl">Unique</div></div>
+        <div class="kpi"><div class="lbl">Manufacturers</div><div class="val" id="kpi-mfrs">—</div><div class="sublbl">Unique</div></div>
+        <div class="kpi"><div class="lbl">Pipeline (TCV)</div><div class="val" id="kpi-tcv">—</div><div class="sublbl" id="kpi-tcv-full">—</div></div>
+        <div class="kpi"><div class="lbl">Total ARR</div><div class="val" id="kpi-arr">—</div><div class="sublbl" id="kpi-arr-full">—</div></div>
+        <div class="kpi"><div class="lbl">Weighted</div><div class="val" id="kpi-wtd">—</div><div class="sublbl" id="kpi-wtd-full">—</div></div>
+      </div>
+      <div class="note" id="scope-note">Scope: <code>pipeline = Brand (Direct)</code>, <code>dealtype ≠ Existing (Roll-Over)</code>, excluding Closed Won / Closed Lost.</div>
+    </div>
+
+    <div class="three-col">
+      <div class="panel">
+        <h2>Pipeline by Deal Type</h2>
+        <div id="live-by-dealtype" class="loading">Loading…</div>
+      </div>
+      <div class="panel">
+        <h2>Revenue by Product Mix</h2>
+        <div id="live-by-product" class="loading">Loading…</div>
+      </div>
+      <div class="panel">
+        <h2>Pipeline by Owner</h2>
+        <div id="live-by-owner" class="loading">Loading…</div>
+      </div>
+    </div>
+
+    <div class="source" id="live-source">Source: HubSpot</div>
+  </div>
+
+  <!-- ===================== PIPELINE ===================== -->
+  <div class="pane" id="pane-pipeline">
+    <div class="panel">
+      <h2>Pipeline · Live From HubSpot</h2>
+      <div class="note">Filter: <code>pipeline = Brand (Direct)</code>, <code>dealtype ≠ Existing (Roll-Over)</code>, excluding Closed Won/Lost. Click any deal name to open it in HubSpot.</div>
+      <div class="kpi-row" style="grid-template-columns: repeat(4, 1fr); margin-top: 16px;">
+        <div class="kpi"><div class="lbl">Deals</div><div class="val" id="p-count">—</div></div>
+        <div class="kpi"><div class="lbl">TCV</div><div class="val" id="p-tcv">—</div></div>
+        <div class="kpi"><div class="lbl">ARR</div><div class="val" id="p-arr">—</div></div>
+        <div class="kpi"><div class="lbl">Weighted</div><div class="val" id="p-wtd">—</div></div>
+      </div>
+    </div>
+    <div class="grid-wrap" id="grid-pipeline"></div>
+  </div>
+
+  <!-- ===================== ROLL-OVER ===================== -->
+  <div class="pane" id="pane-rollover">
+    <div class="panel">
+      <h2>Existing (Roll-Over) · Live From HubSpot</h2>
+      <div class="note">Filter: <code>pipeline = Brand (Direct)</code>, <code>dealtype = Existing (Roll-Over)</code>, excluding Closed Won/Lost.</div>
+      <div class="kpi-row" style="grid-template-columns: repeat(4, 1fr); margin-top: 16px;">
+        <div class="kpi"><div class="lbl">Deals</div><div class="val" id="r-count">—</div></div>
+        <div class="kpi"><div class="lbl">TCV</div><div class="val" id="r-tcv">—</div></div>
+        <div class="kpi"><div class="lbl">ARR</div><div class="val" id="r-arr">—</div></div>
+        <div class="kpi"><div class="lbl">Weighted</div><div class="val" id="r-wtd">—</div></div>
+      </div>
+    </div>
+    <div class="grid-wrap" id="grid-rollover"></div>
+  </div>
+</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  window.appAuth.init(user => {
+    document.getElementById('auth-loading').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+    document.getElementById('user-email').textContent = user.email;
+    initApp();
+  });
+});
+
+function initApp() {
+  // ============ STATIC REFERENCE DATA (from HubSpot get_properties) ============
+  const STAGE_LABEL = {
+    "1341411420": "Opportunity (Brand & Budget Identified)",
+    "143018394":  "Proposal Delivered",
+    "1341581069": "Proposal Under Evaluation",
+    "972397872":  "Verbal Agreement",
+    "1341581070": "Legal / Regulatory / Internal Alignment",
+    "143018398":  "Paperwork Complete",
+    "972397873":  "Routing for Signature",
+    "143017564":  "Closed Won",
+    "143017565":  "Closed Lost",
+    "972641437":  "On Hold",
+    "1340846889": "Rollover"
+  };
+  const DEALTYPE_LABEL = {
+    "newbusiness": "New Business",
+    "existingbusiness": "Existing (Up-Sell)",
+    "Existing (Expansion)": "Existing (Expansion)",
+    "Existing (Roll-Over)": "Existing (Roll-Over)",
+    "Win-back": "Win-back",
+    "Agency RFP": "Agency RFP"
+  };
+  const FORECAST_LABEL = {
+    "Likely":   {label: "Likely 75%",   cls: "likely"},
+    "Possible": {label: "Possible 50%", cls: "possible"},
+    "Other":    {label: "Other 25%",    cls: "other"}
+  };
+  const BRAND_DIRECT_PIPELINE_ID = "74379150";
+  const CLOSED_STAGE_IDS = ["143017564", "143017565"];
+
+  const PROPS = [
+    "dealname","dealstage","dealtype","pipeline","hubspot_owner_id","closedate",
+    "amount","brand_s_","company_primary","term__months_","mrr","arr",
+    "weighted_amount","weighted_mrr","deal_close_probability","forecast_category",
+    "ad_product","brand_activation","prescriberpoint_pa","samples",
+    "ad_product_revenue","brand_activation_revenue","prescriberpoint_pa_revenue","samples_revenue"
+  ];
+
+  // ============ FORMATTERS ============
+  const fmtMoney = (n) => {
+    if (n == null || isNaN(n)) return "—";
+    const v = Number(n);
+    if (Math.abs(v) >= 1e6) return "$" + (v/1e6).toFixed(2) + "M";
+    if (Math.abs(v) >= 1e3) return "$" + (v/1e3).toFixed(0) + "K";
+    return "$" + Math.round(v).toLocaleString();
+  };
+  const fmtMoneyFull = (n) => {
+    if (n == null || isNaN(n)) return "—";
+    return "$" + Math.round(Number(n)).toLocaleString();
+  };
+  const fmtPct = (n) => (n == null || isNaN(n)) ? "—" : (Number(n) * 100).toFixed(0) + "%";
+  const fmtDate = (d) => {
+    if (!d) return "—";
+    try { return new Date(d).toISOString().slice(0,10); } catch(e) { return "—"; }
+  };
+
+  // ============ SUB-TABS ============
+  document.querySelectorAll(".subtab").forEach(t => {
+    t.addEventListener("click", () => {
+      document.querySelectorAll(".subtab").forEach(x => x.classList.remove("active"));
+      document.querySelectorAll(".pane").forEach(x => x.classList.remove("active"));
+      t.classList.add("active");
+      document.getElementById("pane-" + t.dataset.tab).classList.add("active");
+    });
+  });
+
+  // ============ DATA LOAD ============
+  async function loadAll() {
+    // Fetch up to 200 deals in one call. HubSpot's search API max limit is 200.
+    // Current Brand (Direct) open pipeline is well under that; if it grows, we'll
+    // need to implement `after`-based cursor pagination.
+    const resp = await window.cowork.callMcpTool(
+      "mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects",
+      {
+        objectType: "deals",
+        filterGroups: [{
+          filters: [
+            { propertyName: "pipeline", operator: "EQ", value: BRAND_DIRECT_PIPELINE_ID },
+            { propertyName: "dealstage", operator: "NOT_IN", values: CLOSED_STAGE_IDS }
+          ]
+        }],
+        properties: PROPS,
+        limit: 200,
+        sorts: [{ propertyName: "amount", direction: "DESCENDING" }]
+      }
+    );
+    const data = parseToolResult(resp);
+    const allDeals = data.results || [];
+
+    // Build owner lookup from the full HubSpot owners list
+    let ownerMap = {};
+    try {
+      const ownerResp = await window.cowork.callMcpTool(
+        "mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_owners",
+        {}
+      );
+      const ownerData = parseToolResult(ownerResp);
+      (ownerData.owners || []).forEach(o => { ownerMap[String(o.ownerId)] = o.name; });
+    } catch (e) {
+      console.warn("Owner lookup failed; falling back to numeric owner IDs.", e);
+    }
+
+    return { allDeals, ownerMap };
+  }
+
+  function parseToolResult(resp) {
+    if (!resp) return {};
+    if (typeof resp === "string") {
+      try { return JSON.parse(resp); } catch(e) { return {}; }
+    }
+    if (resp.content && Array.isArray(resp.content)) {
+      const text = resp.content.map(c => c.text || "").join("");
+      try { return JSON.parse(text); } catch(e) { return {}; }
+    }
+    if (resp.results || resp.owners) return resp;
+    return {};
+  }
+
+  // ============ ROW NORMALIZATION ============
+  function normalize(deal, ownerMap) {
+    const p = deal.properties || {};
+    const num = (v) => (v == null || v === "") ? null : Number(v);
+    return {
+      id: deal.id || p.hs_object_id,
+      dealname: p.dealname || "",
+      manufacturer: p.company_primary || "",
+      dealstage: STAGE_LABEL[p.dealstage] || p.dealstage || "",
+      dealtype: DEALTYPE_LABEL[p.dealtype] || p.dealtype || "",
+      owner: ownerMap[p.hubspot_owner_id] || (p.hubspot_owner_id ? "ID " + p.hubspot_owner_id : ""),
+      brands: p.brand_s_ || "",
+      closedate: p.closedate || "",
+      amount: num(p.amount),
+      term: num(p.term__months_),
+      mrr: num(p.mrr),
+      arr: num(p.arr),
+      weighted_amount: num(p.weighted_amount),
+      weighted_mrr: num(p.weighted_mrr),
+      probability: num(p.deal_close_probability),
+      forecast: p.forecast_category || "",
+      ad_pct: num(p.ad_product),
+      ba_pct: num(p.brand_activation),
+      pa_pct: num(p.prescriberpoint_pa),
+      sa_pct: num(p.samples),
+      ad_rev: num(p.ad_product_revenue),
+      ba_rev: num(p.brand_activation_revenue),
+      pa_rev: num(p.prescriberpoint_pa_revenue),
+      sa_rev: num(p.samples_revenue)
+    };
+  }
+
+  // ============ ROLLUPS ============
+  function sum(arr, key) { return arr.reduce((s,r) => s + (r[key] || 0), 0); }
+
+  function rollupBy(rows, keyFn) {
+    const map = new Map();
+    rows.forEach(r => {
+      const k = keyFn(r) || "(blank)";
+      if (!map.has(k)) map.set(k, { key: k, count: 0, tcv: 0, weighted: 0, arr: 0 });
+      const v = map.get(k);
+      v.count += 1;
+      v.tcv += r.amount || 0;
+      v.weighted += r.weighted_amount || 0;
+      v.arr += r.arr || 0;
+    });
+    return Array.from(map.values()).sort((a,b) => b.tcv - a.tcv);
+  }
+
+  function rollupProductMix(rows) {
+    const products = [
+      { key: "PrescriberPoint PA", pct: "pa_pct", rev: "pa_rev" },
+      { key: "Brand Activation",   pct: "ba_pct", rev: "ba_rev" },
+      { key: "Ad Product",         pct: "ad_pct", rev: "ad_rev" },
+      { key: "Samples",            pct: "sa_pct", rev: "sa_rev" }
+    ];
+    return products.map(p => {
+      const tcv = rows.reduce((s,r) => s + (r[p.rev] || 0), 0);
+      const arr = rows.reduce((s,r) => s + (r[p.rev] && r.term ? r[p.rev] * 12 / r.term : 0), 0);
+      const count = rows.filter(r => (r[p.pct] || 0) > 0).length;
+      return { key: p.key, count, tcv, arr };
+    });
+  }
+
+  function pctOf(part, whole) {
+    if (!whole) return "0.0%";
+    return (part / whole * 100).toFixed(1) + "%";
+  }
+
+  function renderRollupTable(target, headers, rows, totalRow) {
+    let html = '<table class="rollup"><thead><tr>';
+    headers.forEach((h,i) => { html += `<th class="${i>0?'num':''}" style="${i>0?'text-align:right':''}">${h}</th>`; });
+    html += '</tr></thead><tbody>';
+    rows.forEach(r => {
+      html += '<tr>';
+      r.forEach((c,i) => { html += `<td class="${i>0?'num':''}">${c}</td>`; });
+      html += '</tr>';
+    });
+    if (totalRow) {
+      html += '<tr class="total">';
+      totalRow.forEach((c,i) => { html += `<td class="${i>0?'num':''}">${c}</td>`; });
+      html += '</tr>';
+    }
+    html += '</tbody></table>';
+    target.innerHTML = html;
+  }
+
+  // ============ GRID.JS TABLE ============
+  function buildGrid(target, rows) {
+    if (target._grid) { target._grid.destroy(); target.innerHTML = ""; }
+    const data = rows.map(r => [
+      r.dealname,
+      r.manufacturer,
+      r.dealstage,
+      r.dealtype,
+      r.owner,
+      r.brands,
+      fmtDate(r.closedate),
+      fmtMoneyFull(r.amount),
+      r.term || "—",
+      fmtMoneyFull(r.mrr),
+      fmtMoneyFull(r.arr),
+      fmtMoneyFull(r.weighted_amount),
+      fmtPct(r.probability),
+      r.forecast ? `<span class="badge ${FORECAST_LABEL[r.forecast]?.cls || ''}">${FORECAST_LABEL[r.forecast]?.label || r.forecast}</span>` : "—",
+      fmtPct(r.ad_pct), fmtPct(r.ba_pct), fmtPct(r.pa_pct), fmtPct(r.sa_pct),
+      fmtMoneyFull(r.ad_rev), fmtMoneyFull(r.ba_rev), fmtMoneyFull(r.pa_rev), fmtMoneyFull(r.sa_rev),
+      r.id
+    ]);
+    const grid = new gridjs.Grid({
+      columns: [
+        { name: "Deal Name", formatter: (cell, row) => {
+            const id = row.cells[row.cells.length-1].data;
+            const url = `https://app.hubspot.com/contacts/21389996/record/0-3/${id}`;
+            return gridjs.html(`<a href="${url}" target="_blank" rel="noopener" style="color:#2563eb;text-decoration:none;">${cell}</a>`);
+        }},
+        "Manufacturer", "Stage", "Type", "Owner", "Brand(s)", "Close",
+        { name: "Amount", attributes: { style: "text-align:right" } },
+        { name: "Term", attributes: { style: "text-align:right" } },
+        { name: "MRR", attributes: { style: "text-align:right" } },
+        { name: "ARR", attributes: { style: "text-align:right" } },
+        { name: "Weighted", attributes: { style: "text-align:right" } },
+        { name: "Prob", attributes: { style: "text-align:right" } },
+        { name: "Forecast", formatter: (cell) => gridjs.html(cell) },
+        { name: "Ad %", attributes: { style: "text-align:right" } },
+        { name: "BA %", attributes: { style: "text-align:right" } },
+        { name: "PA %", attributes: { style: "text-align:right" } },
+        { name: "Sa %", attributes: { style: "text-align:right" } },
+        { name: "Ad Rev", attributes: { style: "text-align:right" } },
+        { name: "BA Rev", attributes: { style: "text-align:right" } },
+        { name: "PA Rev", attributes: { style: "text-align:right" } },
+        { name: "Sa Rev", attributes: { style: "text-align:right" } },
+        { name: "id", hidden: true }
+      ],
+      data, sort: true, search: true, fixedHeader: true,
+      pagination: { limit: 25, summary: true }
+    });
+    grid.render(target);
+    target._grid = grid;
+  }
+
+  // ============ ENTRYPOINT ============
+  (async function main() {
+    let allDeals = [], ownerMap = {};
+    try {
+      const result = await loadAll();
+      allDeals = result.allDeals; ownerMap = result.ownerMap;
+    } catch (e) {
+      document.getElementById("freshness").textContent = "Load failed";
+      document.getElementById("freshness").className = "freshness stale";
+      document.querySelectorAll(".loading").forEach(el => {
+        el.outerHTML = `<div class="error">Failed to load HubSpot data: ${e.message || e}</div>`;
+      });
+      return;
+    }
+
+    const normalized = allDeals.map(d => normalize(d, ownerMap));
+
+    // Tab splits — Pipeline excludes Roll-Over; Roll-Over isolates it
+    const pipeRows = normalized.filter(r => r.dealtype !== "Existing (Roll-Over)");
+    const rollRows = normalized.filter(r => r.dealtype === "Existing (Roll-Over)");
+
+    // ===== SUMMARY: live KPIs =====
+    const liveScope = pipeRows;
+    const uniq = (arr, fn) => new Set(arr.map(fn).filter(v => v && String(v).trim().length)).size;
+    const tcv = sum(liveScope, "amount");
+    const arr = sum(liveScope, "arr");
+    const wtd = sum(liveScope, "weighted_amount");
+
+    document.getElementById("kpi-deals").textContent = liveScope.length.toLocaleString();
+    document.getElementById("kpi-brands").textContent = uniq(liveScope, r => r.brands).toLocaleString();
+    document.getElementById("kpi-mfrs").textContent = uniq(liveScope, r => r.manufacturer).toLocaleString();
+    document.getElementById("kpi-tcv").textContent = fmtMoney(tcv);
+    document.getElementById("kpi-tcv-full").textContent = fmtMoneyFull(tcv);
+    document.getElementById("kpi-arr").textContent = fmtMoney(arr);
+    document.getElementById("kpi-arr-full").textContent = fmtMoneyFull(arr);
+    document.getElementById("kpi-wtd").textContent = fmtMoney(wtd);
+    document.getElementById("kpi-wtd-full").textContent = fmtMoneyFull(wtd);
+
+    // Live rollups
+    const byType = rollupBy(liveScope, r => r.dealtype);
+    renderRollupTable(
+      document.getElementById("live-by-dealtype"),
+      ["Deal Type", "#", "TCV", "% of TCV", "Weighted"],
+      byType.map(v => [v.key, v.count, fmtMoneyFull(v.tcv), pctOf(v.tcv, tcv), fmtMoneyFull(v.weighted)]),
+      ["TOTAL", liveScope.length, fmtMoneyFull(tcv), "100.0%", fmtMoneyFull(wtd)]
+    );
+    const byProd = rollupProductMix(liveScope);
+    const prodTcvTotal = byProd.reduce((s,v)=>s+v.tcv,0);
+    const prodArrTotal = byProd.reduce((s,v)=>s+v.arr,0);
+    renderRollupTable(
+      document.getElementById("live-by-product"),
+      ["Product", "TCV", "% of TCV", "# Deals", "ARR"],
+      byProd.map(v => [v.key, fmtMoneyFull(v.tcv), pctOf(v.tcv, prodTcvTotal), v.count, fmtMoneyFull(v.arr)]),
+      ["TOTAL", fmtMoneyFull(prodTcvTotal), "100.0%", "—", fmtMoneyFull(prodArrTotal)]
+    );
+    const byOwner = rollupBy(liveScope, r => r.owner);
+    renderRollupTable(
+      document.getElementById("live-by-owner"),
+      ["Owner", "#", "TCV", "Weighted"],
+      byOwner.map(v => [v.key, v.count, fmtMoneyFull(v.tcv), fmtMoneyFull(v.weighted)]),
+      ["TOTAL", liveScope.length, fmtMoneyFull(tcv), fmtMoneyFull(wtd)]
+    );
+
+    // Freshness + source line
+    const ts = new Date();
+    document.getElementById("freshness").textContent = "Live · " + ts.toLocaleString();
+    document.getElementById("live-source").textContent =
+      `Source: HubSpot Brand (Direct) pipeline · ${liveScope.length} open deals in Pipeline scope · ${rollRows.length} in Roll-Over · Refreshed ${ts.toLocaleString()}`;
+
+    // ===== Pipeline tab KPIs + grid =====
+    document.getElementById("p-count").textContent = pipeRows.length.toLocaleString();
+    document.getElementById("p-tcv").textContent = fmtMoney(sum(pipeRows, "amount"));
+    document.getElementById("p-arr").textContent = fmtMoney(sum(pipeRows, "arr"));
+    document.getElementById("p-wtd").textContent = fmtMoney(sum(pipeRows, "weighted_amount"));
+    buildGrid(document.getElementById("grid-pipeline"), pipeRows);
+
+    // ===== Roll-Over tab KPIs + grid =====
+    document.getElementById("r-count").textContent = rollRows.length.toLocaleString();
+    document.getElementById("r-tcv").textContent = fmtMoney(sum(rollRows, "amount"));
+    document.getElementById("r-arr").textContent = fmtMoney(sum(rollRows, "arr"));
+    document.getElementById("r-wtd").textContent = fmtMoney(sum(rollRows, "weighted_amount"));
+    buildGrid(document.getElementById("grid-rollover"), rollRows);
+  })();
+}
+</script>
+</body>
+</html>

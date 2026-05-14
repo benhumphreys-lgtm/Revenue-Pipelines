@@ -10,6 +10,11 @@
   to = "/.netlify/functions/hubspot-search"
   status = 200
 
+[[redirects]]
+  from = "/api/hubspot-owners"
+  to = "/.netlify/functions/hubspot-owners"
+  status = 200
+
 [[headers]]
   for = "/*"
   [headers.values]

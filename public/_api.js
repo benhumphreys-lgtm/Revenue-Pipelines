@@ -31,11 +31,44 @@
     return response.json();
   }
 
+  // Owners lookup: fetches all HubSpot owners. Original artifacts called this with
+  // an ownerIds array, but the underlying HubSpot API doesn't filter that way —
+  // we just return all owners and let the artifact build its own ID-to-name map.
+  let _ownersCache = null;
+  async function hubspotOwners(_params) {
+    if (_ownersCache) return _ownersCache;
+    if (!window.netlifyIdentity) {
+      throw new Error('Netlify Identity widget not loaded.');
+    }
+    const user = window.netlifyIdentity.currentUser();
+    if (!user) {
+      throw new Error('Not authenticated. Please log in.');
+    }
+    const jwt = await user.jwt();
+    const response = await fetch('/api/hubspot-owners', {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${jwt}` }
+    });
+    if (!response.ok) {
+      let errData = {};
+      try { errData = await response.json(); } catch (e) {}
+      throw new Error(`HubSpot owners failed (${response.status}): ${errData.error || response.statusText}`);
+    }
+    _ownersCache = await response.json();
+    return _ownersCache;
+  }
+
   // Compat shim: lets the Cowork artifact code work with minimal changes.
   window.cowork = {
     callMcpTool: function (toolName, params) {
-      if (typeof toolName === 'string' && toolName.includes('search_crm_objects')) {
+      if (typeof toolName !== 'string') {
+        return Promise.reject(new Error('Tool name must be a string'));
+      }
+      if (toolName.includes('search_crm_objects')) {
         return hubspotSearch(params);
+      }
+      if (toolName.includes('search_owners')) {
+        return hubspotOwners(params);
       }
       return Promise.reject(new Error('Unsupported MCP tool in Netlify build: ' + toolName));
     }
@@ -43,6 +76,7 @@
 
   // Also expose directly for any new code
   window.hubspotSearch = hubspotSearch;
+  window.hubspotOwners = hubspotOwners;
 
   // Auth helpers used by tab pages
   window.appAuth = {
