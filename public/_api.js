@@ -32,7 +32,6 @@
   }
 
   // Compat shim: lets the Cowork artifact code work with minimal changes.
-  // The artifacts call window.cowork.callMcpTool('mcp__..._search_crm_objects', params) — route that here.
   window.cowork = {
     callMcpTool: function (toolName, params) {
       if (typeof toolName === 'string' && toolName.includes('search_crm_objects')) {
@@ -50,13 +49,15 @@
     init: function (onAuthed) {
       const id = window.netlifyIdentity;
       if (!id) {
-        console.error('Netlify Identity not on page');
+        console.error('Netlify Identity widget not loaded on this page.');
+        document.body.innerHTML = '<div style="padding:40px;text-align:center;font-family:sans-serif"><h1>Identity widget failed to load</h1><p>Check network tab or contact admin.</p></div>';
         return;
       }
 
       function checkUser(user) {
         if (!user) {
-          id.open('login');
+          // Not logged in — open the widget (it handles invite tokens in URL hash automatically)
+          id.open();
           return;
         }
         const email = (user.email || '').toLowerCase();
@@ -68,9 +69,28 @@
         onAuthed(user);
       }
 
-      id.on('init', checkUser);
+      // Register login/logout listeners
       id.on('login', user => { id.close(); checkUser(user); });
       id.on('logout', () => { location.reload(); });
+
+      // The widget script loads synchronously before this defer script runs,
+      // so by now currentUser() is reliable. But we also register an init
+      // listener as a fallback in case the widget is still initializing.
+      let handled = false;
+      function handle(user) {
+        if (handled) return;
+        handled = true;
+        checkUser(user);
+      }
+
+      const existing = id.currentUser();
+      if (existing) {
+        handle(existing);
+      } else {
+        id.on('init', handle);
+        // Safety net: if init never fires within 1.5s, treat as not logged in
+        setTimeout(() => handle(id.currentUser()), 1500);
+      }
     },
     logout: function () { window.netlifyIdentity.logout(); }
   };
