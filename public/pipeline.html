@@ -1,51 +1,535 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Pipeline Confidence — Revenue Pipeline</title>
-  <link rel="stylesheet" href="/_shared.css">
-  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-  <script src="/_api.js" defer></script>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="/_shared.css">
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script src="/_api.js" defer></script>
+<title>Pipeline Confidence Scorecard — Revenue Pipeline</title>
+<style>
+:root { color-scheme: light; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; background: transparent; color: #1A202C; line-height: 1.5; font-size: 14px; }
+.dash { padding: 16px 12px; }
+
+.title-block h1 { font-size: 22px; font-weight: 700; color: #1F4E79; }
+.title-block .subtitle { color: #718096; font-size: 12px; margin-top: 4px; }
+
+.refresh-status { font-size: 10px; color: #A0AEC0; text-align: right; margin-top: 6px; }
+.loading-spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid #E2E8F0; border-top-color: #1F4E79; border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 6px; vertical-align: middle; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* TEAM ROLLUP HERO */
+.hero { background: #EBF8FF; border: 1px solid #BEE3F8; border-radius: 8px; padding: 18px 20px; margin: 16px 0; position: relative; }
+.hero .live-tag { position: absolute; top: 10px; right: 12px; font-size: 9px; padding: 2px 6px; border-radius: 3px; background: #2F855A; color: white; text-transform: uppercase; letter-spacing: 0.4px; }
+.hero .hero-label { font-size: 10px; text-transform: uppercase; color: #2C5282; font-weight: 600; letter-spacing: 0.4px; }
+.hero .hero-headline { font-size: 22px; font-weight: 700; color: #1F4E79; margin: 6px 0 8px; line-height: 1.3; }
+.hero .hero-detail { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-top: 10px; }
+.hero-stat { background: white; border: 1px solid #BEE3F8; border-radius: 6px; padding: 10px; }
+.hero-stat .stat-label { font-size: 10px; text-transform: uppercase; color: #718096; font-weight: 600; letter-spacing: 0.3px; }
+.hero-stat .stat-value { font-size: 18px; font-weight: 700; color: #1F4E79; margin-top: 2px; }
+.hero-stat .stat-sub { font-size: 11px; color: #4A5568; }
+.hero-conclusion { background: white; border-left: 4px solid #2E75B6; border-radius: 4px; padding: 10px 14px; margin-top: 12px; font-size: 13px; color: #2C5282; line-height: 1.5; }
+
+/* REP CARDS GRID */
+.rep-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; margin: 16px 0; }
+.rep-card { background: white; border: 1px solid #E2E8F0; border-radius: 8px; padding: 16px; border-left: 5px solid #CBD5E0; position: relative; transition: box-shadow 0.2s; }
+.rep-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.rep-card.green { border-left-color: #2F855A; }
+.rep-card.yellow { border-left-color: #D69E2E; }
+.rep-card.red { border-left-color: #C53030; }
+.rep-card.gray { border-left-color: #A0AEC0; background: #F7FAFC; }
+
+.rep-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #EDF2F7; margin-bottom: 12px; }
+.rep-name { font-size: 16px; font-weight: 700; color: #1A202C; }
+.rep-target { font-size: 11px; color: #718096; margin-top: 2px; }
+.rep-badge { font-size: 10px; padding: 4px 10px; border-radius: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; }
+.rep-badge.green { background: #C6F6D5; color: #22543D; }
+.rep-badge.yellow { background: #FEFCBF; color: #744210; }
+.rep-badge.red { background: #FED7D7; color: #742A2A; }
+.rep-badge.gray { background: #E2E8F0; color: #4A5568; }
+
+.metric-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed #EDF2F7; }
+.metric-row:last-child { border-bottom: none; }
+.metric-label { font-size: 12px; color: #4A5568; }
+.metric-value { font-size: 14px; font-weight: 700; color: #1A202C; display: flex; align-items: center; gap: 6px; }
+.metric-ratio { font-size: 11px; color: #718096; font-weight: 500; margin-left: 4px; }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
+.dot.green { background: #2F855A; }
+.dot.yellow { background: #D69E2E; }
+.dot.red { background: #C53030; }
+.dot.gray { background: #A0AEC0; }
+
+.action-box { margin-top: 12px; padding: 10px 12px; border-radius: 4px; font-size: 12px; line-height: 1.45; }
+.action-box.green { background: #F0FFF4; border-left: 3px solid #2F855A; color: #22543D; }
+.action-box.yellow { background: #FFFBEA; border-left: 3px solid #D69E2E; color: #744210; }
+.action-box.red { background: #FFF5F5; border-left: 3px solid #C53030; color: #742A2A; }
+.action-box.gray { background: #F7FAFC; border-left: 3px solid #A0AEC0; color: #4A5568; }
+.action-box strong { display: block; font-size: 10px; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 4px; }
+
+.stale-flag { display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; font-size: 11px; color: #C53030; background: #FFF5F5; padding: 4px 8px; border-radius: 3px; border: 1px solid #FEB2B2; }
+
+.deals-toggle { font-size: 11px; color: #2E75B6; cursor: pointer; margin-top: 10px; user-select: none; }
+.deals-toggle:hover { text-decoration: underline; }
+.deals-list { margin-top: 8px; font-size: 11px; display: none; }
+.deals-list.open { display: block; }
+.deal-row { padding: 6px 0; border-bottom: 1px dotted #EDF2F7; display: flex; justify-content: space-between; gap: 8px; }
+.deal-row:last-child { border-bottom: none; }
+.deal-name { color: #2D3748; flex: 1; }
+.deal-name.stale { color: #C53030; }
+.deal-name a { color: inherit; text-decoration: none; }
+.deal-name a:hover { text-decoration: underline; }
+.deal-meta { color: #718096; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* NON-REP SECTION */
+.section { background: white; border: 1px solid #E2E8F0; border-radius: 6px; padding: 14px 16px; margin-bottom: 14px; }
+.section h2 { font-size: 14px; color: #1F4E79; font-weight: 700; margin-bottom: 4px; }
+.section .section-sub { font-size: 11px; color: #718096; margin-bottom: 12px; font-style: italic; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+.tbl th { background: #F7FAFC; color: #4A5568; padding: 8px 10px; text-align: left; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 1px solid #E2E8F0; }
+.tbl td { padding: 8px 10px; border-bottom: 1px solid #EDF2F7; }
+.tbl td.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.methodology { padding: 12px 14px; background: #F7FAFC; border-radius: 6px; margin-top: 14px; font-size: 11px; color: #4A5568; line-height: 1.6; }
+.methodology h3 { font-size: 12px; color: #1F4E79; font-weight: 700; margin-bottom: 6px; }
+.methodology code { font-family: ui-monospace, "SF Mono", monospace; background: white; padding: 1px 4px; border-radius: 3px; border: 1px solid #E2E8F0; font-size: 10.5px; }
+
+.error-banner { background: #FFF5F5; border: 1px solid #FEB2B2; color: #742A2A; padding: 10px 14px; border-radius: 4px; font-size: 12px; margin: 12px 0; display: none; }
+.error-banner.show { display: block; }
+</style>
 </head>
 <body>
-  <nav class="topnav">
-    <div class="brand">Revenue Pipeline</div>
-    <div class="tabs">
-      <a class="tab" href="/asembia.html">Asembia 2026</a>
-      <a class="tab" href="/first-meeting.html">First Meeting</a>
-      <a class="tab active" href="/pipeline.html">Pipeline Confidence</a>
-    </div>
-    <div class="userbox">
-      <span id="user-email">—</span>
-      <button onclick="window.appAuth.logout()">Log out</button>
-    </div>
-  </nav>
+<nav class="topnav">
+  <div class="brand">Revenue Pipeline</div>
+  <div class="tabs">
+    <a class="tab" href="/asembia.html">Asembia 2026</a>
+    <a class="tab" href="/first-meeting.html">First Meeting</a>
+    <a class="tab active" href="/pipeline.html">Pipeline Confidence</a>
+  </div>
+  <div class="userbox">
+    <span id="user-email">—</span>
+    <button onclick="window.appAuth.logout()">Log out</button>
+  </div>
+</nav>
 
-  <div id="auth-loading" class="auth-gate">
-    <h1>Loading…</h1>
-    <p>Checking authentication.</p>
+<div id="auth-loading" class="auth-gate">
+  <h1>Loading…</h1>
+  <p>Checking authentication.</p>
+</div>
+
+<div id="main-content" style="display:none">
+<div class="dash">
+  <div class="title-block">
+    <h1>Pipeline Confidence Scorecard</h1>
+    <div class="subtitle">$4M ARR gap by EOY 2026 · Brand Direct Pipeline · Live HubSpot view</div>
+    <div class="refresh-status" id="refresh-status"><span class="loading-spinner"></span>Loading from HubSpot…</div>
   </div>
 
-  <div id="main-content" style="display:none">
-    <div class="placeholder">
-      <h1>Pipeline Confidence Scorecard — coming soon</h1>
-      <p>This tab will be the live port of the Pipeline Confidence Scorecard from Cowork.</p>
-      <p>Includes: team rollup hero, 3 rep cards with coverage/forecast color-coding, deal drill-down, stale-closedate flags, $4M ARR gap progress.</p>
-      <p>Until then, use the Cowork artifact directly.</p>
-      <p style="margin-top: 20px; font-size: 11px; color: #718096;">
-        v0.2 will replace this placeholder with the full port.
-      </p>
-    </div>
+  <div class="error-banner" id="error-banner"></div>
+
+  <!-- TEAM ROLLUP -->
+  <div class="hero">
+    <span class="live-tag">Live</span>
+    <div class="hero-label">Team Rollup — 3 active reps</div>
+    <div class="hero-headline" id="hero-headline">Loading team rollup…</div>
+    <div class="hero-detail" id="hero-detail"></div>
+    <div class="hero-conclusion" id="hero-conclusion"></div>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      window.appAuth.init(user => {
-        document.getElementById('auth-loading').style.display = 'none';
-        document.getElementById('main-content').style.display = 'block';
-        document.getElementById('user-email').textContent = user.email;
-      });
+  <!-- REP CARDS -->
+  <div class="rep-grid" id="rep-grid"></div>
+
+  <!-- NON-REP OWNERS -->
+  <div class="section">
+    <h2>Out-of-scope: deals owned by non-rep accounts</h2>
+    <div class="section-sub">These owners hold Brand Direct pipe but aren't scored against the $4M gap. Confirm with Dan whether any should count.</div>
+    <table class="tbl" id="non-rep-table">
+      <thead>
+        <tr>
+          <th>Owner</th>
+          <th class="num">Open deals</th>
+          <th class="num">Open pipe</th>
+          <th class="num">Weighted forecast</th>
+        </tr>
+      </thead>
+      <tbody id="non-rep-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- METHODOLOGY -->
+  <div class="methodology">
+    <h3>How this is scored</h3>
+    <p><strong>Per-rep target:</strong> $1.33M ARR ($4M gap ÷ 3 active reps) by Dec 31, 2026. Placeholder rep (specialty pharma hire) excluded until ramp date is set.</p>
+    <p><strong>Coverage ratio</strong> = sum of open deal amounts ÷ rep target. Industry standard: <code>&lt;4x = Red, 4x–6x = Yellow, &gt;6x = Green</code>.</p>
+    <p><strong>Weighted forecast</strong> = sum of (deal amount × HubSpot <code>deal_close_probability</code>) ÷ rep target. Uses the rep-maintained close probability per deal, not the stage default. <code>&lt;100% = Red, 100%–150% = Yellow, &gt;150% = Green</code>.</p>
+    <p><strong>Combined confidence:</strong> both dimensions must be Yellow or better to qualify as "On Track." A rep with high coverage but low weighted = lots of stuck or low-probability deals; a rep with low coverage but high weighted = thin pipe with no margin for slippage.</p>
+    <p><strong>Deal count translation:</strong> Expected wins = weighted forecast ÷ $480K (Dan's $40K/mo × 12 avg deal size). Per-rep target = 3 deals, team target = 9 deals across 3 reps.</p>
+    <p><strong>Quarterly pacing:</strong> Open deals bucketed by closedate quarter. Pre-Q2 2026 closedates are flagged as stale (shown separately) and excluded from pacing counts.</p>
+    <p><strong>Filter:</strong> pipeline <code>74379150</code> (Brand Direct), excluding stages <code>Closed Won</code> and <code>Closed Lost</code>. Stale-closedate flag = closedate before today.</p>
+  </div>
+
+</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  window.appAuth.init(user => {
+    document.getElementById('auth-loading').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+    document.getElementById('user-email').textContent = user.email;
+    initApp();
+  });
+});
+
+function initApp() {
+const REPS = {
+  '153408573': { name: 'Daniel Cornwell',   shortName: 'Dan',   target: 1333333 },
+  '314753596': { name: 'Kyle McCaig',        shortName: 'Kyle',  target: 1333333 },
+  '78606761':  { name: 'Anne Foelsch',       shortName: 'Anne',  target: 1333333 }
+};
+const PLACEHOLDER_NAME = 'New Hire (Specialty Pharma)';
+const TOTAL_TARGET = 4000000;
+const PIPELINE_ID = '74379150';
+const CLOSED_STAGES = ['143017564', '143017565'];
+const TODAY = new Date();
+const HS_BASE = 'https://app.hubspot.com/contacts/21389996/record/0-3/';
+const AVG_DEAL_SIZE = 480000;       // Dan's $40K/mo × 12 = avg ARR per deal
+const DEAL_TARGET_PER_REP = 3;      // 1 deal/quarter for 3 quarters
+const TOTAL_DEAL_TARGET = 9;        // 3 reps × 3 deals each
+
+const fmt$ = (n) => '$' + (Math.round(n / 1000) >= 1000
+  ? (n/1000000).toFixed(2) + 'M'
+  : Math.round(n / 1000) + 'K');
+const fmt$Long = (n) => '$' + n.toLocaleString(undefined, { maximumFractionDigits: 0 });
+const pct = (n) => Math.round(n * 100) + '%';
+
+function colorFor(value, redCutoff, greenCutoff) {
+  if (value < redCutoff) return 'red';
+  if (value <= greenCutoff) return 'yellow';
+  return 'green';
+}
+function combinedColor(a, b) {
+  if (a === 'red' || b === 'red') return 'red';
+  if (a === 'yellow' || b === 'yellow') return 'yellow';
+  return 'green';
+}
+function badgeLabel(color) {
+  return { green: 'On Track', yellow: 'Needs Attention', red: 'At Risk', gray: 'Pre-Ramp' }[color];
+}
+function actionFor(covColor, fcstColor, repName) {
+  if (covColor === 'red' && fcstColor === 'red')
+    return { tone: 'red', headline: 'Needs more leads', detail: `Both coverage and forecast below target. ${repName} needs top-of-funnel intervention — assign more accounts or redirect inbound.` };
+  if (covColor !== 'red' && fcstColor === 'red')
+    return { tone: 'red', headline: 'Coach deals — quality is the gap', detail: `Coverage is fine but weighted forecast is below target. ${repName}'s pipe is full of low-probability or stuck deals. Qualify out junk or push stages.` };
+  if (covColor === 'red' && fcstColor !== 'red')
+    return { tone: 'yellow', headline: 'Build coverage cushion', detail: `Forecast just clears target but coverage is thin. ${repName} needs 2–3 more deals to reach a 4x+ cushion. No margin for slippage.` };
+  if (covColor === 'yellow' || fcstColor === 'yellow')
+    return { tone: 'yellow', headline: 'On track — protect velocity', detail: `${repName} is performing but has limited cushion. Watch for slippage on key deals.` };
+  return { tone: 'green', headline: 'On track', detail: `${repName}'s pipeline supports the target with margin. No intervention needed.` };
+}
+
+function isStale(closedateIso) {
+  if (!closedateIso) return false;
+  return new Date(closedateIso) < TODAY;
+}
+
+function dealUrl(id) { return HS_BASE + id; }
+
+// MCP responses can come back as a raw object, a JSON string, wrapped in .body,
+// or wrapped in .content[].text (MCP protocol shape). Unwrap defensively.
+function parseMcpResponse(res) {
+  let data = res;
+  if (typeof res === 'string') { try { data = JSON.parse(res); } catch (e) {} }
+  if (data && data.body) data = (typeof data.body === 'string' ? JSON.parse(data.body) : data.body);
+  if (data && data.content && Array.isArray(data.content)) {
+    const txt = data.content.find(c => c.type === 'text');
+    if (txt && txt.text) { try { data = JSON.parse(txt.text); } catch (e) {} }
+  }
+  return data;
+}
+
+async function load() {
+  const status = document.getElementById('refresh-status');
+  const errBanner = document.getElementById('error-banner');
+  errBanner.classList.remove('show');
+
+  try {
+    const res = await window.cowork.callMcpTool('mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects', {
+      objectType: 'deals',
+      filterGroups: [{
+        filters: [
+          { propertyName: 'pipeline', operator: 'EQ', value: PIPELINE_ID },
+          { propertyName: 'dealstage', operator: 'NOT_IN', values: CLOSED_STAGES }
+        ]
+      }],
+      properties: ['dealname', 'dealstage', 'amount', 'hubspot_owner_id', 'deal_close_probability', 'closedate'],
+      limit: 200,
+      sorts: [{ propertyName: 'amount', direction: 'DESCENDING' }],
+      chatInsights: { userIntent: 'Refresh Brand Direct pipeline confidence scorecard.', satisfaction: 'NEUTRAL' }
     });
-  </script>
+
+    const data = parseMcpResponse(res);
+    const deals = (data && Array.isArray(data.results)) ? data.results : [];
+    render(deals);
+    status.innerHTML = `Refreshed · ${deals.length} open deals · ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  } catch (e) {
+    console.error(e);
+    errBanner.textContent = 'Failed to load HubSpot data: ' + (e && e.message ? e.message : String(e));
+    errBanner.classList.add('show');
+    status.textContent = 'Refresh failed — see banner above.';
+  }
+}
+
+function render(deals) {
+  // Bucket by owner
+  const byOwner = {};
+  deals.forEach(d => {
+    const p = d.properties || {};
+    const owner = p.hubspot_owner_id || 'unowned';
+    if (!byOwner[owner]) byOwner[owner] = [];
+    byOwner[owner].push({
+      id: d.id,
+      name: p.dealname || '(unnamed)',
+      amount: parseFloat(p.amount || 0) || 0,
+      prob: parseFloat(p.deal_close_probability || 0) || 0,
+      closedate: p.closedate,
+      stale: isStale(p.closedate)
+    });
+  });
+
+  // Compute per-rep
+  const repCards = [];
+  let teamOpen = 0, teamWeighted = 0, teamDealCount = 0, teamStaleCount = 0;
+  for (const [ownerId, info] of Object.entries(REPS)) {
+    const dealsForRep = byOwner[ownerId] || [];
+    const open = dealsForRep.reduce((s, d) => s + d.amount, 0);
+    const weighted = dealsForRep.reduce((s, d) => s + d.amount * d.prob, 0);
+    const stale = dealsForRep.filter(d => d.stale).length;
+    const cov = open / info.target;
+    const fcst = weighted / info.target;
+    const covColor = colorFor(cov, 4, 6);
+    const fcstColor = colorFor(fcst, 1.0, 1.5);
+    const combined = combinedColor(covColor, fcstColor);
+    // Deal count translation (Dan's framing: ~$40K/mo avg = $480K/yr per deal)
+    const expectedWins = weighted / AVG_DEAL_SIZE;
+    // Quarterly pacing: bucket open deals by closedate quarter (2026 only; 2027+ separate; pre-Q2 excluded as those are stale)
+    const pacing = { Q2: 0, Q3: 0, Q4: 0, future: 0 };
+    dealsForRep.forEach(d => {
+      if (!d.closedate) return;
+      const dt = new Date(d.closedate);
+      const yr = dt.getUTCFullYear();
+      const mo = dt.getUTCMonth();
+      if (yr === 2026 && mo >= 3 && mo <= 5) pacing.Q2++;
+      else if (yr === 2026 && mo >= 6 && mo <= 8) pacing.Q3++;
+      else if (yr === 2026 && mo >= 9 && mo <= 11) pacing.Q4++;
+      else if (yr >= 2027) pacing.future++;
+    });
+    repCards.push({ ownerId, info, deals: dealsForRep, open, weighted, stale, cov, fcst, covColor, fcstColor, combined, expectedWins, pacing });
+    teamOpen += open;
+    teamWeighted += weighted;
+    teamDealCount += dealsForRep.length;
+    teamStaleCount += stale;
+  }
+  // Placeholder
+  repCards.push({ placeholder: true });
+
+  // Non-rep owners
+  const nonRepOwners = {};
+  Object.entries(byOwner).forEach(([ownerId, ds]) => {
+    if (REPS[ownerId]) return;
+    nonRepOwners[ownerId] = {
+      open: ds.reduce((s,d) => s + d.amount, 0),
+      weighted: ds.reduce((s,d) => s + d.amount * d.prob, 0),
+      count: ds.length
+    };
+  });
+
+  renderHero(teamOpen, teamWeighted, teamDealCount, teamStaleCount, repCards);
+  renderReps(repCards);
+  renderNonReps(nonRepOwners);
+}
+
+function renderHero(teamOpen, teamWeighted, dealCount, staleCount, repCards) {
+  const teamCov = teamOpen / TOTAL_TARGET;
+  const teamFcst = teamWeighted / TOTAL_TARGET;
+  const fcstColor = colorFor(teamFcst, 1.0, 1.5);
+  const covColor = colorFor(teamCov, 4, 6);
+  const combined = combinedColor(covColor, fcstColor);
+
+  // Concentration risk
+  const danCard = repCards.find(c => c.info && c.ownerId === '153408573');
+  const danShare = danCard ? Math.round((danCard.weighted / teamWeighted) * 100) : 0;
+  const reqsAtRisk = repCards.filter(c => c.info && c.combined === 'red').map(c => c.info.shortName);
+
+  document.getElementById('hero-headline').textContent =
+    teamFcst >= 1
+      ? `Weighted forecast covers the $4M gap (${pct(teamFcst)} of target).`
+      : `Weighted forecast falls short of the $4M gap (${pct(teamFcst)} of target).`;
+
+  const teamExpectedWins = teamWeighted / AVG_DEAL_SIZE;
+  const teamWinsColor = colorFor(teamExpectedWins / TOTAL_DEAL_TARGET, 1.0, 1.5);
+
+  document.getElementById('hero-detail').innerHTML = `
+    <div class="hero-stat">
+      <div class="stat-label">Total open pipe</div>
+      <div class="stat-value">${fmt$(teamOpen)}</div>
+      <div class="stat-sub">${teamCov.toFixed(2)}x team coverage <span class="dot ${covColor}" style="vertical-align:baseline;width:8px;height:8px;"></span></div>
+    </div>
+    <div class="hero-stat">
+      <div class="stat-label">Weighted forecast</div>
+      <div class="stat-value">${fmt$(teamWeighted)}</div>
+      <div class="stat-sub">${pct(teamFcst)} of $4M target <span class="dot ${fcstColor}" style="vertical-align:baseline;width:8px;height:8px;"></span></div>
+    </div>
+    <div class="hero-stat">
+      <div class="stat-label">Expected wins</div>
+      <div class="stat-value">${teamExpectedWins.toFixed(1)}</div>
+      <div class="stat-sub">vs ${TOTAL_DEAL_TARGET} deal target <span class="dot ${teamWinsColor}" style="vertical-align:baseline;width:8px;height:8px;"></span></div>
+    </div>
+    <div class="hero-stat">
+      <div class="stat-label">Open deals (3 reps)</div>
+      <div class="stat-value">${dealCount}</div>
+      <div class="stat-sub">${staleCount} with past closedate</div>
+    </div>
+    <div class="hero-stat">
+      <div class="stat-label">Concentration on Dan</div>
+      <div class="stat-value">${danShare}%</div>
+      <div class="stat-sub">of team weighted forecast</div>
+    </div>
+  `;
+
+  let conclusion = '';
+  if (reqsAtRisk.length === 0 && teamFcst >= 1.5) {
+    conclusion = `Strong position. ${pct(teamFcst)} weighted coverage of the $4M gap with all reps Yellow or better.`;
+  } else if (reqsAtRisk.length === 0) {
+    conclusion = `On track but thin. ${pct(teamFcst)} of target — limited margin if a key deal slips.`;
+  } else {
+    conclusion = `Math says we close the gap — but ${danShare}% of weighted forecast sits on Dan, and ${reqsAtRisk.join(' & ')} ${reqsAtRisk.length === 1 ? 'is' : 'are'} below target. Intervention focus: see action cards below.`;
+  }
+  document.getElementById('hero-conclusion').textContent = conclusion;
+}
+
+function renderReps(repCards) {
+  const grid = document.getElementById('rep-grid');
+  grid.innerHTML = '';
+  repCards.forEach(card => {
+    if (card.placeholder) {
+      grid.insertAdjacentHTML('beforeend', `
+        <div class="rep-card gray">
+          <div class="rep-header">
+            <div>
+              <div class="rep-name">${PLACEHOLDER_NAME}</div>
+              <div class="rep-target">Target: TBD (specialty motion)</div>
+            </div>
+            <span class="rep-badge gray">Pre-Ramp</span>
+          </div>
+          <div style="font-size: 12px; color: #4A5568; line-height: 1.5;">
+            New hire not yet started — excluded from $4M gap math.
+            Different sales motion (specialty pharma). Will be tracked separately once ramp date is set.
+          </div>
+          <div class="action-box gray">
+            <strong>Action</strong>
+            Confirm start date and target with Dan. Decide whether to rebalance team targets when hire ramps or absorb into specialty bucket.
+          </div>
+        </div>
+      `);
+      return;
+    }
+    const action = actionFor(card.covColor, card.fcstColor, card.info.shortName);
+    const dealsHtml = card.deals
+      .sort((a,b) => b.amount - a.amount)
+      .map(d => `
+        <div class="deal-row">
+          <span class="deal-name ${d.stale ? 'stale' : ''}">
+            <a href="${dealUrl(d.id)}?utm_source=cowork_artifact" target="_blank">${d.name}</a>
+            ${d.stale ? ' ⚠' : ''}
+          </span>
+          <span class="deal-meta">${fmt$(d.amount)} · ${pct(d.prob)}</span>
+        </div>
+      `).join('');
+
+    grid.insertAdjacentHTML('beforeend', `
+      <div class="rep-card ${card.combined}">
+        <div class="rep-header">
+          <div>
+            <div class="rep-name">${card.info.name}</div>
+            <div class="rep-target">Target: ${fmt$(card.info.target)} ARR by EOY 2026</div>
+          </div>
+          <span class="rep-badge ${card.combined}">${badgeLabel(card.combined)}</span>
+        </div>
+
+        <div class="metric-row">
+          <span class="metric-label">Open pipeline</span>
+          <span class="metric-value">
+            <span class="dot ${card.covColor}"></span>
+            ${fmt$(card.open)}
+            <span class="metric-ratio">(${card.cov.toFixed(2)}x cov)</span>
+          </span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-label">Weighted forecast</span>
+          <span class="metric-value">
+            <span class="dot ${card.fcstColor}"></span>
+            ${fmt$(card.weighted)}
+            <span class="metric-ratio">(${pct(card.fcst)} of target)</span>
+          </span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-label">Expected wins</span>
+          <span class="metric-value">
+            <span class="dot ${card.fcstColor}"></span>
+            ${card.expectedWins.toFixed(1)}
+            <span class="metric-ratio">/ ${DEAL_TARGET_PER_REP} deal target</span>
+          </span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-label">Pacing (open by quarter)</span>
+          <span class="metric-value" style="font-size:11px;color:#4A5568;font-weight:500;">
+            Q2: ${card.pacing.Q2} · Q3: ${card.pacing.Q3} · Q4: ${card.pacing.Q4}${card.pacing.future > 0 ? ' · 2027+: ' + card.pacing.future : ''}
+          </span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-label">Open deals</span>
+          <span class="metric-value">${card.deals.length}</span>
+        </div>
+
+        ${card.stale > 0 ? `<div class="stale-flag">⚠ ${card.stale} deal${card.stale === 1 ? '' : 's'} with past closedate — needs hygiene fix</div>` : ''}
+
+        <div class="action-box ${action.tone}">
+          <strong>Action — ${action.headline}</strong>
+          ${action.detail}
+        </div>
+
+        <div class="deals-toggle" onclick="this.nextElementSibling.classList.toggle('open'); this.textContent = this.nextElementSibling.classList.contains('open') ? '▾ Hide deals' : '▸ Show ' + ${card.deals.length} + ' deals';">▸ Show ${card.deals.length} deals</div>
+        <div class="deals-list">${dealsHtml}</div>
+      </div>
+    `);
+  });
+}
+
+function renderNonReps(nonRepOwners) {
+  const tbody = document.getElementById('non-rep-tbody');
+  const known = {
+    '79878581': 'Michelle Bornstein',
+    '176792101': 'John Robinson',
+    '637028764': 'Shawn Moriarty',
+    '90251481': 'Ben Humphreys',
+    'unowned': '(Unowned)'
+  };
+  const rows = Object.entries(nonRepOwners)
+    .sort(([,a],[,b]) => b.open - a.open)
+    .map(([ownerId, v]) => `
+      <tr>
+        <td>${known[ownerId] || 'Owner ' + ownerId}</td>
+        <td class="num">${v.count}</td>
+        <td class="num">${fmt$Long(v.open)}</td>
+        <td class="num">${fmt$Long(v.weighted)}</td>
+      </tr>
+    `).join('');
+  tbody.innerHTML = rows || '<tr><td colspan="4" style="text-align:center;color:#A0AEC0;padding:14px;">No non-rep owners with open deals</td></tr>';
+}
+
+load();
+}
+</script>
 </body>
 </html>

@@ -1,51 +1,738 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>First Meeting Tracker — Revenue Pipeline</title>
-  <link rel="stylesheet" href="/_shared.css">
-  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-  <script src="/_api.js" defer></script>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="/_shared.css">
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script src="/_api.js" defer></script>
+<title>First Meeting Tracker — Revenue Pipeline</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<style>
+:root { color-scheme: light; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; background: transparent; color: #1A202C; line-height: 1.5; font-size: 14px; }
+.dash { padding: 16px 12px; }
+.title-block h1 { font-size: 22px; font-weight: 700; color: #1F4E79; }
+.title-block .subtitle { color: #718096; font-size: 12px; margin-top: 4px; }
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 16px 0; }
+.kpi { background: #fff; border: 1px solid #E2E8F0; border-radius: 6px; padding: 12px; position: relative; }
+.kpi.primary { background: #EBF8FF; border-color: #BEE3F8; }
+.kpi.weekly { background: #F0FFF4; border-color: #C6F6D5; }
+.kpi.future { background: #FAF5FF; border-color: #E9D8FD; }
+.kpi .label { font-size: 10px; text-transform: uppercase; color: #718096; font-weight: 600; letter-spacing: 0.4px; }
+.kpi .value { font-size: 26px; font-weight: 700; color: #1F4E79; margin-top: 4px; }
+.kpi.weekly .value { color: #2F855A; }
+.kpi.future .value { color: #6B46C1; }
+.kpi .delta { font-size: 11px; color: #4A5568; margin-top: 4px; }
+.kpi .live-tag { position: absolute; top: 8px; right: 8px; font-size: 9px; padding: 2px 6px; border-radius: 3px; background: #2F855A; color: white; text-transform: uppercase; letter-spacing: 0.4px; display: none; }
+.kpi.live .live-tag { display: inline-block; }
+
+.section { background: #fff; border: 1px solid #E2E8F0; border-radius: 6px; padding: 14px 16px; margin-bottom: 14px; }
+.section h2 { font-size: 14px; color: #1F4E79; font-weight: 700; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #EDF2F7; }
+
+/* WoW comparison panel */
+.wow-panel { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 8px; }
+.wow-col { background: #F7FAFC; border-radius: 6px; padding: 12px; }
+.wow-col.current { background: #F0FFF4; border-left: 4px solid #2F855A; }
+.wow-col.previous { background: #FAF5FF; border-left: 4px solid #9F7AEA; }
+.wow-col.delta { background: #EBF8FF; border-left: 4px solid #2E75B6; }
+.wow-col-header { font-size: 11px; text-transform: uppercase; color: #718096; font-weight: 600; letter-spacing: 0.4px; margin-bottom: 8px; }
+.wow-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #E2E8F0; align-items: center; }
+.wow-row:last-child { border-bottom: none; }
+.wow-label { font-size: 12px; color: #4A5568; }
+.wow-value { font-size: 14px; font-weight: 700; color: #1A202C; }
+.wow-delta-up { color: #2F855A; font-weight: 700; }
+.wow-delta-down { color: #C53030; font-weight: 700; }
+.wow-delta-flat { color: #718096; font-weight: 700; }
+.wow-arrow { font-size: 12px; }
+
+.tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+.tbl th { background: #1F4E79; color: white; padding: 6px 10px; text-align: left; font-weight: 600; }
+.tbl td { padding: 6px 10px; border-bottom: 1px solid #EDF2F7; }
+.tbl .num { text-align: right; }
+.tag { display: inline-block; font-size: 10px; padding: 2px 6px; border-radius: 3px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+.tag.bd { background: #EBF8FF; color: #1F4E79; }
+.tag.bia { background: #FAF5FF; color: #6B46C1; }
+.tag.mkt { background: #FFFAF0; color: #DD6B20; }
+.tag.rp { background: #C6F6D5; color: #2F855A; }
+.refresh-status { font-size: 10px; color: #A0AEC0; text-align: right; margin-top: 4px; }
+.loading-spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid #E2E8F0; border-top-color: #1F4E79; border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 6px; vertical-align: middle; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.note { font-size: 11px; color: #718096; font-style: italic; margin-top: 8px; padding-top: 8px; border-top: 1px solid #EDF2F7; }
+.chart-container { position: relative; height: 280px; }
+.callout { padding: 10px 14px; background: #FFFAF0; border-left: 4px solid #DD6B20; border-radius: 4px; margin: 10px 0; font-size: 12px; color: #4A5568; }
+.callout.method { background: #EBF8FF; border-left-color: #2E75B6; }
+a { color: #2E75B6; text-decoration: none; }
+a:hover { text-decoration: underline; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px; font-size: 11px; }
+.legend-item { display: flex; align-items: center; gap: 6px; }
+.legend-dot { width: 12px; height: 12px; border-radius: 2px; }
+
+@media (max-width: 700px) { .wow-panel { grid-template-columns: 1fr; } }
+</style>
 </head>
 <body>
-  <nav class="topnav">
-    <div class="brand">Revenue Pipeline</div>
-    <div class="tabs">
-      <a class="tab" href="/asembia.html">Asembia 2026</a>
-      <a class="tab active" href="/first-meeting.html">First Meeting</a>
-      <a class="tab" href="/pipeline.html">Pipeline Confidence</a>
-    </div>
-    <div class="userbox">
-      <span id="user-email">—</span>
-      <button onclick="window.appAuth.logout()">Log out</button>
-    </div>
-  </nav>
+<nav class="topnav">
+  <div class="brand">Revenue Pipeline</div>
+  <div class="tabs">
+    <a class="tab" href="/asembia.html">Asembia 2026</a>
+    <a class="tab active" href="/first-meeting.html">First Meeting</a>
+    <a class="tab" href="/pipeline.html">Pipeline Confidence</a>
+  </div>
+  <div class="userbox">
+    <span id="user-email">—</span>
+    <button onclick="window.appAuth.logout()">Log out</button>
+  </div>
+</nav>
 
-  <div id="auth-loading" class="auth-gate">
-    <h1>Loading…</h1>
-    <p>Checking authentication.</p>
+<div id="auth-loading" class="auth-gate">
+  <h1>Loading…</h1>
+  <p>Checking authentication.</p>
+</div>
+
+<div id="main-content" style="display:none">
+<div class="dash">
+  <div class="title-block">
+    <h1>First Meeting Tracker — Multi-Source WoW</h1>
+    <div class="subtitle">Week of <span id="hdr-week-range">…</span> · live HubSpot view · all windows recomputed on every refresh.</div>
   </div>
 
-  <div id="main-content" style="display:none">
-    <div class="placeholder">
-      <h1>First Meeting Tracker — coming soon</h1>
-      <p>This tab will be the live port of the First Meeting Tracker from Cowork.</p>
-      <p>Includes: 4 KPI cards, WoW comparison, 13-week trend chart with drill-downs, rep × month chart.</p>
-      <p>Until then, use the Cowork artifact directly.</p>
-      <p style="margin-top: 20px; font-size: 11px; color: #718096;">
-        v0.2 will replace this placeholder with the full port.
-      </p>
+  <!-- HEADLINE KPIS -->
+  <div class="kpi-grid">
+    <div class="kpi primary live" id="kpi-board-card">
+      <span class="live-tag">Live</span>
+      <div class="label">On the board (strict, 90d)</div>
+      <div class="value" id="kpi-board">—</div>
+      <div class="delta" id="kpi-board-delta"><span class="loading-spinner"></span>Re-pulling…</div>
+    </div>
+    <div class="kpi weekly">
+      <div class="label">Booked this week (first mtgs)</div>
+      <div class="value" id="kpi-booked">—</div>
+      <div class="delta" id="kpi-booked-range">…</div>
+    </div>
+    <div class="kpi weekly">
+      <div class="label">Happening this week (first mtgs)</div>
+      <div class="value" id="kpi-happening">—</div>
+      <div class="delta" id="kpi-happening-range">…</div>
+    </div>
+    <div class="kpi future">
+      <div class="label">Future-scheduled total</div>
+      <div class="value" id="kpi-future">—</div>
+      <div class="delta">All upcoming first meetings</div>
     </div>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      window.appAuth.init(user => {
-        document.getElementById('auth-loading').style.display = 'none';
-        document.getElementById('main-content').style.display = 'block';
-        document.getElementById('user-email').textContent = user.email;
-      });
+  <!-- WoW COMPARISON PANEL -->
+  <div class="section">
+    <h2>This week vs last week — WoW comparison</h2>
+    <div class="wow-panel">
+      <div class="wow-col current">
+        <div class="wow-col-header" id="wow-cur-header">This week — …</div>
+        <div class="wow-row"><span class="wow-label">First mtgs booked</span><span class="wow-value" id="wow-cur-booked">—</span></div>
+        <div class="wow-row"><span class="wow-label">First mtgs happening</span><span class="wow-value" id="wow-cur-happening">—</span></div>
+      </div>
+      <div class="wow-col previous">
+        <div class="wow-col-header" id="wow-prev-header">Last week — …</div>
+        <div class="wow-row"><span class="wow-label">First mtgs booked</span><span class="wow-value" id="wow-prev-booked">—</span></div>
+        <div class="wow-row"><span class="wow-label">First mtgs happening</span><span class="wow-value" id="wow-prev-happening">—</span></div>
+      </div>
+      <div class="wow-col delta">
+        <div class="wow-col-header">WoW change</div>
+        <div class="wow-row"><span class="wow-label">First mtgs booked</span><span id="wow-delta-booked" class="wow-delta-flat wow-arrow">—</span></div>
+        <div class="wow-row"><span class="wow-label">First mtgs happening</span><span id="wow-delta-happening" class="wow-delta-flat wow-arrow">—</span></div>
+      </div>
+    </div>
+    <div class="callout">
+      <strong>Reading the numbers:</strong> "Booked" is the leading indicator — meetings scheduled this week, regardless of when they'll occur. "Happening" is the lagging indicator — meetings whose start date falls inside this week, regardless of when they were booked. The booking velocity now becomes next week's "happening." Watch the booked count every Monday. <em>For all-meeting (not first-meeting) volume, see HubSpot's native meetings filter.</em>
+    </div>
+  </div>
+
+  <!-- WEEKLY TREND CHART -->
+  <div class="section">
+    <h2>13-week trend — first meeting events <span style="font-weight:400;font-size:12px;color:#718096;">(<span id="trend-title-range">…</span> · click any bar to see the meetings)</span></h2>
+    <div class="chart-container"><canvas id="wowChart" style="cursor:pointer"></canvas></div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background: #1F4E79"></div>Brand Direct (happened)</div>
+      <div class="legend-item"><div class="legend-dot" style="background: #9F7AEA"></div>Brand Indirect Agencies (happened)</div>
+      <div class="legend-item"><div class="legend-dot" style="background: rgba(31, 78, 121, 0.45); border: 1px solid #1F4E79"></div>Brand Direct (scheduled)</div>
+      <div class="legend-item"><div class="legend-dot" style="background: rgba(159, 122, 234, 0.45); border: 1px solid #9F7AEA"></div>Brand Indirect Agencies (scheduled)</div>
+    </div>
+    <div class="note">
+      Window auto-shifts: 8 weeks back, current week, 4 weeks forward. Each bar = unique meeting events (group meetings count as 1). Solid bars = meetings that already happened. Lighter bars = meetings booked but not yet occurred. <strong>Click any bar to drill in</strong> and see the actual meetings + attendees with HubSpot links.
+    </div>
+
+    <!-- Drill-down panel -->
+    <div id="drilldown-panel" style="display:none; margin-top: 16px; padding: 14px 16px; background: #F7FAFC; border: 1px solid #BEE3F8; border-radius: 6px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h3 id="drilldown-title" style="font-size: 13px; color: #1F4E79; font-weight: 700; margin: 0;">First meetings — week of …</h3>
+        <button id="drilldown-close" style="background: none; border: 1px solid #CBD5E0; border-radius: 4px; padding: 4px 10px; font-size: 11px; cursor: pointer; color: #4A5568;">✕ Close</button>
+      </div>
+      <div id="drilldown-content" style="font-size: 12px;">
+        <div style="text-align: center; padding: 20px; color: #718096;"><span class="loading-spinner"></span>Loading contacts…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REP × MONTH CHART -->
+  <div class="section">
+    <h2>By rep × month — first meetings <span style="font-weight:400;font-size:12px;color:#718096;">(<span id="rep-month-range">…</span> · click any rep's bar to drill in)</span></h2>
+    <div class="chart-container"><canvas id="repMonthChart" style="cursor:pointer"></canvas></div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background: #1F4E79"></div>Kyle (happened)</div>
+      <div class="legend-item"><div class="legend-dot" style="background: rgba(31, 78, 121, 0.45); border: 1px solid #1F4E79"></div>Kyle (scheduled)</div>
+      <div class="legend-item"><div class="legend-dot" style="background: #D53F8C"></div>Anne (happened)</div>
+      <div class="legend-item"><div class="legend-dot" style="background: rgba(213, 63, 140, 0.45); border: 1px solid #D53F8C"></div>Anne (scheduled)</div>
+      <div class="legend-item"><div class="legend-dot" style="background: #2F855A"></div>Dan (happened)</div>
+      <div class="legend-item"><div class="legend-dot" style="background: rgba(47, 133, 90, 0.45); border: 1px solid #2F855A"></div>Dan (scheduled)</div>
+    </div>
+    <div class="note">Window auto-shifts: 2 months back + current + 1 month forward. Grouped bars per month, each rep stacked: solid = meetings that happened, lighter = scheduled. <strong>Click any bar</strong> to see that rep's meetings for that month with HubSpot links.</div>
+
+    <!-- Rep×Month Drill-down panel -->
+    <div id="rep-drilldown-panel" style="display:none; margin-top: 16px; padding: 14px 16px; background: #F7FAFC; border: 1px solid #BEE3F8; border-radius: 6px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h3 id="rep-drilldown-title" style="font-size: 13px; color: #1F4E79; font-weight: 700; margin: 0;">First meetings — rep × month …</h3>
+        <button id="rep-drilldown-close" style="background: none; border: 1px solid #CBD5E0; border-radius: 4px; padding: 4px 10px; font-size: 11px; cursor: pointer; color: #4A5568;">✕ Close</button>
+      </div>
+      <div id="rep-drilldown-content" style="font-size: 12px;">
+        <div style="text-align: center; padding: 20px; color: #718096;"><span class="loading-spinner"></span>Loading contacts…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOURCE PRIORITY HIERARCHY -->
+  <div class="section">
+    <h2>Source priority hierarchy — how each first meeting is attributed</h2>
+    <table class="tbl">
+      <thead><tr><th>Priority</th><th>Source</th><th>Filter</th></tr></thead>
+      <tbody>
+        <tr><td>1 (highest)</td><td><span class="tag rp">RP</span> Referral Partner</td><td>Contact has <code>referred_by_rp = true</code></td></tr>
+        <tr><td>2</td><td><span class="tag mkt">MKT</span> Marketing Inbound</td><td>Contact has <code>first_conversion_date</code> populated (form submission)</td></tr>
+        <tr><td>3</td><td><span class="tag bia">BIA</span> Brand Indirect Agencies</td><td>Contact at agency/media co OR has deal in pipeline 890777600</td></tr>
+        <tr><td>4 (default)</td><td><span class="tag bd">BD</span> Brand Direct</td><td>Default: pharma manufacturer contact, deal in pipeline 74379150 if any</td></tr>
+      </tbody>
+    </table>
+    <div class="callout method">
+      <strong>Methodology:</strong> Each first meeting gets ONE source via this priority. RP takes precedence over MKT, etc. Counts won't double — total source breakdown sums to total events. <strong>Validation:</strong> Kyle's Lead-stage signal (contacts in <code>hs_lead_status = "Top B - First Meeting Scheduled"</code>) is a parallel signal that's useful for cross-checking the Brand Direct count.
+    </div>
+  </div>
+
+  <!-- DEFINITION TRADE-OFF -->
+  <div class="section">
+    <h2>Definition trade-off — strict vs broader</h2>
+    <table class="tbl">
+      <thead><tr><th>Definition</th><th>Filter</th><th>Captures</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Strict</strong> (HubSpot native, this tracker's primary)</td><td><code>hs_sa_first_engagement_object_type = MEETING_EVENT</code></td><td>Pure cold first meetings — no prior outreach</td></tr>
+        <tr><td><strong>Broader</strong></td><td>Earliest meeting per contact, regardless of prior emails/calls</td><td>Any first meeting, even after warm-up email</td></tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <strong>Why broader is bigger:</strong> Group dinners and on-site events often have attendees who received cold-outreach emails first, so HubSpot flags their first <em>engagement</em> as EMAIL. Operationally they had their first meeting at the event. <strong>Exact broader count requires a custom HubSpot report (instructions in the HubSpot Build Playbook).</strong>
+    </div>
+  </div>
+
+
+  <!-- WEEKLY OPERATING PROCEDURE -->
+  <div class="section">
+    <h2>Operating procedure — weekly cadence</h2>
+    <p style="font-size: 12px; line-height: 1.7;">
+      <strong>1. Monday morning:</strong> Refresh this artifact. The "Booked this week" KPI (leading indicator) and "Happening this week" KPI (lagging) recompute automatically against the new week. Compare to last week → log the delta.<br>
+      <strong>2. Tuesday review:</strong> Open HubSpot saved list views. Cross-check that the source attribution matches expectations.<br>
+      <strong>3. End of week:</strong> Capture the WoW snapshot if needed for the leadership update.<br>
+      <strong>4. Monthly:</strong> Pull a 30-day rollup → conversion rate by source → report to leadership. Trigger reviews if any source drops &gt;25% WoW.
+    </p>
+  </div>
+
+  <div class="refresh-status" id="last-refresh" style="margin-top: 12px; text-align: center;">Loading live counts…</div>
+</div>
+</div>
+
+<script>
+// Wait for auth, then run dashboard
+document.addEventListener('DOMContentLoaded', () => {
+  window.appAuth.init(user => {
+    document.getElementById('auth-loading').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+    document.getElementById('user-email').textContent = user.email;
+    initApp();
+  });
+});
+
+function initApp() {
+// ============================================================================
+// DYNAMIC DATE COMPUTATION — recomputed on every page load.
+// Today drives current week (Mon-Sun), previous week, trend window, and month window.
+// ============================================================================
+function startOfWeek(d) {
+  const r = new Date(d); r.setHours(0,0,0,0);
+  const day = r.getDay(); // 0=Sun, 1=Mon..6=Sat
+  const diff = day === 0 ? -6 : 1 - day;
+  r.setDate(r.getDate() + diff);
+  return r;
+}
+function endOfWeek(d) {
+  const r = startOfWeek(d); r.setDate(r.getDate() + 6); return r;
+}
+function addDays(d, n) { const r = new Date(d); r.setDate(r.getDate() + n); return r; }
+function fmtIso(d) { return d.toISOString().slice(0, 10); }
+function fmtShort(d) { return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); }
+function fmtRange(s, e) { return `${fmtShort(s)} → ${fmtShort(e)}`; }
+
+const TODAY = new Date();
+const TODAY_ISO = fmtIso(TODAY);
+const CUR_START = startOfWeek(TODAY);
+const CUR_END = endOfWeek(TODAY);
+const PREV_START = addDays(CUR_START, -7);
+const PREV_END = addDays(CUR_END, -7);
+const CUR_START_ISO = fmtIso(CUR_START);
+const CUR_END_ISO = fmtIso(CUR_END);
+const PREV_START_ISO = fmtIso(PREV_START);
+const PREV_END_ISO = fmtIso(PREV_END);
+const CUR_RANGE_LABEL = fmtRange(CUR_START, CUR_END);
+const PREV_RANGE_LABEL = fmtRange(PREV_START, PREV_END);
+
+// 13-week trend window: 8 weeks back + current + 4 weeks forward
+const weeks = [];
+const weekRanges = [];
+for (let offset = -8; offset <= 4; offset++) {
+  const ws = addDays(CUR_START, offset * 7);
+  const we = addDays(ws, 6);
+  weeks.push(fmtShort(ws));
+  weekRanges.push([fmtIso(ws), fmtIso(we)]);
+}
+
+// Rep × month window: 2 past + current + 1 future = 4 months
+const months = [];
+const monthRanges = [];
+for (let offset = -2; offset <= 1; offset++) {
+  const m = new Date(TODAY.getFullYear(), TODAY.getMonth() + offset, 1);
+  const mEnd = new Date(m.getFullYear(), m.getMonth() + 1, 0);
+  months.push(m.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }));
+  monthRanges.push([fmtIso(m), fmtIso(mEnd)]);
+}
+
+// Populate static header labels immediately (don't wait for fetch)
+function setText(id, text) { const el = document.getElementById(id); if (el) el.textContent = text; }
+setText('hdr-week-range', CUR_RANGE_LABEL);
+setText('kpi-booked-range', CUR_RANGE_LABEL);
+setText('kpi-happening-range', `${CUR_RANGE_LABEL} start_time`);
+setText('wow-cur-header', `This week — ${CUR_RANGE_LABEL}`);
+setText('wow-prev-header', `Last week — ${PREV_RANGE_LABEL}`);
+setText('trend-title-range', `${weeks[0]} → ${weeks[weeks.length-1]}`);
+setText('rep-month-range', `${months[0]} → ${months[months.length-1]}`);
+
+// Defensive helper to safely extract count from MCP response
+function safeTotal(response, fallback) {
+  if (!response) return fallback;
+  if (typeof response.total === 'number') return response.total;
+  if (response.body && typeof response.body.total === 'number') return response.body.total;
+  return fallback;
+}
+
+// ============================================================================
+// SINGLE LIVE FETCH from HubSpot powers BOTH charts + BOTH drill-downs + WoW.
+// Group by hs_first_engagement_object_id (the actual meeting ID) for accurate dedup.
+// ============================================================================
+let allMeetings = []; // {meetingId, date, createdate, repId, domain, contacts: [...]}
+let dataLoaded = false;
+
+const isHappened = (mtgDate) => mtgDate <= TODAY_ISO;
+const agencyDomains = ['phm.com','publicishealthmedia.com','mbww.com','initiative.com','klick.com','cmimediagroup.com','relevatehealth.com','evolvemkd.com','webershandwick.com','pocmarketing.org','thecollaborativestrategists.com','hellocanopy.com','fingerpaint.com','syneoshealth.com','eversana.com','inizio.com','evoke.com','sscgmedia.com','havasworldwide.com'];
+const isAgency = (domain) => agencyDomains.some(a => (domain || '').includes(a));
+
+function parseMcpResponse(res) {
+  let data = res;
+  if (typeof res === 'string') { try { data = JSON.parse(res); } catch (e) {} }
+  if (data && data.body) data = (typeof data.body === 'string' ? JSON.parse(data.body) : data.body);
+  if (data && data.content && Array.isArray(data.content)) {
+    const txt = data.content.find(c => c.type === 'text');
+    if (txt && txt.text) { try { data = JSON.parse(txt.text); } catch (e) {} }
+  }
+  return data;
+}
+
+async function loadAllFirstMeetings() {
+  try {
+    const res = await window.cowork.callMcpTool('mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects', {
+      objectType: 'CONTACT',
+      filterGroups: [{ filters: [
+        { propertyName: 'hubspot_owner_id', operator: 'IN', values: ['314753596', '78606761', '153408573'] },
+        { propertyName: 'hs_sa_first_engagement_date', operator: 'BETWEEN', value: weekRanges[0][0], highValue: weekRanges[weekRanges.length - 1][1] },
+        { propertyName: 'hs_sa_first_engagement_object_type', operator: 'EQ', value: 'MEETING_EVENT' }
+      ]}],
+      properties: ['firstname', 'lastname', 'email', 'hubspot_owner_id', 'hs_sa_first_engagement_date', 'hs_first_engagement_object_id', 'has_active_lead', 'num_associated_deals', 'lifecyclestage', 'hs_lead_status', 'createdate'],
+      limit: 200,
+      sorts: [{ propertyName: 'hs_sa_first_engagement_date', direction: 'ASCENDING' }],
+      chatInsights: { userIntent: 'Live load all first meetings for chart aggregation + WoW', satisfaction: 'NEUTRAL' }
     });
-  </script>
+
+    const data = parseMcpResponse(res);
+    const contacts = (data && Array.isArray(data.results)) ? data.results : [];
+
+    // Group by hs_first_engagement_object_id (actual meeting ID — strict dedup).
+    // createdate = earliest contact createdate in the group (proxy for booking time).
+    const byMeetingId = {};
+    contacts.forEach(c => {
+      const p = c.properties || {};
+      const meetingId = p.hs_first_engagement_object_id;
+      if (!meetingId) return;
+      const cd = (p.createdate || '').slice(0, 10);
+      if (!byMeetingId[meetingId]) {
+        byMeetingId[meetingId] = {
+          meetingId,
+          date: (p.hs_sa_first_engagement_date || '').slice(0, 10),
+          createdate: cd,
+          repId: p.hubspot_owner_id,
+          domain: ((p.email || '').split('@')[1] || '').toLowerCase(),
+          contacts: []
+        };
+      } else if (cd && (!byMeetingId[meetingId].createdate || cd < byMeetingId[meetingId].createdate)) {
+        byMeetingId[meetingId].createdate = cd;
+      }
+      byMeetingId[meetingId].contacts.push(c);
+    });
+
+    allMeetings = Object.values(byMeetingId).sort((a, b) => a.date.localeCompare(b.date));
+    dataLoaded = true;
+    return true;
+  } catch (err) {
+    console.error('Failed to load first meetings:', err);
+    return false;
+  }
+}
+
+function computeWeeklyData(meetings) {
+  const result = { bdPast: new Array(weeks.length).fill(0), biaPast: new Array(weeks.length).fill(0), bdSched: new Array(weeks.length).fill(0), biaSched: new Array(weeks.length).fill(0) };
+  meetings.forEach(m => {
+    let weekIdx = -1;
+    for (let i = 0; i < weekRanges.length; i++) {
+      if (m.date >= weekRanges[i][0] && m.date <= weekRanges[i][1]) { weekIdx = i; break; }
+    }
+    if (weekIdx < 0) return;
+    const happened = isHappened(m.date);
+    const agency = isAgency(m.domain);
+    if (happened) { if (agency) result.biaPast[weekIdx]++; else result.bdPast[weekIdx]++; }
+    else { if (agency) result.biaSched[weekIdx]++; else result.bdSched[weekIdx]++; }
+  });
+  return result;
+}
+
+// Initialize chart with empty data (will be populated after fetch)
+const wowChart = new Chart(document.getElementById('wowChart'), {
+  type: 'bar',
+  data: {
+    labels: weeks,
+    datasets: [
+      { label: 'Brand Direct (past)',                 data: new Array(weeks.length).fill(0), backgroundColor: '#1F4E79', stack: 's' },
+      { label: 'Brand Indirect Agencies (past)',      data: new Array(weeks.length).fill(0), backgroundColor: '#9F7AEA', stack: 's' },
+      { label: 'Brand Direct (scheduled)',            data: new Array(weeks.length).fill(0), backgroundColor: 'rgba(31, 78, 121, 0.45)', stack: 's', borderColor: '#1F4E79', borderWidth: 1 },
+      { label: 'Brand Indirect Agencies (scheduled)', data: new Array(weeks.length).fill(0), backgroundColor: 'rgba(159, 122, 234, 0.45)', stack: 's', borderColor: '#9F7AEA', borderWidth: 1 },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { stacked: true, ticks: { font: { size: 10 } } },
+      y: { stacked: true, beginAtZero: true, ticks: { precision: 0, stepSize: 1 } }
+    },
+    onClick: (event, elements) => {
+      if (!elements || elements.length === 0) return;
+      const idx = elements[0].index;
+      drillIntoWeek(idx);
+    }
+  }
+});
+
+// ============================================================================
+// SHARED RENDERING for drill-down panels
+// ============================================================================
+
+const ownerNames = {
+  '314753596': 'Kyle', '78606761': 'Anne', '153408573': 'Dan',
+  '445499469': 'Yousif', '402170399': 'Other (PPT exec)',
+};
+
+function prettyAccount(domain) {
+  if (!domain) return '—';
+  const map = { 'gene.com': 'Genentech', 'pfizer.com': 'Pfizer', 'takeda.com': 'Takeda', 'lilly.com': 'Lilly', 'abbvie.com': 'AbbVie', 'novartis.com': 'Novartis', 'sanofi.com': 'Sanofi', 'amneal.com': 'Amneal', 'madrigalpharma.com': 'Madrigal', 'ucb.com': 'UCB', 'alphacognition.com': 'AlphaCognition', 'gmail.com': '(personal email)', 'relevatehealth.com': 'RelevateHealth', 'payersciences.com': 'Payer Sciences' };
+  return map[domain] || domain;
+}
+
+function detectSource(domain) {
+  return isAgency(domain) ? 'Brand Indirect Agencies' : 'Brand Direct';
+}
+
+function renderMeetingsList(meetings, summaryLabel, leftBorderColor) {
+  if (meetings.length === 0) {
+    return `<div style="padding:14px;background:#FEF5E7;border-left:4px solid #DD6B20;border-radius:4px;color:#4A5568;font-size:12px;">
+      <strong style="color:#DD6B20;">No first meetings ${summaryLabel}.</strong>
+    </div>`;
+  }
+
+  const totalContacts = meetings.reduce((sum, m) => sum + m.contacts.length, 0);
+  let pastCount = 0, scheduledCount = 0;
+  meetings.forEach(m => { if (isHappened(m.date)) pastCount++; else scheduledCount++; });
+
+  let html = `<div style="margin-bottom:12px;color:#4A5568;display:flex;justify-content:space-between;align-items:center;">
+    <span><strong style="color:#1F4E79;font-size:14px;">${meetings.length}</strong> first-meeting event${meetings.length !== 1 ? 's' : ''} ${summaryLabel} (${pastCount} happened, ${scheduledCount} scheduled) · <strong>${totalContacts}</strong> contact${totalContacts !== 1 ? 's' : ''}</span>
+    <span style="font-size:10px;color:#718096;">Group meetings counted once (by HubSpot meeting ID)</span>
+  </div>`;
+
+  meetings.sort((a, b) => a.date.localeCompare(b.date)).forEach(mtg => {
+    const rep = ownerNames[mtg.repId] || `Owner ${mtg.repId}`;
+    const account = prettyAccount(mtg.domain);
+    const source = detectSource(mtg.domain);
+    const sourceBadge = source === 'Brand Indirect Agencies' ? '<span class="tag bia">BIA</span>' : '<span class="tag bd">BD</span>';
+    const happened = isHappened(mtg.date);
+    const statusBadge = happened
+      ? '<span class="tag" style="background:#EDF2F7;color:#4A5568;">✓ Happened</span>'
+      : '<span class="tag" style="background:#FAF5FF;color:#6B46C1;">📅 Scheduled</span>';
+    const attendeeCount = mtg.contacts.length;
+    const borderStyle = leftBorderColor ? `border-left:3px solid ${leftBorderColor};` : '';
+
+    html += `<div style="background:#fff;border:1px solid #E2E8F0;border-radius:6px;padding:10px 12px;margin-bottom:8px;${borderStyle}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <div style="font-weight:600;color:#1A202C;">
+          <span style="color:#1F4E79;">${mtg.date}</span> · ${account} · ${rep}
+          ${attendeeCount > 1 ? `<span style="color:#DD6B20;font-size:11px;font-weight:600;margin-left:6px;">👥 ${attendeeCount}-person group</span>` : ''}
+        </div>
+        <div>${sourceBadge} ${statusBadge}</div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;font-size:11px;">`;
+
+    mtg.contacts.forEach(c => {
+      const p = c.properties || {};
+      const id = c.id;
+      const name = `${p.firstname || ''} ${p.lastname || ''}`.trim() || p.email || '(no name)';
+      const hasLead = p.has_active_lead === 'true';
+      const dealCount = parseInt(p.num_associated_deals || '0', 10);
+      let badges = '';
+      if (hasLead) badges += ' <span style="background:#EBF8FF;color:#1F4E79;font-size:9px;padding:1px 4px;border-radius:2px;font-weight:600;">LEAD</span>';
+      if (dealCount > 0) badges += ` <span style="background:#C6F6D5;color:#2F855A;font-size:9px;padding:1px 4px;border-radius:2px;font-weight:600;">${dealCount} DEAL${dealCount > 1 ? 'S' : ''}</span>`;
+      const hsUrl = `https://app.hubspot.com/contacts/21389996/record/0-1/${id}`;
+      html += `<a href="${hsUrl}" target="_blank" style="background:#F7FAFC;border:1px solid #E2E8F0;color:#2E75B6;text-decoration:none;padding:3px 8px;border-radius:3px;display:inline-flex;align-items:center;">${name}${badges}</a>`;
+    });
+
+    html += '</div></div>';
+  });
+
+  return html;
+}
+
+// Drill-down: filter meetings by week, render
+function drillIntoWeek(weekIdx) {
+  const panel = document.getElementById('drilldown-panel');
+  const title = document.getElementById('drilldown-title');
+  const content = document.getElementById('drilldown-content');
+  const weekLabel = weeks[weekIdx];
+  const [start, end] = weekRanges[weekIdx];
+
+  panel.style.display = 'block';
+  title.textContent = `First meetings — week of ${weekLabel} (${start} → ${end})`;
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  if (!dataLoaded) {
+    content.innerHTML = '<div style="text-align:center;padding:20px;color:#718096;"><span class="loading-spinner"></span>Loading data from HubSpot…</div>';
+    return;
+  }
+
+  const filtered = allMeetings.filter(m => m.date >= start && m.date <= end);
+  content.innerHTML = renderMeetingsList(filtered, `in week of ${weekLabel}`);
+}
+
+
+document.getElementById('drilldown-close').addEventListener('click', () => {
+  document.getElementById('drilldown-panel').style.display = 'none';
+});
+
+// ============================================================================
+// REP × MONTH CHART
+// ============================================================================
+
+const salesReps = [
+  { id: '314753596', name: 'Kyle', solid: '#1F4E79', light: 'rgba(31, 78, 121, 0.45)' },
+  { id: '78606761',  name: 'Anne', solid: '#D53F8C', light: 'rgba(213, 63, 140, 0.45)' },
+  { id: '153408573', name: 'Dan',  solid: '#2F855A', light: 'rgba(47, 133, 90, 0.45)' },
+];
+
+function computeRepMonthData(meetings) {
+  const result = {
+    'Kyle-past':       new Array(months.length).fill(0), 'Kyle-scheduled':  new Array(months.length).fill(0),
+    'Anne-past':       new Array(months.length).fill(0), 'Anne-scheduled':  new Array(months.length).fill(0),
+    'Dan-past':        new Array(months.length).fill(0), 'Dan-scheduled':   new Array(months.length).fill(0),
+  };
+  const repName = { '314753596': 'Kyle', '78606761': 'Anne', '153408573': 'Dan' };
+  meetings.forEach(m => {
+    const rep = repName[m.repId];
+    if (!rep) return;
+    let monthIdx = -1;
+    for (let i = 0; i < monthRanges.length; i++) {
+      if (m.date >= monthRanges[i][0] && m.date <= monthRanges[i][1]) { monthIdx = i; break; }
+    }
+    if (monthIdx < 0) return;
+    const bucket = isHappened(m.date) ? 'past' : 'scheduled';
+    result[`${rep}-${bucket}`][monthIdx]++;
+  });
+  return result;
+}
+
+const repMonthChart = new Chart(document.getElementById('repMonthChart'), {
+  type: 'bar',
+  data: {
+    labels: months,
+    datasets: [
+      { label: 'Kyle (happened)',   data: new Array(months.length).fill(0), backgroundColor: '#1F4E79', stack: 'kyle' },
+      { label: 'Kyle (scheduled)',  data: new Array(months.length).fill(0), backgroundColor: 'rgba(31, 78, 121, 0.45)', borderColor: '#1F4E79', borderWidth: 1, stack: 'kyle' },
+      { label: 'Anne (happened)',   data: new Array(months.length).fill(0), backgroundColor: '#D53F8C', stack: 'anne' },
+      { label: 'Anne (scheduled)',  data: new Array(months.length).fill(0), backgroundColor: 'rgba(213, 63, 140, 0.45)', borderColor: '#D53F8C', borderWidth: 1, stack: 'anne' },
+      { label: 'Dan (happened)',    data: new Array(months.length).fill(0), backgroundColor: '#2F855A', stack: 'dan' },
+      { label: 'Dan (scheduled)',   data: new Array(months.length).fill(0), backgroundColor: 'rgba(47, 133, 90, 0.45)', borderColor: '#2F855A', borderWidth: 1, stack: 'dan' },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { stacked: false },
+      y: { stacked: true, beginAtZero: true, ticks: { precision: 0, stepSize: 1 } }
+    },
+    onClick: (event, elements) => {
+      if (!elements || elements.length === 0) return;
+      const datasetIdx = elements[0].datasetIndex;
+      const monthIdx = elements[0].index;
+      const repIdx = Math.floor(datasetIdx / 2);
+      drillIntoRepMonth(repIdx, monthIdx);
+    }
+  }
+});
+
+
+function drillIntoRepMonth(repIdx, monthIdx) {
+  const panel = document.getElementById('rep-drilldown-panel');
+  const title = document.getElementById('rep-drilldown-title');
+  const content = document.getElementById('rep-drilldown-content');
+  const rep = salesReps[repIdx];
+  const monthLabel = months[monthIdx];
+  const [start, end] = monthRanges[monthIdx];
+
+  panel.style.display = 'block';
+  title.textContent = `${rep.name}'s first meetings — ${monthLabel} (${start} → ${end})`;
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  if (!dataLoaded) {
+    content.innerHTML = '<div style="text-align:center;padding:20px;color:#718096;"><span class="loading-spinner"></span>Loading data from HubSpot…</div>';
+    return;
+  }
+
+  const filtered = allMeetings.filter(m => m.repId === rep.id && m.date >= start && m.date <= end);
+  content.innerHTML = renderMeetingsList(filtered, `for ${rep.name} in ${monthLabel}`, rep.solid);
+}
+
+document.getElementById('rep-drilldown-close').addEventListener('click', () => {
+  document.getElementById('rep-drilldown-panel').style.display = 'none';
+});
+
+// ============================================================================
+// POPULATE KPIs + WoW PANEL from live data
+// ============================================================================
+function statsForWindow(meetings, startIso, endIso) {
+  const happening = meetings.filter(m => m.date >= startIso && m.date <= endIso).length;
+  const booked = meetings.filter(m => m.createdate && m.createdate >= startIso && m.createdate <= endIso).length;
+  return { happening, booked };
+}
+
+function fmtDelta(curV, prevV) {
+  const d = curV - prevV;
+  const pctText = prevV === 0 ? (curV === 0 ? '—' : '∞') : `${d >= 0 ? '+' : ''}${Math.round((d / prevV) * 100)}%`;
+  const arrow = d > 0 ? '↑' : d < 0 ? '↓' : '→';
+  const cls = d > 0 ? 'wow-delta-up' : d < 0 ? 'wow-delta-down' : 'wow-delta-flat';
+  return { text: `${d >= 0 ? '+' : ''}${d} (${pctText}) ${arrow}`, cls };
+}
+
+function populateKpisAndWow() {
+  const cur = statsForWindow(allMeetings, CUR_START_ISO, CUR_END_ISO);
+  const prev = statsForWindow(allMeetings, PREV_START_ISO, PREV_END_ISO);
+  const futureCount = allMeetings.filter(m => m.date > TODAY_ISO).length;
+
+  setText('kpi-booked', cur.booked);
+  setText('kpi-happening', cur.happening);
+  setText('kpi-future', futureCount);
+
+  setText('wow-cur-booked', cur.booked);
+  setText('wow-cur-happening', cur.happening);
+  setText('wow-prev-booked', prev.booked);
+  setText('wow-prev-happening', prev.happening);
+
+  const bookedDelta = fmtDelta(cur.booked, prev.booked);
+  const happeningDelta = fmtDelta(cur.happening, prev.happening);
+  const bookedEl = document.getElementById('wow-delta-booked');
+  if (bookedEl) { bookedEl.textContent = bookedDelta.text; bookedEl.className = `${bookedDelta.cls} wow-arrow`; }
+  const happeningEl = document.getElementById('wow-delta-happening');
+  if (happeningEl) { happeningEl.textContent = happeningDelta.text; happeningEl.className = `${happeningDelta.cls} wow-arrow`; }
+}
+
+// ============================================================================
+// INIT — load data, populate both charts + KPIs + WoW
+// ============================================================================
+async function initLiveCharts() {
+  const ok = await loadAllFirstMeetings();
+  if (!ok) return;
+  // Update 13-week chart
+  const weeklyData = computeWeeklyData(allMeetings);
+  wowChart.data.datasets[0].data = weeklyData.bdPast;
+  wowChart.data.datasets[1].data = weeklyData.biaPast;
+  wowChart.data.datasets[2].data = weeklyData.bdSched;
+  wowChart.data.datasets[3].data = weeklyData.biaSched;
+  wowChart.update();
+  // Update rep × month chart
+  const rmd = computeRepMonthData(allMeetings);
+  repMonthChart.data.datasets[0].data = rmd['Kyle-past'];
+  repMonthChart.data.datasets[1].data = rmd['Kyle-scheduled'];
+  repMonthChart.data.datasets[2].data = rmd['Anne-past'];
+  repMonthChart.data.datasets[3].data = rmd['Anne-scheduled'];
+  repMonthChart.data.datasets[4].data = rmd['Dan-past'];
+  repMonthChart.data.datasets[5].data = rmd['Dan-scheduled'];
+  repMonthChart.update();
+  // Populate KPI cards + WoW panel
+  populateKpisAndWow();
+}
+initLiveCharts();
+
+// Live re-pull for the "On the board (90d)" KPI specifically (its own query
+// since it uses a different date filter — trailing 90d rather than the trend window).
+async function refresh() {
+  const setClass = (id, cls) => { const el = document.getElementById(id); if (el) el.className = cls; };
+
+  try {
+    const start = addDays(TODAY, -90);
+    const strict = await window.cowork.callMcpTool('mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects', {
+      objectType: 'CONTACT',
+      filterGroups: [{ filters: [
+        { propertyName: 'hubspot_owner_id', operator: 'IN', values: ['314753596', '78606761', '153408573'] },
+        { propertyName: 'hs_sa_first_engagement_date', operator: 'GTE', value: fmtIso(start) },
+        { propertyName: 'hs_sa_first_engagement_object_type', operator: 'EQ', value: 'MEETING_EVENT' }
+      ]}],
+      properties: ['firstname'], limit: 1,
+      chatInsights: { userIntent: 'Live first-meeting count (90d trailing)', satisfaction: 'NEUTRAL' }
+    });
+
+    const strictCount = safeTotal(strict, 0);
+    setText('kpi-board', strictCount);
+    setText('kpi-board-delta', `Strict (HubSpot native). 90d trailing from ${fmtShort(TODAY)}.`);
+    setClass('kpi-board-delta', 'delta');
+
+    setText('last-refresh', `Live re-pull ${new Date().toLocaleString()} · Strict 90d: ${strictCount} · Week of ${CUR_RANGE_LABEL} (today: ${fmtShort(TODAY)})`);
+  } catch (err) {
+    setText('kpi-board', '—');
+    setText('kpi-board-delta', `Live re-pull failed`);
+    setClass('kpi-board-delta', 'delta');
+    document.getElementById('kpi-board-card').classList.remove('live');
+    setText('last-refresh', `Live re-pull failed: ${(err && err.message) || 'unknown error'}.`);
+  }
+}
+refresh();
+}
+</script>
 </body>
 </html>
