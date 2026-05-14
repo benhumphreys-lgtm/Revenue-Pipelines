@@ -26,6 +26,10 @@
   .kpi .lbl { font-size: 11px; color:#64748b; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
   .kpi .val { font-size: 22px; font-weight: 600; color:#0f172a; }
   .kpi .sublbl { font-size: 11px; color:#94a3b8; margin-top:4px; font-variant-numeric: tabular-nums; }
+  .kpi .delta { font-size: 11px; font-weight: 600; margin-top: 4px; font-variant-numeric: tabular-nums; min-height: 14px; }
+  .kpi .delta.up { color: #15803d; }
+  .kpi .delta.flat { color: #94a3b8; font-weight: 400; }
+  .kpi .delta.down { color: #b91c1c; }
   .panel { background:#fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 18px; margin-bottom: 18px; }
   .panel h2 { font-size: 14px; margin: 0 0 12px; text-transform: uppercase; letter-spacing: 0.04em; color:#475569; }
   table.rollup { width:100%; border-collapse: collapse; font-size: 13px; }
@@ -85,12 +89,12 @@
     <div class="panel">
       <h2>Headline · Live From HubSpot</h2>
       <div class="kpi-row">
-        <div class="kpi"><div class="lbl">Total Deals</div><div class="val" id="kpi-deals">—</div><div class="sublbl">Pipeline scope</div></div>
-        <div class="kpi"><div class="lbl">Brands</div><div class="val" id="kpi-brands">—</div><div class="sublbl">Unique</div></div>
-        <div class="kpi"><div class="lbl">Manufacturers</div><div class="val" id="kpi-mfrs">—</div><div class="sublbl">Unique</div></div>
-        <div class="kpi"><div class="lbl">Pipeline (TCV)</div><div class="val" id="kpi-tcv">—</div><div class="sublbl" id="kpi-tcv-full">—</div></div>
-        <div class="kpi"><div class="lbl">Total ARR</div><div class="val" id="kpi-arr">—</div><div class="sublbl" id="kpi-arr-full">—</div></div>
-        <div class="kpi"><div class="lbl">Weighted</div><div class="val" id="kpi-wtd">—</div><div class="sublbl" id="kpi-wtd-full">—</div></div>
+        <div class="kpi"><div class="lbl">Total Deals</div><div class="val" id="kpi-deals">—</div><div class="delta" id="kpi-deals-delta">—</div><div class="sublbl">Pipeline scope</div></div>
+        <div class="kpi"><div class="lbl">Brands</div><div class="val" id="kpi-brands">—</div><div class="delta" id="kpi-brands-delta">—</div><div class="sublbl">Unique</div></div>
+        <div class="kpi"><div class="lbl">Manufacturers</div><div class="val" id="kpi-mfrs">—</div><div class="delta" id="kpi-mfrs-delta">—</div><div class="sublbl">Unique</div></div>
+        <div class="kpi"><div class="lbl">Pipeline (TCV)</div><div class="val" id="kpi-tcv">—</div><div class="delta" id="kpi-tcv-delta">—</div><div class="sublbl" id="kpi-tcv-full">—</div></div>
+        <div class="kpi"><div class="lbl">Total ARR</div><div class="val" id="kpi-arr">—</div><div class="delta" id="kpi-arr-delta">—</div><div class="sublbl" id="kpi-arr-full">—</div></div>
+        <div class="kpi"><div class="lbl">Weighted</div><div class="val" id="kpi-wtd">—</div><div class="delta" id="kpi-wtd-delta">—</div><div class="sublbl" id="kpi-wtd-full">—</div></div>
       </div>
       <div class="note" id="scope-note">Scope: <code>pipeline = Brand (Direct)</code>, <code>dealtype ≠ Existing (Roll-Over)</code>, excluding Closed Won / Closed Lost.</div>
     </div>
@@ -187,7 +191,7 @@ function initApp() {
   const CLOSED_STAGE_IDS = ["143017564", "143017565"];
 
   const PROPS = [
-    "dealname","dealstage","dealtype","pipeline","hubspot_owner_id","closedate",
+    "dealname","dealstage","dealtype","pipeline","hubspot_owner_id","closedate","createdate",
     "amount","brand_s_","company_primary","term__months_","mrr","arr",
     "weighted_amount","weighted_mrr","deal_close_probability","forecast_category",
     "ad_product","brand_activation","prescriberpoint_pa","samples",
@@ -280,6 +284,7 @@ function initApp() {
     const num = (v) => (v == null || v === "") ? null : Number(v);
     return {
       id: deal.id || p.hs_object_id,
+      created_at: p.createdate || "",
       dealname: p.dealname || "",
       manufacturer: p.company_primary || "",
       dealstage: STAGE_LABEL[p.dealstage] || p.dealstage || "",
@@ -452,6 +457,52 @@ function initApp() {
     document.getElementById("kpi-arr-full").textContent = fmtMoneyFull(arr);
     document.getElementById("kpi-wtd").textContent = fmtMoney(wtd);
     document.getElementById("kpi-wtd-full").textContent = fmtMoneyFull(wtd);
+
+    // ===== WEEK-OVER-WEEK DELTAS =====
+    // What's been added since Monday 00:00 of the current week (local time).
+    // Brands/manufacturers only count NEW values not already in the pre-week pipeline.
+    function startOfThisWeek() {
+      const d = new Date();
+      d.setHours(0, 0, 0, 0);
+      const dow = d.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+      const diff = dow === 0 ? -6 : 1 - dow;
+      d.setDate(d.getDate() + diff);
+      return d;
+    }
+    const weekStart = startOfThisWeek();
+    const isThisWeek = (r) => r.created_at && new Date(r.created_at) >= weekStart;
+    const thisWeekRows = liveScope.filter(isThisWeek);
+    const preWeekRows = liveScope.filter(r => !isThisWeek(r));
+    const norm = (v) => (v == null ? "" : String(v).trim().toLowerCase());
+    const preWeekBrands = new Set(preWeekRows.map(r => norm(r.brands)).filter(Boolean));
+    const preWeekMfrs   = new Set(preWeekRows.map(r => norm(r.manufacturer)).filter(Boolean));
+    const newBrands = new Set(
+      thisWeekRows.map(r => norm(r.brands)).filter(b => b && !preWeekBrands.has(b))
+    ).size;
+    const newMfrs = new Set(
+      thisWeekRows.map(r => norm(r.manufacturer)).filter(m => m && !preWeekMfrs.has(m))
+    ).size;
+
+    function renderDelta(id, value, isMoney) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (value > 0) {
+        el.className = "delta up";
+        el.textContent = (isMoney ? "+" + fmtMoney(value) : "+" + value.toLocaleString()) + " this week ↑";
+      } else if (value === 0) {
+        el.className = "delta flat";
+        el.textContent = "No change this week";
+      } else {
+        el.className = "delta down";
+        el.textContent = (isMoney ? fmtMoney(value) : value.toLocaleString()) + " this week ↓";
+      }
+    }
+    renderDelta("kpi-deals-delta",  thisWeekRows.length, false);
+    renderDelta("kpi-brands-delta", newBrands, false);
+    renderDelta("kpi-mfrs-delta",   newMfrs, false);
+    renderDelta("kpi-tcv-delta",    sum(thisWeekRows, "amount"), true);
+    renderDelta("kpi-arr-delta",    sum(thisWeekRows, "arr"), true);
+    renderDelta("kpi-wtd-delta",    sum(thisWeekRows, "weighted_amount"), true);
 
     // Live rollups
     const byType = rollupBy(liveScope, r => r.dealtype);
