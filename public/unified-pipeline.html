@@ -503,20 +503,12 @@ function persistFilters() {
 // ============================================================
 async function loadAll() {
   try {
-    // Open contacts in active lead stages
-    const leadStatuses = ['Top A - Pending First Meeting', 'Top B - First Meeting Scheduled', 'Mid A - Idle', 'Mid B - Moving', 'Disqualified Lead', 'Prospect', 'Lead'];
-    const contactPromises = leadStatuses.map(s => fetchContactsForStatus(s));
-
-    // Open deals in the two pipelines we're consolidating
-    const dealPromise = fetchOpenDeals();
-
-    const [contactResults, dealResult] = await Promise.all([
-      Promise.all(contactPromises),
-      dealPromise,
+    const [contacts, deals] = await Promise.all([
+      fetchAllOpenContacts(),
+      fetchOpenDeals(),
     ]);
-
-    state.contacts = contactResults.flat();
-    state.deals = dealResult;
+    state.contacts = contacts;
+    state.deals = deals;
 
     document.getElementById('loading').style.display = 'none';
     document.getElementById('content').style.display = '';
@@ -528,18 +520,22 @@ async function loadAll() {
   }
 }
 
-async function fetchContactsForStatus(status) {
+// Single consolidated request — uses IN operator to combine all 7 lead statuses
+// into one HubSpot search call. Eliminates the rate-limit issues of one-per-status
+// fan-out. Uses HubSpot's `after` cursor for proper pagination (not offset).
+async function fetchAllOpenContacts() {
+  const leadStatuses = ['Top A - Pending First Meeting', 'Top B - First Meeting Scheduled', 'Mid A - Idle', 'Mid B - Moving', 'Disqualified Lead', 'Prospect', 'Lead'];
   const out = [];
-  let offset = 0;
-  for (let i = 0; i < 5; i++) { // max 5 pages = 1000 contacts per status
-    const resp = await window.cowork.callMcpTool('mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects', {
+  let after = null;
+  for (let i = 0; i < 10; i++) { // up to 2000 contacts total
+    const params = {
       objectType: 'contacts',
       limit: 200,
-      offset: offset,
       properties: ['hs_lead_status','hubspot_owner_id','contact_type','firstname','lastname','company','lastmodifieddate','hs_full_name_or_email'],
-      filterGroups: [{ filters: [{ propertyName: 'hs_lead_status', operator: 'EQ', value: status }] }],
-      chatInsights: { userIntent: 'Load open leads for unified dashboard', satisfaction: 'NEUTRAL' },
-    });
+      filterGroups: [{ filters: [{ propertyName: 'hs_lead_status', operator: 'IN', values: leadStatuses }] }],
+    };
+    if (after) params.after = after;
+    const resp = await window.cowork.callMcpTool('mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects', params);
     const data = parseResp(resp);
     if (!data || !data.results) break;
     out.push(...data.results.map(r => ({
@@ -553,45 +549,44 @@ async function fetchContactsForStatus(status) {
       modified: r.properties && r.properties.lastmodifieddate,
       url: `https://app.hubspot.com/contacts/${HUBSPOT_PORTAL}/record/0-1/${r.id}`,
     })));
-    if (data.results.length < 200) break;
-    offset += 200;
+    after = data.paging && data.paging.next && data.paging.next.after;
+    if (!after) break;
   }
   return out;
 }
 
+// Single consolidated request — uses IN operator to combine both pipelines.
 async function fetchOpenDeals() {
   const out = [];
-  for (const pipelineId of [DIRECT_PIPELINE, INDIRECT_PIPELINE]) {
-    let offset = 0;
-    for (let i = 0; i < 5; i++) {
-      const resp = await window.cowork.callMcpTool('mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects', {
-        objectType: 'deals',
-        limit: 200,
-        offset: offset,
-        properties: ['dealname','dealstage','pipeline','dealtype','hubspot_owner_id','amount','hs_lastmodifieddate','hs_is_closed'],
-        filterGroups: [{ filters: [
-          { propertyName: 'pipeline', operator: 'EQ', value: pipelineId },
-          { propertyName: 'hs_is_closed', operator: 'NEQ', value: 'true' },
-        ]}],
-        chatInsights: { userIntent: 'Load open deals for unified dashboard', satisfaction: 'NEUTRAL' },
-      });
-      const data = parseResp(resp);
-      if (!data || !data.results) break;
-      out.push(...data.results.map(r => ({
-        id: r.id,
-        type: 'deal',
-        stage: r.properties && r.properties.dealstage,
-        pipeline: r.properties && r.properties.pipeline,
-        dealType: r.properties && r.properties.dealtype,
-        owner: r.properties && r.properties.hubspot_owner_id,
-        name: (r.properties && r.properties.dealname) || ('Deal ' + r.id),
-        amount: parseFloat((r.properties && r.properties.amount) || 0) || 0,
-        modified: r.properties && r.properties.hs_lastmodifieddate,
-        url: `https://app.hubspot.com/contacts/${HUBSPOT_PORTAL}/record/0-3/${r.id}`,
-      })));
-      if (data.results.length < 200) break;
-      offset += 200;
-    }
+  let after = null;
+  for (let i = 0; i < 10; i++) {
+    const params = {
+      objectType: 'deals',
+      limit: 200,
+      properties: ['dealname','dealstage','pipeline','dealtype','hubspot_owner_id','amount','hs_lastmodifieddate','hs_is_closed'],
+      filterGroups: [{ filters: [
+        { propertyName: 'pipeline', operator: 'IN', values: [DIRECT_PIPELINE, INDIRECT_PIPELINE] },
+        { propertyName: 'hs_is_closed', operator: 'NEQ', value: 'true' },
+      ]}],
+    };
+    if (after) params.after = after;
+    const resp = await window.cowork.callMcpTool('mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects', params);
+    const data = parseResp(resp);
+    if (!data || !data.results) break;
+    out.push(...data.results.map(r => ({
+      id: r.id,
+      type: 'deal',
+      stage: r.properties && r.properties.dealstage,
+      pipeline: r.properties && r.properties.pipeline,
+      dealType: r.properties && r.properties.dealtype,
+      owner: r.properties && r.properties.hubspot_owner_id,
+      name: (r.properties && r.properties.dealname) || ('Deal ' + r.id),
+      amount: parseFloat((r.properties && r.properties.amount) || 0) || 0,
+      modified: r.properties && r.properties.hs_lastmodifieddate,
+      url: `https://app.hubspot.com/contacts/${HUBSPOT_PORTAL}/record/0-3/${r.id}`,
+    })));
+    after = data.paging && data.paging.next && data.paging.next.after;
+    if (!after) break;
   }
   return out;
 }

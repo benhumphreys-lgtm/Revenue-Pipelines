@@ -81,9 +81,22 @@ exports.handler = async (event, context) => {
   };
   if (after) hubspotBody.after = after;
 
-  // ---- Call HubSpot ----
+  // ---- Call HubSpot with retry-on-429 ----
+  async function fetchWithRetry(url, options, maxRetries = 2) {
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      const resp = await fetch(url, options);
+      if (resp.status !== 429 || attempt === maxRetries) return resp;
+      // Respect Retry-After header if present, otherwise backoff 1s, 2s
+      const retryAfter = parseInt(resp.headers.get('Retry-After') || '', 10);
+      const waitMs = (isFinite(retryAfter) && retryAfter > 0)
+        ? Math.min(retryAfter * 1000, 3000)
+        : (1000 * (attempt + 1));
+      await new Promise(r => setTimeout(r, waitMs));
+    }
+  }
+
   try {
-    const response = await fetch(hubspotUrl, {
+    const response = await fetchWithRetry(hubspotUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
