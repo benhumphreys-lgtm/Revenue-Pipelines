@@ -62,6 +62,15 @@
   .gridjs-table { font-size: 12px; }
   .gridjs-th, .gridjs-td { padding: 8px 10px; }
   .gridjs-th { background:#f8fafc; color:#475569; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+  /* Data hygiene: red flag for missing fields */
+  .missing-cell { display: inline-block; background: #fef2f2; color: #991b1b; font-weight: 700; font-size: 10px; padding: 2px 6px; border-radius: 3px; border: 1px solid #fecaca; letter-spacing: 0.5px; }
+  .health-banner { padding: 10px 14px; border-radius: 6px; margin-bottom: 14px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .health-banner.good { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+  .health-banner.bad { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+  .health-banner.bad strong { color: #7f1d1d; }
+  .health-banner .health-icon { font-size: 18px; }
+  .health-banner .health-detail { color: inherit; font-weight: 400; font-size: 12px; margin-left: auto; }
 </style>
 </head>
 <body>
@@ -149,6 +158,7 @@
         <div class="kpi"><div class="lbl">Weighted</div><div class="val" id="p-wtd">—</div></div>
       </div>
     </div>
+    <div class="health-banner" id="p-health" style="display:none"></div>
     <div class="grid-wrap" id="grid-pipeline"></div>
   </div>
 
@@ -164,6 +174,7 @@
         <div class="kpi"><div class="lbl">Weighted</div><div class="val" id="r-wtd">—</div></div>
       </div>
     </div>
+    <div class="health-banner" id="r-health" style="display:none"></div>
     <div class="grid-wrap" id="grid-rollover"></div>
   </div>
 </div>
@@ -386,24 +397,84 @@ function initApp() {
     target.innerHTML = html;
   }
 
+  // ============ DATA HYGIENE: missing-field flagging ============
+  function isFieldMissing(v) {
+    return v == null || v === "" || (typeof v === "string" && v.trim() === "");
+  }
+  function htmlEscapeForGrid(s) {
+    if (s == null) return "";
+    return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+  }
+  // Render a cell as either a formatted value OR a red "MISSING" badge.
+  // treatZeroAsMissing: for numeric fields where 0 likely means "not entered."
+  function flagCell(rawValue, fmt, fieldName, treatZeroAsMissing) {
+    const missing = isFieldMissing(rawValue) || (treatZeroAsMissing && Number(rawValue) === 0);
+    if (missing) {
+      return `<span class="missing-cell" title="Missing ${fieldName}">MISSING</span>`;
+    }
+    const formatted = fmt ? fmt(rawValue) : rawValue;
+    return formatted == null ? "" : String(formatted);
+  }
+  // Per-deal list of missing critical fields. Drives the top-of-grid health banner.
+  function dealMissingFields(r) {
+    const m = [];
+    if (isFieldMissing(r.manufacturer)) m.push("Manufacturer");
+    if (isFieldMissing(r.brands))       m.push("Brand(s)");
+    if (isFieldMissing(r.closedate))    m.push("Close Date");
+    if (r.amount == null || Number(r.amount) === 0) m.push("Amount");
+    if (r.term == null   || Number(r.term)   === 0) m.push("Term");
+    if (r.probability == null)          m.push("Probability");
+    if (isFieldMissing(r.forecast))     m.push("Forecast");
+    return m;
+  }
+  // Update the green/red banner above a deal grid.
+  function renderHealthBanner(targetId, rows) {
+    const el = document.getElementById(targetId);
+    if (!el) return;
+    const issueRows = rows.map(r => ({ r, missing: dealMissingFields(r) })).filter(x => x.missing.length > 0);
+    el.style.display = "";
+    if (rows.length === 0) {
+      el.style.display = "none";
+      return;
+    }
+    if (issueRows.length === 0) {
+      el.className = "health-banner good";
+      el.innerHTML = `<span class="health-icon">✓</span> <strong>All ${rows.length} deals have complete data.</strong> <span class="health-detail">Pipeline hygiene 100% — keep it here.</span>`;
+      return;
+    }
+    // Owners-to-nudge: skip ones rendered as "ID 12345" since we don't have a name to put in front of leadership
+    const reps = [...new Set(issueRows.map(x => x.r.owner).filter(o => o && !/^ID\s/.test(o)))].sort();
+    const repText = reps.length ? `Owners to nudge: <strong>${reps.map(htmlEscapeForGrid).join(", ")}</strong>` : "";
+    // Most common missing field across affected deals
+    const fieldCounts = {};
+    issueRows.forEach(x => x.missing.forEach(f => { fieldCounts[f] = (fieldCounts[f] || 0) + 1; }));
+    const topField = Object.entries(fieldCounts).sort((a, b) => b[1] - a[1])[0];
+    const topText = topField ? `Most common gap: <strong>${topField[0]}</strong> (${topField[1]} deals)` : "";
+    el.className = "health-banner bad";
+    el.innerHTML = `<span class="health-icon">⚠</span> <strong>${issueRows.length} of ${rows.length}</strong> deals are missing key fields — see red badges below. <span class="health-detail">${topText}${topText && repText ? " · " : ""}${repText}</span>`;
+  }
+
   // ============ GRID.JS TABLE ============
   function buildGrid(target, rows) {
     if (target._grid) { target._grid.destroy(); target.innerHTML = ""; }
+    const htmlFmt = (cell) => gridjs.html(cell);
     const data = rows.map(r => [
       r.dealname,
-      r.manufacturer,
+      flagCell(r.manufacturer, htmlEscapeForGrid, "Manufacturer"),
       r.dealstage,
       r.dealtype,
       r.owner,
-      r.brands,
-      fmtDate(r.closedate),
-      fmtMoneyFull(r.amount),
-      r.term || "—",
+      flagCell(r.brands, htmlEscapeForGrid, "Brand(s)"),
+      flagCell(r.closedate, fmtDate, "Close Date"),
+      flagCell(r.amount, fmtMoneyFull, "Amount", true),
+      flagCell(r.term, v => v, "Term", true),
       fmtMoneyFull(r.mrr),
       fmtMoneyFull(r.arr),
       fmtMoneyFull(r.weighted_amount),
-      fmtPct(r.probability),
-      r.forecast ? `<span class="badge ${FORECAST_LABEL[r.forecast]?.cls || ''}">${FORECAST_LABEL[r.forecast]?.label || r.forecast}</span>` : "—",
+      flagCell(r.probability, fmtPct, "Probability"),
+      isFieldMissing(r.forecast)
+        ? `<span class="missing-cell" title="Missing Forecast">MISSING</span>`
+        : `<span class="badge ${FORECAST_LABEL[r.forecast]?.cls || ''}">${FORECAST_LABEL[r.forecast]?.label || r.forecast}</span>`,
       fmtPct(r.ad_pct), fmtPct(r.ba_pct), fmtPct(r.pa_pct), fmtPct(r.sa_pct),
       fmtMoneyFull(r.ad_rev), fmtMoneyFull(r.ba_rev), fmtMoneyFull(r.pa_rev), fmtMoneyFull(r.sa_rev),
       r.id
@@ -415,14 +486,17 @@ function initApp() {
             const url = `https://app.hubspot.com/contacts/21389996/record/0-3/${id}`;
             return gridjs.html(`<a href="${url}" target="_blank" rel="noopener" style="color:#2563eb;text-decoration:none;">${cell}</a>`);
         }},
-        "Manufacturer", "Stage", "Type", "Owner", "Brand(s)", "Close",
-        { name: "Amount", attributes: { style: "text-align:right" } },
-        { name: "Term", attributes: { style: "text-align:right" } },
+        { name: "Manufacturer", formatter: htmlFmt },
+        "Stage", "Type", "Owner",
+        { name: "Brand(s)", formatter: htmlFmt },
+        { name: "Close", formatter: htmlFmt },
+        { name: "Amount", attributes: { style: "text-align:right" }, formatter: htmlFmt },
+        { name: "Term", attributes: { style: "text-align:right" }, formatter: htmlFmt },
         { name: "MRR", attributes: { style: "text-align:right" } },
         { name: "ARR", attributes: { style: "text-align:right" } },
         { name: "Weighted", attributes: { style: "text-align:right" } },
-        { name: "Prob", attributes: { style: "text-align:right" } },
-        { name: "Forecast", formatter: (cell) => gridjs.html(cell) },
+        { name: "Prob", attributes: { style: "text-align:right" }, formatter: htmlFmt },
+        { name: "Forecast", formatter: htmlFmt },
         { name: "Ad %", attributes: { style: "text-align:right" } },
         { name: "BA %", attributes: { style: "text-align:right" } },
         { name: "PA %", attributes: { style: "text-align:right" } },
@@ -699,6 +773,7 @@ function initApp() {
     document.getElementById("p-tcv").textContent = fmtMoney(sum(pipeRows, "amount"));
     document.getElementById("p-arr").textContent = fmtMoney(sum(pipeRows, "arr"));
     document.getElementById("p-wtd").textContent = fmtMoney(sum(pipeRows, "weighted_amount"));
+    renderHealthBanner("p-health", pipeRows);
     buildGrid(document.getElementById("grid-pipeline"), pipeRows);
 
     // ===== Roll-Over tab KPIs + grid =====
@@ -706,6 +781,7 @@ function initApp() {
     document.getElementById("r-tcv").textContent = fmtMoney(sum(rollRows, "amount"));
     document.getElementById("r-arr").textContent = fmtMoney(sum(rollRows, "arr"));
     document.getElementById("r-wtd").textContent = fmtMoney(sum(rollRows, "weighted_amount"));
+    renderHealthBanner("r-health", rollRows);
     buildGrid(document.getElementById("grid-rollover"), rollRows);
   })();
 }
