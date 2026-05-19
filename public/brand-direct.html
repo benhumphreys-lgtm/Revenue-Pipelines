@@ -117,7 +117,7 @@
         <div class="kpi"><div class="lbl">Total ARR</div><div class="val" id="kpi-arr">—</div><div class="delta" id="kpi-arr-delta">—</div><div class="sublbl" id="kpi-arr-full">—</div></div>
         <div class="kpi"><div class="lbl">Weighted</div><div class="val" id="kpi-wtd">—</div><div class="delta" id="kpi-wtd-delta">—</div><div class="sublbl" id="kpi-wtd-full">—</div></div>
       </div>
-      <div class="note" id="scope-note">Scope: <code>pipeline = Brand (Direct)</code>, <code>dealtype ≠ Existing (Roll-Over)</code>, excluding Closed Won / Closed Lost. <strong>Click any green "this week" delta to see the contributing deals.</strong></div>
+      <div class="note" id="scope-note">Scope: <code>pipeline = Brand (Direct)</code>, <code>dealtype ≠ Existing (Roll-Over)</code>, <code>dealtype ≠ Agency RFP</code>, excluding Closed Won / Closed Lost. <strong>Click any green "this week" delta to see the contributing deals.</strong></div>
     </div>
 
     <div class="delta-drilldown" id="delta-drilldown" style="display:none">
@@ -150,7 +150,7 @@
   <div class="pane" id="pane-pipeline">
     <div class="panel">
       <h2>Pipeline · Live From HubSpot</h2>
-      <div class="note">Filter: <code>pipeline = Brand (Direct)</code>, <code>dealtype ≠ Existing (Roll-Over)</code>, excluding Closed Won/Lost. Click any deal name to open it in HubSpot.</div>
+      <div class="note">Filter: <code>pipeline = Brand (Direct)</code>, <code>dealtype ≠ Existing (Roll-Over)</code>, <code>dealtype ≠ Agency RFP</code>, excluding Closed Won/Lost. Click any deal name to open it in HubSpot.</div>
       <div class="kpi-row" style="grid-template-columns: repeat(4, 1fr); margin-top: 16px;">
         <div class="kpi"><div class="lbl">Deals</div><div class="val" id="p-count">—</div></div>
         <div class="kpi"><div class="lbl">TCV</div><div class="val" id="p-tcv">—</div></div>
@@ -531,8 +531,8 @@ function initApp() {
 
     const normalized = allDeals.map(d => normalize(d, ownerMap));
 
-    // Tab splits — Pipeline excludes Roll-Over; Roll-Over isolates it
-    const pipeRows = normalized.filter(r => r.dealtype !== "Existing (Roll-Over)");
+    // Tab splits — Pipeline excludes Roll-Over AND Agency RFPs; Roll-Over isolates it
+    const pipeRows = normalized.filter(r => r.dealtype !== "Existing (Roll-Over)" && r.dealtype !== "Agency RFP");
     const rollRows = normalized.filter(r => r.dealtype === "Existing (Roll-Over)");
 
     // ===== SUMMARY: live KPIs =====
