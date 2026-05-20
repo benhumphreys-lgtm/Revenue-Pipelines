@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>Brand Direct Pipeline — Revenue Pipeline</title>
 <link rel="stylesheet" href="/_shared.css">
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 <script src="/_api.js" defer></script>
+<title>Brand Direct Pipeline — Revenue Pipeline</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridjs@5.0.2/dist/theme/mermaid.min.css" integrity="sha384-jZvDSsmGB9oGGT/4l9bHXGoAv1OxvG/cFmSo0dZaSqmBgvQTKDBFAMftlXTmMbNW" crossorigin="anonymous">
 <script src="https://cdn.jsdelivr.net/npm/gridjs@5.0.2/dist/gridjs.umd.js" integrity="sha384-/XXDzxe4FsGiAe50i/u9pY/Vy/uX654MHB1xoc1BJNnH1WXHhqHga9g3q5tF4gj7" crossorigin="anonymous"></script>
 <style>
@@ -26,21 +26,6 @@
   .kpi .lbl { font-size: 11px; color:#64748b; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
   .kpi .val { font-size: 22px; font-weight: 600; color:#0f172a; }
   .kpi .sublbl { font-size: 11px; color:#94a3b8; margin-top:4px; font-variant-numeric: tabular-nums; }
-  .kpi .delta { font-size: 11px; font-weight: 600; margin-top: 4px; font-variant-numeric: tabular-nums; min-height: 14px; }
-  .kpi .delta.up { color: #15803d; }
-  .kpi .delta.flat { color: #94a3b8; font-weight: 400; }
-  .kpi .delta.down { color: #b91c1c; }
-  .kpi .delta.clickable { cursor: pointer; }
-  .kpi .delta.clickable:hover { text-decoration: underline; }
-  .delta-drilldown { background:#fff; border: 1px solid #BEE3F8; border-left: 4px solid #2563eb; border-radius: 8px; padding: 16px 18px; margin-bottom: 18px; }
-  .delta-drilldown .dd-header { display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0; }
-  .delta-drilldown h3 { font-size: 14px; margin: 0; color: #1F4E79; font-weight: 700; }
-  .delta-drilldown .dd-close { background:none; border:1px solid #cbd5e1; border-radius:4px; padding:4px 12px; font-size:12px; cursor:pointer; color:#475569; }
-  .delta-drilldown .dd-close:hover { background:#f1f5f9; }
-  .delta-drilldown table.rollup th { background:#EBF8FF; color:#1F4E79; }
-  .delta-drilldown .group-header { font-size:13px; font-weight:600; color:#1F4E79; margin-bottom:6px; padding:6px 10px; background:#EBF8FF; border-left:3px solid #2563eb; border-radius:4px; }
-  .delta-drilldown .group-header.mfr { background:#FAF5FF; border-left-color:#6B46C1; color:#6B46C1; }
-  .delta-drilldown .group-block { margin-bottom: 16px; }
   .panel { background:#fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 18px; margin-bottom: 18px; }
   .panel h2 { font-size: 14px; margin: 0 0 12px; text-transform: uppercase; letter-spacing: 0.04em; color:#475569; }
   table.rollup { width:100%; border-collapse: collapse; font-size: 13px; }
@@ -49,6 +34,19 @@
   table.rollup td.num { text-align: right; font-variant-numeric: tabular-nums; }
   table.rollup tr.total td { font-weight: 600; background:#f8fafc; border-top: 2px solid #cbd5e1; }
   .three-col { display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+  .week-panel { border: 1px solid #c7d2fe; background: linear-gradient(180deg,#eef2ff 0%, #fff 100%); border-radius: 12px; padding: 18px 20px; margin-bottom: 18px; }
+  .week-panel h2 { font-size: 14px; margin: 0 0 14px; color:#3730a3; text-transform: uppercase; letter-spacing: 0.04em; display:flex; align-items:center; gap:8px; }
+  .week-panel h2 .pulse { width:8px; height:8px; background:#6366f1; border-radius:999px; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; transform: scale(1);} 50% { opacity:0.5; transform: scale(1.3);} }
+  .week-row { display:grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 14px; }
+  .week-kpi { background:#fff; border: 1px solid #e0e7ff; border-radius: 10px; padding: 14px 16px; }
+  .week-kpi .lbl { font-size: 11px; color:#4338ca; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; font-weight: 600; }
+  .week-kpi .val { font-size: 26px; font-weight: 700; color:#1e1b4b; }
+  .week-kpi .sublbl { font-size: 11px; color:#6b7280; margin-top:4px; }
+  .chip { display:inline-block; padding: 4px 10px; border-radius: 999px; font-size: 12px; background:#e0e7ff; color:#3730a3; margin: 3px 4px 3px 0; border: 1px solid #c7d2fe; }
+  .chip.empty { background:#f1f5f9; color:#94a3b8; border-color:#e2e8f0; font-style: italic; }
+  .week-section { background:#fff; border:1px solid #e0e7ff; border-radius: 10px; padding: 12px 14px; margin-top: 12px; }
+  .week-section .head { font-size: 11px; color:#4338ca; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; margin-bottom: 8px; }
   .note { font-size: 12px; color:#64748b; margin-top: 6px; }
   .grid-wrap { background:#fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px; }
   .badge { display:inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; }
@@ -103,6 +101,7 @@
     <div class="subtab active" data-tab="summary">Summary</div>
     <div class="subtab" data-tab="pipeline">Pipeline</div>
     <div class="subtab" data-tab="rollover">Existing (Roll-Over)</div>
+    <div class="subtab" data-tab="agencyrfp">Agency RFP</div>
   </div>
 
   <!-- ===================== SUMMARY ===================== -->
@@ -110,22 +109,42 @@
     <div class="panel">
       <h2>Headline · Live From HubSpot</h2>
       <div class="kpi-row">
-        <div class="kpi"><div class="lbl">Total Deals</div><div class="val" id="kpi-deals">—</div><div class="delta" id="kpi-deals-delta">—</div><div class="sublbl">Pipeline scope</div></div>
-        <div class="kpi"><div class="lbl">Brands</div><div class="val" id="kpi-brands">—</div><div class="delta" id="kpi-brands-delta">—</div><div class="sublbl">Unique</div></div>
-        <div class="kpi"><div class="lbl">Manufacturers</div><div class="val" id="kpi-mfrs">—</div><div class="delta" id="kpi-mfrs-delta">—</div><div class="sublbl">Unique</div></div>
-        <div class="kpi"><div class="lbl">Pipeline (TCV)</div><div class="val" id="kpi-tcv">—</div><div class="delta" id="kpi-tcv-delta">—</div><div class="sublbl" id="kpi-tcv-full">—</div></div>
-        <div class="kpi"><div class="lbl">Total ARR</div><div class="val" id="kpi-arr">—</div><div class="delta" id="kpi-arr-delta">—</div><div class="sublbl" id="kpi-arr-full">—</div></div>
-        <div class="kpi"><div class="lbl">Weighted</div><div class="val" id="kpi-wtd">—</div><div class="delta" id="kpi-wtd-delta">—</div><div class="sublbl" id="kpi-wtd-full">—</div></div>
+        <div class="kpi"><div class="lbl">Total Deals</div><div class="val" id="kpi-deals">—</div><div class="sublbl">Pipeline scope</div></div>
+        <div class="kpi"><div class="lbl">Brands</div><div class="val" id="kpi-brands">—</div><div class="sublbl">Unique</div></div>
+        <div class="kpi"><div class="lbl">Manufacturers</div><div class="val" id="kpi-mfrs">—</div><div class="sublbl">Unique</div></div>
+        <div class="kpi"><div class="lbl">Pipeline (TCV)</div><div class="val" id="kpi-tcv">—</div><div class="sublbl" id="kpi-tcv-full">—</div></div>
+        <div class="kpi"><div class="lbl">Total ARR</div><div class="val" id="kpi-arr">—</div><div class="sublbl" id="kpi-arr-full">—</div></div>
+        <div class="kpi"><div class="lbl">Weighted</div><div class="val" id="kpi-wtd">—</div><div class="sublbl" id="kpi-wtd-full">—</div></div>
       </div>
-      <div class="note" id="scope-note">Scope: <code>pipeline = Brand (Direct)</code>, <code>dealtype ≠ Existing (Roll-Over)</code>, <code>dealtype ≠ Agency RFP</code> (matches both <code>"Agency RFP"</code> and <code>"Agency (RFP)"</code> spellings), excluding Closed Won / Closed Lost. <strong>Click any green "this week" delta to see the contributing deals.</strong></div>
+      <div class="note" id="scope-note">Scope: <code>pipeline = Brand (Direct)</code>, <code>dealtype ≠ Existing (Roll-Over)</code>, <code>dealtype ≠ Agency RFP</code> (matches both <code>"Agency RFP"</code> and <code>"Agency (RFP)"</code> spellings — see the dedicated <strong>Agency RFP</strong> sub-tab), excluding Closed Won / Closed Lost.</div>
     </div>
 
-    <div class="delta-drilldown" id="delta-drilldown" style="display:none">
-      <div class="dd-header">
-        <h3 id="drilldown-title">Drill-down</h3>
-        <button class="dd-close" onclick="document.getElementById('delta-drilldown').style.display='none';">✕ Close</button>
+    <!-- ============ THIS WEEK PANEL ============ -->
+    <div class="week-panel">
+      <h2><span class="pulse"></span>Last 7 Days · This Week <span id="week-window" style="color:#6b7280; font-weight: 500; text-transform: none; letter-spacing: 0;">· loading…</span></h2>
+      <div class="week-row">
+        <div class="week-kpi"><div class="lbl">New Deals</div><div class="val" id="wk-deals">—</div><div class="sublbl">Created in last 7 days</div></div>
+        <div class="week-kpi"><div class="lbl">New Brands</div><div class="val" id="wk-brands">—</div><div class="sublbl">First appearance this week</div></div>
+        <div class="week-kpi"><div class="lbl">New Manufacturers</div><div class="val" id="wk-mfrs">—</div><div class="sublbl">First appearance this week</div></div>
+        <div class="week-kpi"><div class="lbl">Pipeline Added</div><div class="val" id="wk-tcv">—</div><div class="sublbl" id="wk-tcv-full">From new deals only</div></div>
       </div>
-      <div id="drilldown-content"></div>
+
+      <div class="week-section">
+        <div class="head">New Deals (created in last 7 days)</div>
+        <div id="wk-deals-table"><div class="loading" style="padding: 12px;">Loading…</div></div>
+      </div>
+
+      <div class="three-col" style="grid-template-columns: 1fr 1fr; margin-top: 12px;">
+        <div class="week-section">
+          <div class="head">New Brands This Week</div>
+          <div id="wk-brand-chips"></div>
+        </div>
+        <div class="week-section">
+          <div class="head">New Manufacturers This Week</div>
+          <div id="wk-mfr-chips"></div>
+        </div>
+      </div>
+      <div class="note" style="margin-top: 10px;">Compares deals created in the last 7 days against everything older in the Brand (Direct) pipeline (Pipeline + Roll-Over + Agency RFP scope combined). Brand/manufacturer "new" means first appearance in any deal — not necessarily a brand-new pharma company.</div>
     </div>
 
     <div class="three-col">
@@ -177,6 +196,22 @@
     <div class="health-banner" id="r-health" style="display:none"></div>
     <div class="grid-wrap" id="grid-rollover"></div>
   </div>
+
+  <!-- ===================== AGENCY RFP ===================== -->
+  <div class="pane" id="pane-agencyrfp">
+    <div class="panel">
+      <h2>Agency RFP · Live From HubSpot</h2>
+      <div class="note">Filter: <code>pipeline = Brand (Direct)</code>, <code>dealtype = Agency RFP</code> (matches both <code>"Agency RFP"</code> and <code>"Agency (RFP)"</code> spellings), excluding Closed Won/Lost. Click any deal name to open it in HubSpot.</div>
+      <div class="kpi-row" style="grid-template-columns: repeat(4, 1fr); margin-top: 16px;">
+        <div class="kpi"><div class="lbl">Deals</div><div class="val" id="a-count">—</div></div>
+        <div class="kpi"><div class="lbl">TCV</div><div class="val" id="a-tcv">—</div></div>
+        <div class="kpi"><div class="lbl">ARR</div><div class="val" id="a-arr">—</div></div>
+        <div class="kpi"><div class="lbl">Weighted</div><div class="val" id="a-wtd">—</div></div>
+      </div>
+    </div>
+    <div class="health-banner" id="a-health" style="display:none"></div>
+    <div class="grid-wrap" id="grid-agencyrfp"></div>
+  </div>
 </div>
 </div>
 
@@ -227,7 +262,7 @@ function initApp() {
   const CLOSED_STAGE_IDS = ["143017564", "143017565"];
 
   const PROPS = [
-    "dealname","dealstage","dealtype","pipeline","hubspot_owner_id","closedate","createdate",
+    "dealname","dealstage","dealtype","pipeline","hubspot_owner_id","closedate","createdate","hs_lastmodifieddate",
     "amount","brand_s_","company_primary","term__months_","mrr","arr",
     "weighted_amount","weighted_mrr","deal_close_probability","forecast_category",
     "ad_product","brand_activation","prescriberpoint_pa","samples",
@@ -320,7 +355,6 @@ function initApp() {
     const num = (v) => (v == null || v === "") ? null : Number(v);
     return {
       id: deal.id || p.hs_object_id,
-      created_at: p.createdate || "",
       dealname: p.dealname || "",
       manufacturer: p.company_primary || "",
       dealstage: STAGE_LABEL[p.dealstage] || p.dealstage || "",
@@ -328,6 +362,8 @@ function initApp() {
       owner: ownerMap[p.hubspot_owner_id] || (p.hubspot_owner_id ? "ID " + p.hubspot_owner_id : ""),
       brands: p.brand_s_ || "",
       closedate: p.closedate || "",
+      createdate: p.createdate || "",
+      lastmod: p.hs_lastmodifieddate || "",
       amount: num(p.amount),
       term: num(p.term__months_),
       mrr: num(p.mrr),
@@ -536,9 +572,91 @@ function initApp() {
 
     const normalized = allDeals.map(d => normalize(d, ownerMap));
 
-    // Tab splits — Pipeline excludes Roll-Over AND Agency RFPs (both "Agency RFP" and "Agency (RFP)" spellings); Roll-Over isolates it
-    const pipeRows = normalized.filter(r => r.dealtype !== "Existing (Roll-Over)" && !isAgencyRfp(r.dealtype));
-    const rollRows = normalized.filter(r => r.dealtype === "Existing (Roll-Over)");
+    // Tab splits — Pipeline excludes Roll-Over AND Agency RFPs (both "Agency RFP" and "Agency (RFP)" spellings);
+    // Roll-Over isolates Existing (Roll-Over); Agency RFP isolates the agency-RFP deals via the regex helper.
+    const pipeRows       = normalized.filter(r => r.dealtype !== "Existing (Roll-Over)" && !isAgencyRfp(r.dealtype));
+    const rollRows       = normalized.filter(r => r.dealtype === "Existing (Roll-Over)");
+    const agencyRfpRows  = normalized.filter(r => isAgencyRfp(r.dealtype));
+
+    // ===== THIS WEEK: deals created in last 7 days (Pipeline + Roll-Over + Agency RFP combined) =====
+    const now = new Date();
+    const cutoff = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const isAfterCutoff = (iso) => {
+      if (!iso) return false;
+      const d = new Date(iso);
+      return !isNaN(d) && d >= cutoff;
+    };
+    const newThisWeek = normalized.filter(r => isAfterCutoff(r.createdate));
+    const existing    = normalized.filter(r => !isAfterCutoff(r.createdate));
+
+    // Helper: distinct trimmed non-empty values
+    const setOf = (rows, fn) => {
+      const s = new Set();
+      rows.forEach(r => {
+        const v = fn(r);
+        if (v && String(v).trim().length) s.add(String(v).trim());
+      });
+      return s;
+    };
+    const newBrandSet = setOf(newThisWeek, r => r.brands);
+    const existingBrandSet = setOf(existing, r => r.brands);
+    const firstAppearanceBrands = Array.from(newBrandSet).filter(b => !existingBrandSet.has(b));
+
+    const newMfrSet = setOf(newThisWeek, r => r.manufacturer);
+    const existingMfrSet = setOf(existing, r => r.manufacturer);
+    const firstAppearanceMfrs = Array.from(newMfrSet).filter(m => !existingMfrSet.has(m));
+
+    const tcvAdded = sum(newThisWeek, "amount");
+
+    // Format the date window
+    const fmt = (d) => d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    document.getElementById("week-window").textContent = `· ${fmt(cutoff)} – ${fmt(now)}`;
+
+    document.getElementById("wk-deals").textContent  = newThisWeek.length.toLocaleString();
+    document.getElementById("wk-brands").textContent = firstAppearanceBrands.length.toLocaleString();
+    document.getElementById("wk-mfrs").textContent   = firstAppearanceMfrs.length.toLocaleString();
+    document.getElementById("wk-tcv").textContent    = fmtMoney(tcvAdded);
+    document.getElementById("wk-tcv-full").textContent = newThisWeek.length
+      ? `${fmtMoneyFull(tcvAdded)} from ${newThisWeek.length} new deal${newThisWeek.length === 1 ? "" : "s"}`
+      : "No new deals this week";
+
+    // New deals table
+    const wkTable = document.getElementById("wk-deals-table");
+    if (newThisWeek.length === 0) {
+      wkTable.innerHTML = '<div style="padding: 12px; color:#94a3b8; font-style: italic;">No new deals created in the last 7 days.</div>';
+    } else {
+      const sorted = newThisWeek.slice().sort((a,b) => new Date(b.createdate) - new Date(a.createdate));
+      let html = '<table class="rollup"><thead><tr>' +
+        '<th>Deal Name</th><th>Manufacturer</th><th>Brand(s)</th><th>Type</th><th>Owner</th>' +
+        '<th class="num" style="text-align:right;">Amount</th>' +
+        '<th class="num" style="text-align:right;">Created</th></tr></thead><tbody>';
+      sorted.forEach(r => {
+        const url = `https://app.hubspot.com/contacts/21389996/record/0-3/${r.id}`;
+        html += '<tr>' +
+          `<td><a href="${url}" target="_blank" rel="noopener" style="color:#2563eb;text-decoration:none;">${r.dealname || '(unnamed)'}</a></td>` +
+          `<td>${r.manufacturer || '—'}</td>` +
+          `<td>${r.brands || '—'}</td>` +
+          `<td>${r.dealtype || '—'}</td>` +
+          `<td>${r.owner || '—'}</td>` +
+          `<td class="num">${fmtMoneyFull(r.amount)}</td>` +
+          `<td class="num">${fmtDate(r.createdate)}</td>` +
+          '</tr>';
+      });
+      html += '</tbody></table>';
+      wkTable.innerHTML = html;
+    }
+
+    // Brand / manufacturer chips
+    const brandChips = document.getElementById("wk-brand-chips");
+    brandChips.innerHTML = firstAppearanceBrands.length
+      ? firstAppearanceBrands.map(b => `<span class="chip">${b}</span>`).join("")
+      : '<span class="chip empty">No new brands this week</span>';
+
+    const mfrChips = document.getElementById("wk-mfr-chips");
+    mfrChips.innerHTML = firstAppearanceMfrs.length
+      ? firstAppearanceMfrs.map(m => `<span class="chip">${m}</span>`).join("")
+      : '<span class="chip empty">No new manufacturers this week</span>';
+
 
     // ===== SUMMARY: live KPIs =====
     const liveScope = pipeRows;
@@ -556,191 +674,6 @@ function initApp() {
     document.getElementById("kpi-arr-full").textContent = fmtMoneyFull(arr);
     document.getElementById("kpi-wtd").textContent = fmtMoney(wtd);
     document.getElementById("kpi-wtd-full").textContent = fmtMoneyFull(wtd);
-
-    // ===== WEEK-OVER-WEEK DELTAS =====
-    // What's been added since Monday 00:00 of the current week (local time).
-    // Brands/manufacturers only count NEW values not already in the pre-week pipeline.
-    function startOfThisWeek() {
-      const d = new Date();
-      d.setHours(0, 0, 0, 0);
-      const dow = d.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
-      const diff = dow === 0 ? -6 : 1 - dow;
-      d.setDate(d.getDate() + diff);
-      return d;
-    }
-    const weekStart = startOfThisWeek();
-    const isThisWeek = (r) => r.created_at && new Date(r.created_at) >= weekStart;
-    const thisWeekRows = liveScope.filter(isThisWeek);
-    const preWeekRows = liveScope.filter(r => !isThisWeek(r));
-    const norm = (v) => (v == null ? "" : String(v).trim().toLowerCase());
-    const preWeekBrands = new Set(preWeekRows.map(r => norm(r.brands)).filter(Boolean));
-    const preWeekMfrs   = new Set(preWeekRows.map(r => norm(r.manufacturer)).filter(Boolean));
-    const newBrands = new Set(
-      thisWeekRows.map(r => norm(r.brands)).filter(b => b && !preWeekBrands.has(b))
-    ).size;
-    const newMfrs = new Set(
-      thisWeekRows.map(r => norm(r.manufacturer)).filter(m => m && !preWeekMfrs.has(m))
-    ).size;
-
-    function renderDelta(id, value, isMoney) {
-      const el = document.getElementById(id);
-      if (!el) return;
-      if (value > 0) {
-        el.className = "delta up clickable";
-        el.textContent = (isMoney ? "+" + fmtMoney(value) : "+" + value.toLocaleString()) + " this week ↑";
-      } else if (value === 0) {
-        el.className = "delta flat";
-        el.textContent = "No change this week";
-      } else {
-        el.className = "delta down";
-        el.textContent = (isMoney ? fmtMoney(value) : value.toLocaleString()) + " this week ↓";
-      }
-    }
-    renderDelta("kpi-deals-delta",  thisWeekRows.length, false);
-    renderDelta("kpi-brands-delta", newBrands, false);
-    renderDelta("kpi-mfrs-delta",   newMfrs, false);
-    renderDelta("kpi-tcv-delta",    sum(thisWeekRows, "amount"), true);
-    renderDelta("kpi-arr-delta",    sum(thisWeekRows, "arr"), true);
-    renderDelta("kpi-wtd-delta",    sum(thisWeekRows, "weighted_amount"), true);
-
-    // ===== DRILL-DOWN HELPERS =====
-    function dealHubSpotUrl(id) { return `https://app.hubspot.com/contacts/21389996/record/0-3/${id}`; }
-
-    function productsForRow(r) {
-      const items = [];
-      if ((r.pa_pct || 0) > 0) items.push("PrescriberPoint PA");
-      if ((r.ba_pct || 0) > 0) items.push("Brand Activation");
-      if ((r.ad_pct || 0) > 0) items.push("Ad Product");
-      if ((r.sa_pct || 0) > 0) items.push("Samples");
-      return items.length ? items.join(", ") : "—";
-    }
-
-    function escapeHtml(s) {
-      if (s == null) return "";
-      return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
-    }
-
-    function renderDealsTable(rows) {
-      if (!rows.length) return '<p style="color:#94a3b8; padding:8px;">No deals to show.</p>';
-      let html = `<table class="rollup" style="width:100%"><thead><tr>
-        <th>Deal Name</th>
-        <th>Owner</th>
-        <th>Company (Mfr)</th>
-        <th>Brand(s)</th>
-        <th class="num" style="text-align:right">Amount</th>
-        <th class="num" style="text-align:right">Weighted</th>
-        <th>Products</th>
-        <th style="text-align:center">HubSpot</th>
-      </tr></thead><tbody>`;
-      rows.forEach(r => {
-        const url = dealHubSpotUrl(r.id);
-        html += `<tr>
-          <td><a href="${url}" target="_blank" rel="noopener" style="color:#2563eb; text-decoration:none;">${escapeHtml(r.dealname || "(unnamed)")}</a></td>
-          <td>${escapeHtml(r.owner || "—")}</td>
-          <td>${escapeHtml(r.manufacturer || "—")}</td>
-          <td>${escapeHtml(r.brands || "—")}</td>
-          <td class="num">${fmtMoneyFull(r.amount)}</td>
-          <td class="num">${fmtMoneyFull(r.weighted_amount)}</td>
-          <td style="font-size:11px; color:#475569;">${escapeHtml(productsForRow(r))}</td>
-          <td style="text-align:center"><a href="${url}" target="_blank" rel="noopener" style="color:#2563eb; text-decoration:none;">Open ↗</a></td>
-        </tr>`;
-      });
-      html += "</tbody></table>";
-      return html;
-    }
-
-    function showDrilldown(title, html) {
-      document.getElementById("drilldown-title").textContent = title;
-      document.getElementById("drilldown-content").innerHTML = html;
-      const panel = document.getElementById("delta-drilldown");
-      panel.style.display = "block";
-      panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }
-
-    function attachClickHandler(id, handler) {
-      const el = document.getElementById(id);
-      if (!el || !el.classList.contains("clickable")) return;
-      el.onclick = handler;
-    }
-
-    // Deals delta → list all new deals this week
-    attachClickHandler("kpi-deals-delta", () => {
-      const sorted = [...thisWeekRows].sort((a,b) => (b.amount||0) - (a.amount||0));
-      const n = thisWeekRows.length;
-      showDrilldown(
-        `+${n} New Deal${n===1?"":"s"} Added This Week`,
-        renderDealsTable(sorted)
-      );
-    });
-
-    // TCV delta → same set, sorted by amount
-    attachClickHandler("kpi-tcv-delta", () => {
-      const sorted = [...thisWeekRows].sort((a,b) => (b.amount||0) - (a.amount||0));
-      showDrilldown(
-        `+${fmtMoney(sum(thisWeekRows, "amount"))} TCV Added This Week (${sorted.length} deal${sorted.length===1?"":"s"})`,
-        renderDealsTable(sorted)
-      );
-    });
-
-    // ARR delta → sorted by ARR
-    attachClickHandler("kpi-arr-delta", () => {
-      const sorted = [...thisWeekRows].sort((a,b) => (b.arr||0) - (a.arr||0));
-      showDrilldown(
-        `+${fmtMoney(sum(thisWeekRows, "arr"))} ARR Added This Week (${sorted.length} deal${sorted.length===1?"":"s"})`,
-        renderDealsTable(sorted)
-      );
-    });
-
-    // Weighted delta → sorted by weighted
-    attachClickHandler("kpi-wtd-delta", () => {
-      const sorted = [...thisWeekRows].sort((a,b) => (b.weighted_amount||0) - (a.weighted_amount||0));
-      showDrilldown(
-        `+${fmtMoney(sum(thisWeekRows, "weighted_amount"))} Weighted Forecast Added This Week (${sorted.length} deal${sorted.length===1?"":"s"})`,
-        renderDealsTable(sorted)
-      );
-    });
-
-    // Brands delta → group deals by each new brand
-    attachClickHandler("kpi-brands-delta", () => {
-      const newBrandKeys = [...new Set(
-        thisWeekRows.map(r => norm(r.brands)).filter(b => b && !preWeekBrands.has(b))
-      )];
-      let html = "";
-      newBrandKeys.forEach(brandKey => {
-        const dealsForBrand = thisWeekRows.filter(r => norm(r.brands) === brandKey);
-        const brandLabel = dealsForBrand[0]?.brands || brandKey;
-        html += `<div class="group-block">
-          <div class="group-header">${escapeHtml(brandLabel)} — introduced this week by ${dealsForBrand.length} deal${dealsForBrand.length===1?"":"s"}</div>
-          ${renderDealsTable(dealsForBrand)}
-        </div>`;
-      });
-      if (!html) html = "<p style='color:#94a3b8;'>No new unique brands this week.</p>";
-      showDrilldown(
-        `+${newBrandKeys.length} New Brand${newBrandKeys.length===1?"":"s"} This Week`,
-        html
-      );
-    });
-
-    // Manufacturers delta → group deals by each new manufacturer
-    attachClickHandler("kpi-mfrs-delta", () => {
-      const newMfrKeys = [...new Set(
-        thisWeekRows.map(r => norm(r.manufacturer)).filter(m => m && !preWeekMfrs.has(m))
-      )];
-      let html = "";
-      newMfrKeys.forEach(mfrKey => {
-        const dealsForMfr = thisWeekRows.filter(r => norm(r.manufacturer) === mfrKey);
-        const mfrLabel = dealsForMfr[0]?.manufacturer || mfrKey;
-        html += `<div class="group-block">
-          <div class="group-header mfr">${escapeHtml(mfrLabel)} — introduced this week by ${dealsForMfr.length} deal${dealsForMfr.length===1?"":"s"}</div>
-          ${renderDealsTable(dealsForMfr)}
-        </div>`;
-      });
-      if (!html) html = "<p style='color:#94a3b8;'>No new unique manufacturers this week.</p>";
-      showDrilldown(
-        `+${newMfrKeys.length} New Manufacturer${newMfrKeys.length===1?"":"s"} This Week`,
-        html
-      );
-    });
 
     // Live rollups
     const byType = rollupBy(liveScope, r => r.dealtype);
@@ -771,7 +704,7 @@ function initApp() {
     const ts = new Date();
     document.getElementById("freshness").textContent = "Live · " + ts.toLocaleString();
     document.getElementById("live-source").textContent =
-      `Source: HubSpot Brand (Direct) pipeline · ${liveScope.length} open deals in Pipeline scope · ${rollRows.length} in Roll-Over · Refreshed ${ts.toLocaleString()}`;
+      `Source: HubSpot Brand (Direct) pipeline · ${liveScope.length} open deals in Pipeline scope · ${rollRows.length} in Roll-Over · ${agencyRfpRows.length} in Agency RFP · Refreshed ${ts.toLocaleString()}`;
 
     // ===== Pipeline tab KPIs + grid =====
     document.getElementById("p-count").textContent = pipeRows.length.toLocaleString();
@@ -788,6 +721,14 @@ function initApp() {
     document.getElementById("r-wtd").textContent = fmtMoney(sum(rollRows, "weighted_amount"));
     renderHealthBanner("r-health", rollRows);
     buildGrid(document.getElementById("grid-rollover"), rollRows);
+
+    // ===== Agency RFP tab KPIs + grid =====
+    document.getElementById("a-count").textContent = agencyRfpRows.length.toLocaleString();
+    document.getElementById("a-tcv").textContent = fmtMoney(sum(agencyRfpRows, "amount"));
+    document.getElementById("a-arr").textContent = fmtMoney(sum(agencyRfpRows, "arr"));
+    document.getElementById("a-wtd").textContent = fmtMoney(sum(agencyRfpRows, "weighted_amount"));
+    renderHealthBanner("a-health", agencyRfpRows);
+    buildGrid(document.getElementById("grid-agencyrfp"), agencyRfpRows);
   })();
 }
 </script>
