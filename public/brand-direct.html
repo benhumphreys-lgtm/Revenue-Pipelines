@@ -117,7 +117,7 @@
         <div class="kpi"><div class="lbl">Total ARR</div><div class="val" id="kpi-arr">—</div><div class="delta" id="kpi-arr-delta">—</div><div class="sublbl" id="kpi-arr-full">—</div></div>
         <div class="kpi"><div class="lbl">Weighted</div><div class="val" id="kpi-wtd">—</div><div class="delta" id="kpi-wtd-delta">—</div><div class="sublbl" id="kpi-wtd-full">—</div></div>
       </div>
-      <div class="note" id="scope-note">Scope: <code>pipeline = Brand (Direct)</code>, <code>dealtype ≠ Existing (Roll-Over)</code>, <code>dealtype ≠ Agency RFP</code>, excluding Closed Won / Closed Lost. <strong>Click any green "this week" delta to see the contributing deals.</strong></div>
+      <div class="note" id="scope-note">Scope: <code>pipeline = Brand (Direct)</code>, <code>dealtype ≠ Existing (Roll-Over)</code>, <code>dealtype ≠ Agency RFP</code> (matches both <code>"Agency RFP"</code> and <code>"Agency (RFP)"</code> spellings), excluding Closed Won / Closed Lost. <strong>Click any green "this week" delta to see the contributing deals.</strong></div>
     </div>
 
     <div class="delta-drilldown" id="delta-drilldown" style="display:none">
@@ -211,8 +211,13 @@ function initApp() {
     "Existing (Expansion)": "Existing (Expansion)",
     "Existing (Roll-Over)": "Existing (Roll-Over)",
     "Win-back": "Win-back",
-    "Agency RFP": "Agency RFP"
+    "Agency RFP": "Agency RFP",
+    "Agency (RFP)": "Agency RFP"   // legacy HubSpot value — normalize to canonical
   };
+  // Match either "Agency RFP" or "Agency (RFP)" (HubSpot has both spellings live).
+  function isAgencyRfp(s) {
+    return /^\s*agency\s*\(?\s*rfp\s*\)?\s*$/i.test(s || "");
+  }
   const FORECAST_LABEL = {
     "Likely":   {label: "Likely 75%",   cls: "likely"},
     "Possible": {label: "Possible 50%", cls: "possible"},
@@ -531,8 +536,8 @@ function initApp() {
 
     const normalized = allDeals.map(d => normalize(d, ownerMap));
 
-    // Tab splits — Pipeline excludes Roll-Over AND Agency RFPs; Roll-Over isolates it
-    const pipeRows = normalized.filter(r => r.dealtype !== "Existing (Roll-Over)" && r.dealtype !== "Agency RFP");
+    // Tab splits — Pipeline excludes Roll-Over AND Agency RFPs (both "Agency RFP" and "Agency (RFP)" spellings); Roll-Over isolates it
+    const pipeRows = normalized.filter(r => r.dealtype !== "Existing (Roll-Over)" && !isAgencyRfp(r.dealtype));
     const rollRows = normalized.filter(r => r.dealtype === "Existing (Roll-Over)");
 
     // ===== SUMMARY: live KPIs =====
