@@ -117,7 +117,7 @@
         <div class="kpi"><div class="lbl">Total ARR</div><div class="val" id="kpi-arr">—</div><div class="delta" id="kpi-arr-delta">—</div><div class="sublbl" id="kpi-arr-full">—</div></div>
         <div class="kpi"><div class="lbl">Weighted</div><div class="val" id="kpi-wtd">—</div><div class="delta" id="kpi-wtd-delta">—</div><div class="sublbl" id="kpi-wtd-full">—</div></div>
       </div>
-      <div class="note" id="scope-note">Scope: <code>pipeline = Brand (Direct)</code>, <code>dealtype ≠ Existing (Roll-Over)</code>, <code>dealtype ≠ Agency RFP</code>, excluding Closed Won / Closed Lost. <strong>Green deltas show growth over the <span id="week-window-label">last 7 days</span> (rolling) — click any of them to see the contributing deals.</strong></div>
+      <div class="note" id="scope-note">Scope: <code>pipeline = Brand (Direct)</code>, <code>dealtype ≠ Existing (Roll-Over)</code>, <code>dealtype ≠ Agency RFP</code>, excluding Closed Won / Closed Lost. <strong>Click any green "this week" delta to see the contributing deals.</strong></div>
     </div>
 
     <div class="delta-drilldown" id="delta-drilldown" style="display:none">
@@ -552,14 +552,21 @@ function initApp() {
     document.getElementById("kpi-wtd").textContent = fmtMoney(wtd);
     document.getElementById("kpi-wtd-full").textContent = fmtMoneyFull(wtd);
 
-    // ===== ROLLING 7-DAY DELTAS =====
-    // What's been added in the last 7 days (rolling window from now, not calendar week).
-    // Brands/manufacturers only count NEW values not already in the pre-window pipeline.
-    const now = new Date();
-    const cutoff7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const isInLast7Days = (r) => r.created_at && new Date(r.created_at) >= cutoff7d;
-    const thisWeekRows = liveScope.filter(isInLast7Days);
-    const preWeekRows = liveScope.filter(r => !isInLast7Days(r));
+    // ===== WEEK-OVER-WEEK DELTAS =====
+    // What's been added since Monday 00:00 of the current week (local time).
+    // Brands/manufacturers only count NEW values not already in the pre-week pipeline.
+    function startOfThisWeek() {
+      const d = new Date();
+      d.setHours(0, 0, 0, 0);
+      const dow = d.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+      const diff = dow === 0 ? -6 : 1 - dow;
+      d.setDate(d.getDate() + diff);
+      return d;
+    }
+    const weekStart = startOfThisWeek();
+    const isThisWeek = (r) => r.created_at && new Date(r.created_at) >= weekStart;
+    const thisWeekRows = liveScope.filter(isThisWeek);
+    const preWeekRows = liveScope.filter(r => !isThisWeek(r));
     const norm = (v) => (v == null ? "" : String(v).trim().toLowerCase());
     const preWeekBrands = new Set(preWeekRows.map(r => norm(r.brands)).filter(Boolean));
     const preWeekMfrs   = new Set(preWeekRows.map(r => norm(r.manufacturer)).filter(Boolean));
@@ -570,25 +577,18 @@ function initApp() {
       thisWeekRows.map(r => norm(r.manufacturer)).filter(m => m && !preWeekMfrs.has(m))
     ).size;
 
-    // Update scope-note window label with the actual date range
-    const fmtShortDate = (d) => d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-    const winLabelEl = document.getElementById("week-window-label");
-    if (winLabelEl) {
-      winLabelEl.textContent = `last 7 days · ${fmtShortDate(cutoff7d)} – ${fmtShortDate(now)}`;
-    }
-
     function renderDelta(id, value, isMoney) {
       const el = document.getElementById(id);
       if (!el) return;
       if (value > 0) {
         el.className = "delta up clickable";
-        el.textContent = (isMoney ? "+" + fmtMoney(value) : "+" + value.toLocaleString()) + " last 7d ↑";
+        el.textContent = (isMoney ? "+" + fmtMoney(value) : "+" + value.toLocaleString()) + " this week ↑";
       } else if (value === 0) {
         el.className = "delta flat";
-        el.textContent = "No change in last 7d";
+        el.textContent = "No change this week";
       } else {
         el.className = "delta down";
-        el.textContent = (isMoney ? fmtMoney(value) : value.toLocaleString()) + " last 7d ↓";
+        el.textContent = (isMoney ? fmtMoney(value) : value.toLocaleString()) + " this week ↓";
       }
     }
     renderDelta("kpi-deals-delta",  thisWeekRows.length, false);
@@ -658,12 +658,12 @@ function initApp() {
       el.onclick = handler;
     }
 
-    // Deals delta → list all new deals in last 7 days
+    // Deals delta → list all new deals this week
     attachClickHandler("kpi-deals-delta", () => {
       const sorted = [...thisWeekRows].sort((a,b) => (b.amount||0) - (a.amount||0));
       const n = thisWeekRows.length;
       showDrilldown(
-        `+${n} New Deal${n===1?"":"s"} Added in Last 7 Days`,
+        `+${n} New Deal${n===1?"":"s"} Added This Week`,
         renderDealsTable(sorted)
       );
     });
@@ -672,7 +672,7 @@ function initApp() {
     attachClickHandler("kpi-tcv-delta", () => {
       const sorted = [...thisWeekRows].sort((a,b) => (b.amount||0) - (a.amount||0));
       showDrilldown(
-        `+${fmtMoney(sum(thisWeekRows, "amount"))} TCV Added in Last 7 Days (${sorted.length} deal${sorted.length===1?"":"s"})`,
+        `+${fmtMoney(sum(thisWeekRows, "amount"))} TCV Added This Week (${sorted.length} deal${sorted.length===1?"":"s"})`,
         renderDealsTable(sorted)
       );
     });
@@ -681,7 +681,7 @@ function initApp() {
     attachClickHandler("kpi-arr-delta", () => {
       const sorted = [...thisWeekRows].sort((a,b) => (b.arr||0) - (a.arr||0));
       showDrilldown(
-        `+${fmtMoney(sum(thisWeekRows, "arr"))} ARR Added in Last 7 Days (${sorted.length} deal${sorted.length===1?"":"s"})`,
+        `+${fmtMoney(sum(thisWeekRows, "arr"))} ARR Added This Week (${sorted.length} deal${sorted.length===1?"":"s"})`,
         renderDealsTable(sorted)
       );
     });
@@ -690,7 +690,7 @@ function initApp() {
     attachClickHandler("kpi-wtd-delta", () => {
       const sorted = [...thisWeekRows].sort((a,b) => (b.weighted_amount||0) - (a.weighted_amount||0));
       showDrilldown(
-        `+${fmtMoney(sum(thisWeekRows, "weighted_amount"))} Weighted Forecast Added in Last 7 Days (${sorted.length} deal${sorted.length===1?"":"s"})`,
+        `+${fmtMoney(sum(thisWeekRows, "weighted_amount"))} Weighted Forecast Added This Week (${sorted.length} deal${sorted.length===1?"":"s"})`,
         renderDealsTable(sorted)
       );
     });
@@ -705,13 +705,13 @@ function initApp() {
         const dealsForBrand = thisWeekRows.filter(r => norm(r.brands) === brandKey);
         const brandLabel = dealsForBrand[0]?.brands || brandKey;
         html += `<div class="group-block">
-          <div class="group-header">${escapeHtml(brandLabel)} — first introduced in last 7 days by ${dealsForBrand.length} deal${dealsForBrand.length===1?"":"s"}</div>
+          <div class="group-header">${escapeHtml(brandLabel)} — introduced this week by ${dealsForBrand.length} deal${dealsForBrand.length===1?"":"s"}</div>
           ${renderDealsTable(dealsForBrand)}
         </div>`;
       });
-      if (!html) html = "<p style='color:#94a3b8;'>No new unique brands in last 7 days.</p>";
+      if (!html) html = "<p style='color:#94a3b8;'>No new unique brands this week.</p>";
       showDrilldown(
-        `+${newBrandKeys.length} New Brand${newBrandKeys.length===1?"":"s"} in Last 7 Days`,
+        `+${newBrandKeys.length} New Brand${newBrandKeys.length===1?"":"s"} This Week`,
         html
       );
     });
@@ -726,13 +726,13 @@ function initApp() {
         const dealsForMfr = thisWeekRows.filter(r => norm(r.manufacturer) === mfrKey);
         const mfrLabel = dealsForMfr[0]?.manufacturer || mfrKey;
         html += `<div class="group-block">
-          <div class="group-header mfr">${escapeHtml(mfrLabel)} — first introduced in last 7 days by ${dealsForMfr.length} deal${dealsForMfr.length===1?"":"s"}</div>
+          <div class="group-header mfr">${escapeHtml(mfrLabel)} — introduced this week by ${dealsForMfr.length} deal${dealsForMfr.length===1?"":"s"}</div>
           ${renderDealsTable(dealsForMfr)}
         </div>`;
       });
-      if (!html) html = "<p style='color:#94a3b8;'>No new unique manufacturers in last 7 days.</p>";
+      if (!html) html = "<p style='color:#94a3b8;'>No new unique manufacturers this week.</p>";
       showDrilldown(
-        `+${newMfrKeys.length} New Manufacturer${newMfrKeys.length===1?"":"s"} in Last 7 Days`,
+        `+${newMfrKeys.length} New Manufacturer${newMfrKeys.length===1?"":"s"} This Week`,
         html
       );
     });

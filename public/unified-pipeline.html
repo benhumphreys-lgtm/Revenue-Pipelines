@@ -679,7 +679,7 @@ async function fetchOpenDeals() {
     const params = {
       objectType: 'deals',
       limit: 200,
-      properties: ['dealname','dealstage','pipeline','dealtype','hubspot_owner_id','amount','hs_lastmodifieddate','hs_is_closed','createdate','hs_v2_date_entered_current_stage'],
+      properties: ['dealname','dealstage','pipeline','dealtype','hubspot_owner_id','amount','hs_lastmodifieddate','hs_is_closed','createdate','hs_v2_date_entered_current_stage','brand_s_','agency_customers','company_primary'],
       filterGroups: [{ filters: [
         { propertyName: 'pipeline', operator: 'IN', values: [DIRECT_PIPELINE, INDIRECT_PIPELINE] },
         { propertyName: 'hs_is_closed', operator: 'NEQ', value: 'true' },
@@ -701,6 +701,9 @@ async function fetchOpenDeals() {
       modified: r.properties && r.properties.hs_lastmodifieddate,
       createdate: r.properties && r.properties.createdate,
       stageEntered: r.properties && r.properties.hs_v2_date_entered_current_stage,
+      brand: (r.properties && r.properties.brand_s_) || '',
+      agency: (r.properties && r.properties.agency_customers) || '',
+      manufacturer: (r.properties && r.properties.company_primary) || '',
       url: `https://app.hubspot.com/contacts/${HUBSPOT_PORTAL}/record/0-3/${r.id}`,
     })));
     after = data.paging && data.paging.next && data.paging.next.after;
@@ -720,7 +723,7 @@ async function fetchClosedDeals() {
       const params = {
         objectType: 'deals',
         limit: 200,
-        properties: ['dealname','dealstage','pipeline','dealtype','hubspot_owner_id','amount','createdate','closedate','days_to_close','closed_lost_reason','closed_won_reason','hs_is_closed_won','hs_is_closed_lost'],
+        properties: ['dealname','dealstage','pipeline','dealtype','hubspot_owner_id','amount','createdate','closedate','days_to_close','closed_lost_reason','closed_won_reason','hs_is_closed_won','hs_is_closed_lost','brand_s_','agency_customers','company_primary'],
         filterGroups: [{ filters: [
           { propertyName: 'pipeline', operator: 'IN', values: [DIRECT_PIPELINE, INDIRECT_PIPELINE] },
           { propertyName: 'hs_is_closed', operator: 'EQ', value: 'true' },
@@ -747,6 +750,9 @@ async function fetchClosedDeals() {
         closedLost: (r.properties && r.properties.hs_is_closed_lost) === 'true',
         lostReason: (r.properties && r.properties.closed_lost_reason) || '',
         wonReason: (r.properties && r.properties.closed_won_reason) || '',
+        brand: (r.properties && r.properties.brand_s_) || '',
+        agency: (r.properties && r.properties.agency_customers) || '',
+        manufacturer: (r.properties && r.properties.company_primary) || '',
         url: `https://app.hubspot.com/contacts/${HUBSPOT_PORTAL}/record/0-3/${r.id}`,
       })));
       after = data.paging && data.paging.next && data.paging.next.after;
@@ -1544,7 +1550,7 @@ function renderDrill() {
   }
   const isDeal = state.drillRecords[0].type === 'deal';
   let html = '<table class="records"><thead><tr>';
-  if (isDeal) html += '<th>Deal</th><th>Owner</th><th>Type</th><th class="num">Amount</th><th>Last modified</th><th></th>';
+  if (isDeal) html += '<th>Deal</th><th>Manufacturer</th><th>Brand</th><th>Agency</th><th>Owner</th><th>Type</th><th class="num">Amount</th><th>Last modified</th><th></th>';
   else        html += '<th>Contact</th><th>Owner</th><th>Type</th><th>Last modified</th><th></th>';
   html += '</tr></thead><tbody>';
   // Sort by last modified desc
@@ -1553,7 +1559,10 @@ function renderDrill() {
     const ownerName = FOCUS_OWNERS[r.owner] || (r.owner ? ('Owner ' + r.owner) : '—');
     const mod = r.modified ? r.modified.split('T')[0] : '—';
     if (isDeal) {
-      html += `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(ownerName)}</td><td>${escapeHtml(r.dealType || '—')}</td><td class="num">${fmtMoney(r.amount)}</td><td>${mod}</td><td><a href="${r.url}" target="_blank">↗</a></td></tr>`;
+      const mfg = r.manufacturer ? escapeHtml(r.manufacturer) : '<span style="color:#d1d5db">—</span>';
+      const brand = r.brand ? escapeHtml(r.brand) : '<span style="color:#d1d5db">—</span>';
+      const agency = r.agency ? escapeHtml(r.agency) : '<span style="color:#d1d5db">—</span>';
+      html += `<tr><td>${escapeHtml(r.name)}</td><td>${mfg}</td><td>${brand}</td><td>${agency}</td><td>${escapeHtml(ownerName)}</td><td>${escapeHtml(r.dealType || '—')}</td><td class="num">${fmtMoney(r.amount)}</td><td>${mod}</td><td><a href="${r.url}" target="_blank">↗</a></td></tr>`;
     } else {
       html += `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(ownerName)}</td><td>${escapeHtml(r.contactType || '—')}</td><td>${mod}</td><td><a href="${r.url}" target="_blank">↗</a></td></tr>`;
     }
