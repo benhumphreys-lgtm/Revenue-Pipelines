@@ -558,8 +558,8 @@ const DEAL_SECONDARY = [
 // Lead side uses contact_type for now (3 types have contact coverage); the rest are deal-only until the lead-type field is wired up.
 const TYPES = [
   { id: 'new_business', label: 'New Business',           contact: ['Brand Sales Target'], deal: ['newbusiness'],          color: '#2563eb' },
-  { id: 'agency',       label: 'Agency',                 contact: ['Agency Target'],      deal: ['Agency RFP'],           color: '#9333ea' }, // HubSpot label "Agency" = stored value "Agency RFP"
-  { id: 'agency_rfp',   label: 'Agency RFP',             contact: [],                     deal: ['Agency (RFP)'],         color: '#7c3aed' }, // HubSpot label "Agency RFP" = stored value "Agency (RFP)"
+  { id: 'agency',       label: 'Agency',                 contact: ['Agency Target'],      deal: ['Agency'],               color: '#9333ea' }, // post-cleanup: legitimate agency-led work
+  { id: 'agency_rfp',   label: 'Agency RFP',             contact: [],                     deal: ['Agency RFP', 'Agency (RFP)'], color: '#7c3aed' }, // RFPs — handles both old and new spelling
   { id: 'specialty',    label: 'Specialty Pharma',       contact: ['Specialty Pharma'],   deal: ['Specialty Pharma'],     color: '#ea580c' },
   { id: 'upsell',       label: 'Existing (Up-sell)',     contact: [], deal: ['existingbusiness'],                          color: '#0891b2' },
   { id: 'expansion',    label: 'Existing (Expansion)',   contact: [], deal: ['Existing (Expansion)'],                      color: '#16a34a' },
