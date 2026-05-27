@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<title>Unified Pipeline Dashboard — Revenue Pipeline</title>
 <link rel="stylesheet" href="/_shared.css">
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 <script src="/_api.js" defer></script>
-<title>Unified Pipeline Dashboard — Revenue Pipeline</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
 <style>
   :root { color-scheme: light; }
@@ -118,6 +118,8 @@
   .stage-card .stage-amt { font-size: 11px; color: #6b7280; }
   .stage-card.lead .stage-count { color: #1e40af; }
   .stage-card.deal .stage-count { color: #047857; }
+  .stage-card.bridge { background: #fdf4ff; border-color: #e9d5ff; border-style: dashed; }
+  .stage-card.bridge .stage-count { color: #7c3aed; }
 
   /* Sub-row (Limbo / Exit / Won-Lost) */
   .secondary-row {
@@ -317,7 +319,10 @@
   <h1>Unified Pipeline Dashboard</h1>
   <div class="subhead">Live HubSpot view mapped to the target unified Lead + Deal pipelines. Open records only. <span class="legend"><span><span class="dot lead"></span>Lead</span><span><span class="dot deal"></span>Deal</span></span></div>
   <div class="banner">
-    <b>Deal pipeline migrated.</b> Brand (Direct) now uses the unified 4 deal stages (Client Committed → Routing for Signature). Lead pipeline (Top A / Top B / Mid A / Mid B) still reads from legacy <code>contacts.hs_lead_status</code> — to be migrated. Lead/Deal de-dupe is active: when a contact has an associated open deal, only the deal is counted (per the auto-deal-creation rule at Opportunity lead stage).
+    <b>Both pipelines migrated.</b> Brand (Direct) uses the unified 4 deal stages. <code>hs_lead_status</code> workflow now mirrors the unified pipeline on contacts. Lead/Deal de-dupe is active: when a contact has an associated open deal, only the deal is counted.
+  </div>
+  <div id="migration-health" class="banner" style="background:#eff6ff;border-color:#bfdbfe;color:#1e40af;display:none">
+    <b>Migration health (live):</b> <span id="mh-body">—</span>
   </div>
 
   <div id="error" class="error" style="display:none"></div>
@@ -340,7 +345,7 @@
 
     <!-- KPIs -->
     <div class="kpis">
-      <div class="kpi"><div class="label">Open Leads</div><div class="val" id="kpi-leads">—</div><div class="sub">contacts in active lead stages</div></div>
+      <div class="kpi"><div class="label">Open Leads</div><div class="val" id="kpi-leads">—</div><div class="sub">Top A + Top B + Mid A (Mid B excluded — deal exists)</div></div>
       <div class="kpi"><div class="label">Open Deals</div><div class="val" id="kpi-deals">—</div><div class="sub">active deals in pipeline</div></div>
       <div class="kpi"><div class="label">Open Deal $</div><div class="val" id="kpi-amt">—</div><div class="sub">sum of deal amounts</div></div>
       <div class="kpi"><div class="label">Lead → Deal Conversion</div><div class="val" id="kpi-conv">—</div><div class="sub">open deals / (open leads + open deals)</div></div>
@@ -348,9 +353,8 @@
 
     <!-- Lead funnel -->
     <div class="funnel-section">
-      <h2 style="margin-top:0">Unified Lead Pipeline · <span style="text-transform:none;color:#9ca3af;font-weight:400">9 stages (5 active + 4 limbo/exit)</span></h2>
+      <h2 style="margin-top:0">Unified Lead Pipeline · <span style="text-transform:none;color:#9ca3af;font-weight:400">Top A → Mid A are open leads; Mid B is the bridge to the deal pipeline</span></h2>
       <div class="funnel-row funnel-lead" id="lead-funnel"></div>
-      <div class="secondary-row" id="lead-secondary"></div>
     </div>
 
     <!-- Deal funnel -->
@@ -438,13 +442,16 @@
       <summary>Mapping notes — verify the legacy → unified mapping</summary>
       <div class="map-grid">
         <div>
-          <h4>Lead stages (from contacts.hs_lead_status — not yet migrated)</h4>
+          <h4>Lead stages (from contacts.hs_lead_status — workflow now mirrors unified pipeline)</h4>
           <table>
             <tr><td class="from">Top A - Pending First Meeting</td><td class="to">→ Top A — Pending First Meeting</td></tr>
             <tr><td class="from">Top B - First Meeting Scheduled</td><td class="to">→ Top B — First Meeting Scheduled</td></tr>
-            <tr><td class="from">Mid B - Moving</td><td class="to">→ Mid A — First Meeting Complete (Moving)</td></tr>
-            <tr><td class="from">Brand Indirect deals at "Opportunity"</td><td class="to">→ Mid B — Opportunity Identified (legacy bridge only — Brand Direct's Opportunity stage was relabeled)</td></tr>
+            <tr><td class="from">Mid A - First meeting complete - Moving <em>(NEW)</em></td><td class="to">→ Mid A — First Meeting Complete (Moving)</td></tr>
+            <tr><td class="from">Mid B - Moving <em>(legacy fallback)</em></td><td class="to">→ Mid A — First Meeting Complete (Moving)</td></tr>
+            <tr><td class="from">Mid B - Opportunity Identified (Brand &amp; Budget <em>(NEW)</em></td><td class="to">→ Mid B — Opportunity Identified</td></tr>
+            <tr><td class="from">Brand Indirect deals at "Opportunity (Brand &amp; Budget Identified)"</td><td class="to">→ Mid B (legacy bridge)</td></tr>
             <tr><td class="from">Mid A - Idle</td><td class="to">→ Limbo: Idle</td></tr>
+            <tr><td class="from">Hand Off <em>(NEW)</em></td><td class="to">→ Limbo: Hand-off</td></tr>
             <tr><td class="from">Disqualified Lead</td><td class="to">→ Exit: Not a Fit</td></tr>
           </table>
         </div>
@@ -473,6 +480,7 @@
 </div>
 
 <script>
+window.closeDrill = function () { if (typeof closeDrill === 'function') closeDrill(); };
 document.addEventListener('DOMContentLoaded', () => {
   window.appAuth.init(user => {
     document.getElementById('auth-loading').style.display = 'none';
@@ -500,21 +508,23 @@ const FOCUS_OWNERS = {
 const EXCLUDED_OWNERS = new Set(['83860592']); // Kyle Bechter
 
 // Unified Lead stage definitions (active)
-// NOTE: Lead pipeline has NOT been migrated yet — values still use legacy hs_lead_status on contacts.
-// Once the lead migration adds "Opportunity" as an hs_lead_status value, Mid B will populate from contacts too.
-// Mid B currently pulls from Brand Indirect deals still parked at "Opportunity (Brand & Budget Identified)" (1342614660).
-// Brand Direct's 1341411420 USED to be "Opportunity" but was relabeled to "Client Committed" — it's now a deal stage.
+// Open-lead definition: Top A + Top B + Mid A. Mid B is the BRIDGE stage where the deal auto-creates —
+// it's the end of the lead funnel and the start of the deal pipeline (Client Committed). It is rendered
+// on the funnel but excluded from "Open Leads" KPI / By Owner / By Type counts (matches HubSpot's
+// "Lead stage is none of Bad Timing / Didn't Respond / Not a fit / Hand-off / Mid B Opportunity" filter).
+// Mid A - Idle is folded into Mid A — still an open lead per the same filter.
 const LEAD_ACTIVE_STAGES = [
   { id: 'top_a', label: 'Top A — Pending First Meeting', match: ['Top A - Pending First Meeting'], src: 'contact' },
   { id: 'top_b', label: 'Top B — First Meeting Scheduled', match: ['Top B - First Meeting Scheduled'], src: 'contact' },
-  { id: 'mid_a', label: 'Mid A — First Meeting Complete (Moving)', match: ['Mid B - Moving'], src: 'contact' },
-  { id: 'mid_b', label: 'Mid B — Opportunity Identified (Brand & Budget)', match: ['Opportunity (Brand & Budget Identified)', '1342614660', 'Opportunity'], src: 'deal' },
+  { id: 'mid_a', label: 'Mid A — First Meeting Complete (Moving)', match: ['Mid A - First meeting complete - Moving', 'Mid B - Moving', 'Mid A - Idle'], src: 'contact' },
+  // Mid B: bridge stage — shown but not counted as "open lead". Deal auto-creates here.
+  { id: 'mid_b', label: 'Mid B — Opportunity Identified (bridge → Client Committed)', match: ['Mid B - Opportunity Identified (Brand & Budget'], src: 'contact', dealMatch: ['1342614660', 'Opportunity (Brand & Budget Identified)'], bridge: true },
 ];
 
 // Lead secondary buckets
 const LEAD_SECONDARY = [
   { id: 'limbo_idle', label: 'Limbo: Idle', match: ['Mid A - Idle'], src: 'contact', kind: 'limbo' },
-  { id: 'limbo_handoff', label: 'Limbo: Hand-off', match: [], src: 'contact', kind: 'limbo' },
+  { id: 'limbo_handoff', label: 'Limbo: Hand-off', match: ['Hand Off'], src: 'contact', kind: 'limbo' },
   { id: 'exit_bad_timing', label: 'Exit: Bad Timing', match: [], src: 'contact', kind: 'exit' },
   { id: 'exit_no_resp', label: 'Exit: Did not respond', match: [], src: 'contact', kind: 'exit' },
   { id: 'exit_not_fit', label: 'Exit: Not a Fit', match: ['Disqualified Lead'], src: 'contact', kind: 'exit' },
@@ -608,19 +618,37 @@ function persistFilters() {
 // ============================================================
 async function loadAll() {
   try {
-    const [contacts, deals, closed, velocity] = await Promise.all([
-      fetchAllOpenContacts(),
-      fetchOpenDeals(),
+    // Open contacts in active lead stages
+    const leadStatuses = [
+      'Top A - Pending First Meeting',
+      'Top B - First Meeting Scheduled',
+      'Mid A - First meeting complete - Moving', // NEW (workflow)
+      'Mid B - Opportunity Identified (Brand & Budget', // NEW (workflow) — sic, missing close paren in HubSpot
+      'Mid A - Idle',
+      'Mid B - Moving', // legacy, still has unconverted records
+      'Hand Off', // NEW
+      'Disqualified Lead',
+      'Prospect',
+      'Lead',
+    ];
+    const contactPromises = leadStatuses.map(s => fetchContactsForStatus(s));
+
+    // Open deals in the two pipelines we're consolidating
+    const dealPromise = fetchOpenDeals();
+
+    const [contactResults, dealResult, closedResult, velocityContactResult] = await Promise.all([
+      Promise.all(contactPromises),
+      dealPromise,
       fetchClosedDeals(),
       fetchVelocityContacts(),
     ]);
 
     // Strip records owned by departed team members up front — single point of truth
     const stripExcluded = (rec) => !rec.owner || !EXCLUDED_OWNERS.has(String(rec.owner));
-    state.contacts = contacts.filter(stripExcluded);
-    state.deals = deals.filter(stripExcluded);
-    state.closedDeals = closed.filter(stripExcluded);
-    state.velocityContacts = velocity.filter(stripExcluded);
+    state.contacts = contactResults.flat().filter(stripExcluded);
+    state.deals = dealResult.filter(stripExcluded);
+    state.closedDeals = closedResult.filter(stripExcluded);
+    state.velocityContacts = velocityContactResult.filter(stripExcluded);
 
     // De-dupe: find contacts associated with any open deal so we don't double-count lead+deal pairs
     const openDealIds = state.deals.map(d => parseInt(d.id, 10)).filter(n => !isNaN(n));
@@ -636,22 +664,23 @@ async function loadAll() {
   }
 }
 
-// Single consolidated request — uses IN operator to combine all 7 lead statuses
-// into one HubSpot search call. Eliminates the rate-limit issues of one-per-status
-// fan-out. Uses HubSpot's `after` cursor for proper pagination (not offset).
-async function fetchAllOpenContacts() {
-  const leadStatuses = ['Top A - Pending First Meeting', 'Top B - First Meeting Scheduled', 'Mid A - Idle', 'Mid B - Moving', 'Disqualified Lead', 'Prospect', 'Lead'];
+async function fetchContactsForStatus(status) {
   const out = [];
   let after = null;
-  for (let i = 0; i < 10; i++) { // up to 2000 contacts total
-    const params = {
+  for (let i = 0; i < 5; i++) { // max 5 pages = 1000 contacts per status
+    const resp = await window.cowork.callMcpTool('mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects', {
       objectType: 'contacts',
       limit: 200,
-      properties: ['hs_lead_status','hubspot_owner_id','contact_type','firstname','lastname','company','lastmodifieddate','hs_full_name_or_email'],
-      filterGroups: [{ filters: [{ propertyName: 'hs_lead_status', operator: 'IN', values: leadStatuses }] }],
-    };
-    if (after) params.after = after;
-    const resp = await window.cowork.callMcpTool('mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects', params);
+      ...(after ? { after } : {}),
+      properties: ['hs_lead_status','hubspot_owner_id','contact_type','firstname','lastname','company','lastmodifieddate','hs_full_name_or_email','has_active_lead','notes_next_activity_date','jobtitle'],
+      // has_active_lead = "true" ensures the contact has a live Lead record in HubSpot's Lead pipeline,
+      // not just a sticky hs_lead_status value left over from older lead-cycles. Matches what the
+      // "Open leads" view in HubSpot shows.
+      filterGroups: [{ filters: [
+        { propertyName: 'hs_lead_status', operator: 'EQ', value: status },
+        { propertyName: 'has_active_lead', operator: 'EQ', value: 'true' },
+      ]}],
+    });
     const data = parseResp(resp);
     if (!data || !data.results) break;
     out.push(...data.results.map(r => ({
@@ -661,77 +690,33 @@ async function fetchAllOpenContacts() {
       owner: r.properties && r.properties.hubspot_owner_id,
       contactType: r.properties && r.properties.contact_type,
       name: (r.properties && (r.properties.hs_full_name_or_email || ((r.properties.firstname || '') + ' ' + (r.properties.lastname || '')).trim())) || r.displayName || ('Contact ' + r.id),
-      company: r.properties && r.properties.company,
+      company: (r.properties && r.properties.company) || '',
+      jobTitle: (r.properties && r.properties.jobtitle) || '',
+      nextActivity: (r.properties && r.properties.notes_next_activity_date) || '',
       modified: r.properties && r.properties.lastmodifieddate,
       url: `https://app.hubspot.com/contacts/${HUBSPOT_PORTAL}/record/0-1/${r.id}`,
     })));
-    after = data.paging && data.paging.next && data.paging.next.after;
-    if (!after) break;
+    if (data.results.length < 200) break;
+    after = (data.paging && data.paging.next && data.paging.next.after) || null; if (!after) break;
   }
   return out;
 }
 
-// Single consolidated request — uses IN operator to combine both pipelines.
 async function fetchOpenDeals() {
   const out = [];
-  let after = null;
-  for (let i = 0; i < 10; i++) {
-    const params = {
-      objectType: 'deals',
-      limit: 200,
-      properties: ['dealname','dealstage','pipeline','dealtype','hubspot_owner_id','amount','hs_lastmodifieddate','hs_is_closed','createdate','hs_v2_date_entered_current_stage','brand_s_','agency_customers','company_primary'],
-      filterGroups: [{ filters: [
-        { propertyName: 'pipeline', operator: 'IN', values: [DIRECT_PIPELINE, INDIRECT_PIPELINE] },
-        { propertyName: 'hs_is_closed', operator: 'NEQ', value: 'true' },
-      ]}],
-    };
-    if (after) params.after = after;
-    const resp = await window.cowork.callMcpTool('mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects', params);
-    const data = parseResp(resp);
-    if (!data || !data.results) break;
-    out.push(...data.results.map(r => ({
-      id: r.id,
-      type: 'deal',
-      stage: r.properties && r.properties.dealstage,
-      pipeline: r.properties && r.properties.pipeline,
-      dealType: r.properties && r.properties.dealtype,
-      owner: r.properties && r.properties.hubspot_owner_id,
-      name: (r.properties && r.properties.dealname) || ('Deal ' + r.id),
-      amount: parseFloat((r.properties && r.properties.amount) || 0) || 0,
-      modified: r.properties && r.properties.hs_lastmodifieddate,
-      createdate: r.properties && r.properties.createdate,
-      stageEntered: r.properties && r.properties.hs_v2_date_entered_current_stage,
-      brand: (r.properties && r.properties.brand_s_) || '',
-      agency: (r.properties && r.properties.agency_customers) || '',
-      manufacturer: (r.properties && r.properties.company_primary) || '',
-      url: `https://app.hubspot.com/contacts/${HUBSPOT_PORTAL}/record/0-3/${r.id}`,
-    })));
-    after = data.paging && data.paging.next && data.paging.next.after;
-    if (!after) break;
-  }
-  return out;
-}
-
-// Single consolidated request — closed-won + closed-lost in both pipelines, last 24 months.
-// Uses IN operator on pipeline and `after` cursor for pagination.
-async function fetchClosedDeals() {
-  const out = [];
-  const cutoff = new Date(Date.now() - 24 * 30 * 24 * 60 * 60 * 1000).toISOString();
-  let after = null;
-  for (let i = 0; i < 10; i++) { // up to 2000 closed deals
-    try {
-      const params = {
+  for (const pipelineId of [DIRECT_PIPELINE, INDIRECT_PIPELINE]) {
+    let after = null;
+    for (let i = 0; i < 5; i++) {
+      const resp = await window.cowork.callMcpTool('mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects', {
         objectType: 'deals',
         limit: 200,
-        properties: ['dealname','dealstage','pipeline','dealtype','hubspot_owner_id','amount','createdate','closedate','days_to_close','closed_lost_reason','closed_won_reason','hs_is_closed_won','hs_is_closed_lost','brand_s_','agency_customers','company_primary'],
+        ...(after ? { after } : {}),
+        properties: ['dealname','dealstage','pipeline','dealtype','hubspot_owner_id','amount','hs_lastmodifieddate','hs_is_closed','createdate','hs_v2_date_entered_current_stage','brand_s_','agency_customers','company_primary'],
         filterGroups: [{ filters: [
-          { propertyName: 'pipeline', operator: 'IN', values: [DIRECT_PIPELINE, INDIRECT_PIPELINE] },
-          { propertyName: 'hs_is_closed', operator: 'EQ', value: 'true' },
-          { propertyName: 'closedate', operator: 'GTE', value: cutoff },
+          { propertyName: 'pipeline', operator: 'EQ', value: pipelineId },
+          { propertyName: 'hs_is_closed', operator: 'NEQ', value: 'true' },
         ]}],
-      };
-      if (after) params.after = after;
-      const resp = await window.cowork.callMcpTool('mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects', params);
+      });
       const data = parseResp(resp);
       if (!data || !data.results) break;
       out.push(...data.results.map(r => ({
@@ -743,46 +728,90 @@ async function fetchClosedDeals() {
         owner: r.properties && r.properties.hubspot_owner_id,
         name: (r.properties && r.properties.dealname) || ('Deal ' + r.id),
         amount: parseFloat((r.properties && r.properties.amount) || 0) || 0,
+        modified: r.properties && r.properties.hs_lastmodifieddate,
         createdate: r.properties && r.properties.createdate,
-        closedate: r.properties && r.properties.closedate,
-        daysToClose: parseInt((r.properties && r.properties.days_to_close) || 0, 10) || 0,
-        closedWon: (r.properties && r.properties.hs_is_closed_won) === 'true',
-        closedLost: (r.properties && r.properties.hs_is_closed_lost) === 'true',
-        lostReason: (r.properties && r.properties.closed_lost_reason) || '',
-        wonReason: (r.properties && r.properties.closed_won_reason) || '',
+        stageEntered: r.properties && r.properties.hs_v2_date_entered_current_stage,
         brand: (r.properties && r.properties.brand_s_) || '',
         agency: (r.properties && r.properties.agency_customers) || '',
         manufacturer: (r.properties && r.properties.company_primary) || '',
         url: `https://app.hubspot.com/contacts/${HUBSPOT_PORTAL}/record/0-3/${r.id}`,
       })));
-      after = data.paging && data.paging.next && data.paging.next.after;
-      if (!after) break;
-    } catch (e) { console.warn('Closed deal fetch err', e); break; }
+      if (data.results.length < 200) break;
+      after = (data.paging && data.paging.next && data.paging.next.after) || null; if (!after) break;
+    }
   }
   return out;
 }
 
-// Contacts whose first deal has been created AND whose current owner has logged a first engagement.
-// First Touch = hs_sa_first_engagement_date (current contact owner's first activity on the contact).
-// Opportunity = first_deal_created_date (deal auto-creates when contact reaches Opportunity lead stage).
-// Single request — already consolidated by source; switched to `after` cursor for proper pagination.
+async function fetchClosedDeals() {
+  // Closed-won + closed-lost in Brand Direct + Brand Indirect, last 24 months
+  const out = [];
+  const cutoff = new Date(Date.now() - 24 * 30 * 24 * 60 * 60 * 1000).toISOString();
+  for (const pipelineId of [DIRECT_PIPELINE, INDIRECT_PIPELINE]) {
+    let after = null;
+    for (let i = 0; i < 5; i++) {
+      try {
+        const resp = await window.cowork.callMcpTool('mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects', {
+          objectType: 'deals',
+          limit: 200,
+          ...(after ? { after } : {}),
+          properties: ['dealname','dealstage','pipeline','dealtype','hubspot_owner_id','amount','createdate','closedate','days_to_close','closed_lost_reason','closed_won_reason','hs_is_closed_won','hs_is_closed_lost','brand_s_','agency_customers','company_primary'],
+          filterGroups: [{ filters: [
+            { propertyName: 'pipeline', operator: 'EQ', value: pipelineId },
+            { propertyName: 'hs_is_closed', operator: 'EQ', value: 'true' },
+            { propertyName: 'closedate', operator: 'GTE', value: cutoff },
+          ]}],
+        });
+        const data = parseResp(resp);
+        if (!data || !data.results) break;
+        out.push(...data.results.map(r => ({
+          id: r.id,
+          type: 'deal',
+          stage: r.properties && r.properties.dealstage,
+          pipeline: r.properties && r.properties.pipeline,
+          dealType: r.properties && r.properties.dealtype,
+          owner: r.properties && r.properties.hubspot_owner_id,
+          name: (r.properties && r.properties.dealname) || ('Deal ' + r.id),
+          amount: parseFloat((r.properties && r.properties.amount) || 0) || 0,
+          createdate: r.properties && r.properties.createdate,
+          closedate: r.properties && r.properties.closedate,
+          daysToClose: parseInt((r.properties && r.properties.days_to_close) || 0, 10) || 0,
+          closedWon: (r.properties && r.properties.hs_is_closed_won) === 'true',
+          closedLost: (r.properties && r.properties.hs_is_closed_lost) === 'true',
+          lostReason: (r.properties && r.properties.closed_lost_reason) || '',
+          wonReason: (r.properties && r.properties.closed_won_reason) || '',
+          brand: (r.properties && r.properties.brand_s_) || '',
+          agency: (r.properties && r.properties.agency_customers) || '',
+          manufacturer: (r.properties && r.properties.company_primary) || '',
+          url: `https://app.hubspot.com/contacts/${HUBSPOT_PORTAL}/record/0-3/${r.id}`,
+        })));
+        if (data.results.length < 200) break;
+        after = (data.paging && data.paging.next && data.paging.next.after) || null; if (!after) break;
+      } catch (e) { console.warn('Closed deal fetch err', e); break; }
+    }
+  }
+  return out;
+}
+
 async function fetchVelocityContacts() {
+  // Contacts whose first deal has been created AND whose current owner has logged a first engagement.
+  // First Touch = hs_sa_first_engagement_date (current contact owner's first activity on the contact).
+  // Opportunity = first_deal_created_date (deal auto-creates when contact reaches Opportunity lead stage).
   const out = [];
   let after = null;
   for (let i = 0; i < 10; i++) { // up to 2000 contacts
     try {
-      const params = {
+      const resp = await window.cowork.callMcpTool('mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects', {
         objectType: 'contacts',
         limit: 200,
+        ...(after ? { after } : {}),
         properties: ['createdate','first_deal_created_date','hs_sa_first_engagement_date','hubspot_owner_id','contact_type'],
         filterGroups: [{ filters: [
           { propertyName: 'first_deal_created_date', operator: 'HAS_PROPERTY' },
           { propertyName: 'hs_sa_first_engagement_date', operator: 'HAS_PROPERTY' },
         ]}],
         sorts: [{ propertyName: 'first_deal_created_date', direction: 'DESCENDING' }],
-      };
-      if (after) params.after = after;
-      const resp = await window.cowork.callMcpTool('mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects', params);
+      });
       const data = parseResp(resp);
       if (!data || !data.results) break;
       out.push(...data.results.map(r => ({
@@ -793,8 +822,8 @@ async function fetchVelocityContacts() {
         owner: r.properties && r.properties.hubspot_owner_id,
         contactType: r.properties && r.properties.contact_type,
       })));
-      after = data.paging && data.paging.next && data.paging.next.after;
-      if (!after) break;
+      if (data.results.length < 200) break;
+      after = (data.paging && data.paging.next && data.paging.next.after) || null; if (!after) break;
     } catch (e) { console.warn('Velocity contact fetch err', e); break; }
   }
   return out;
@@ -810,21 +839,20 @@ async function fetchContactsAssociatedWithDeals(dealIds) {
     let after = null;
     for (let i = 0; i < 10; i++) { // up to 2000 contacts per chunk
       try {
-        const params = {
+        const resp = await window.cowork.callMcpTool('mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects', {
           objectType: 'contacts',
           limit: 200,
+          ...(after ? { after } : {}),
           properties: ['hs_object_id'],
           filterGroups: [{
             associatedWith: [{ objectType: 'deals', operator: 'IN', objectIdValues: chunk }],
           }],
-        };
-        if (after) params.after = after;
-        const resp = await window.cowork.callMcpTool('mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects', params);
+        });
         const data = parseResp(resp);
         if (!data || !data.results) break;
         for (const r of data.results) out.add(String(r.id));
-        after = data.paging && data.paging.next && data.paging.next.after;
-        if (!after) break;
+        if (data.results.length < 200) break;
+        after = (data.paging && data.paging.next && data.paging.next.after) || null; if (!after) break;
       } catch (e) {
         console.warn('Association fetch failed for chunk', start, e);
         break;
@@ -897,6 +925,13 @@ function bucketize() {
       for (const c of state.contacts) {
         if (s.match.includes(c.stage) && matchesFilter(c) && !isDuped(c)) buckets[s.id].push(c);
       }
+      // A contact-sourced stage can optionally pull legacy deal-records via dealMatch
+      // (used for Mid B to catch Brand Indirect deals still parked at "Opportunity (Brand & Budget Identified)")
+      if (s.dealMatch && s.dealMatch.length) {
+        for (const d of state.deals) {
+          if (s.dealMatch.includes(d.stage) && matchesFilter(d)) buckets[s.id].push(d);
+        }
+      }
     } else if (s.src === 'deal') {
       for (const d of state.deals) {
         if (s.match.includes(d.stage) && matchesFilter(d)) buckets[s.id].push(d);
@@ -937,11 +972,44 @@ function fmtMoney(n) {
 // ============================================================
 // Render
 // ============================================================
+function renderMigrationHealth() {
+  const banner = document.getElementById('migration-health');
+  const body = document.getElementById('mh-body');
+  if (!banner || !body) return;
+  const issues = [];
+  // 1. Legacy Mid B - Moving records that haven't been migrated to the new label
+  const legacyMidB = state.contacts.filter(c => c.stage === 'Mid B - Moving').length;
+  const newMidA = state.contacts.filter(c => c.stage === 'Mid A - First meeting complete - Moving').length;
+  if (legacyMidB > 0) {
+    issues.push(`<b>${legacyMidB}</b> contacts still on legacy <code>Mid B - Moving</code> (new value: <code>Mid A - First meeting complete - Moving</code>, currently ${newMidA}). Workflow only fires forward — these need backfill.`);
+  }
+  // 2. Brand Indirect deals not yet merged
+  const indirectOpen = state.deals.filter(d => d.pipeline === '890777600').length;
+  if (indirectOpen > 0) {
+    issues.push(`<b>${indirectOpen}</b> open deals still in Brand (Indirect Agencies) pipeline — merge in progress.`);
+  }
+  // 3. Workflow check — any contacts at deal-mirror statuses?
+  const mirrorStatuses = ['Client committed to proposal/ proposal meeting pending','Proposal Delivered','Contract Negotiation','Routing for Signature'];
+  const openDealsActive = state.deals.filter(d => isActiveDealStage(d.stage)).length;
+  // If we have plenty of open deals but zero contacts mirror their stage, the workflow may not be triggering on deal-side updates
+  // (we don't fetch deal-mirror contact statuses, so this is a heuristic).
+  // 4. Typo flag in HubSpot
+  if (state.contacts.some(c => c.stage === 'Mid B - Opportunity Identified (Brand & Budget')) {
+    issues.push(`<code>Mid B - Opportunity Identified (Brand &amp; Budget</code> is missing its closing paren in HubSpot — worth fixing for cleanliness.`);
+  }
+  if (issues.length === 0) {
+    banner.style.display = 'none';
+  } else {
+    body.innerHTML = issues.join(' &nbsp;·&nbsp; ');
+    banner.style.display = '';
+  }
+}
+
 function render() {
   renderFilters();
+  renderMigrationHealth();
   const b = bucketize();
   renderLeadFunnel(b);
-  renderLeadSecondary(b);
   renderDealFunnel(b);
   renderDealSecondary(b);
   renderKpis(b);
@@ -1358,13 +1426,14 @@ function renderLeadFunnel(b) {
   el.innerHTML = '';
   for (const s of LEAD_ACTIVE_STAGES) {
     const recs = b[s.id] || [];
-    // For deal-sourced stages (e.g. Mid B), include the rolled-up $ value so the budget is visible
-    const isDealSourced = s.src === 'deal';
-    const amt = isDealSourced ? recs.reduce((sum, r) => sum + (r.amount || 0), 0) : 0;
+    // Bridge stages (Mid B) often have a deal-side $$ — include it so the value isn't hidden
+    const showAmt = s.bridge || s.src === 'deal';
+    const amt = showAmt ? recs.reduce((sum, r) => sum + (r.amount || 0), 0) : 0;
     const card = document.createElement('div');
-    card.className = 'stage-card lead' + (state.drill === s.id ? ' selected' : '');
-    const amtHtml = isDealSourced ? `<div class="stage-amt">${fmtMoney(amt)}</div>` : '';
-    card.innerHTML = `<div class="stage-label">${s.label}</div><div class="stage-count">${recs.length}</div>${amtHtml}`;
+    card.className = 'stage-card lead' + (state.drill === s.id ? ' selected' : '') + (s.bridge ? ' bridge' : '');
+    const amtHtml = showAmt && amt > 0 ? `<div class="stage-amt">${fmtMoney(amt)}</div>` : '';
+    const bridgeBadge = s.bridge ? '<div style="position:absolute;top:6px;right:8px;font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;font-weight:600">bridge</div>' : '';
+    card.innerHTML = `${bridgeBadge}<div class="stage-label">${s.label}</div><div class="stage-count">${recs.length}</div>${amtHtml}`;
     card.onclick = () => openDrill(s.id, s.label, recs);
     el.appendChild(card);
   }
@@ -1413,7 +1482,10 @@ function renderDealSecondary(b) {
 
 function renderKpis(b) {
   let leadCount = 0, dealCount = 0, dealAmt = 0;
-  for (const s of LEAD_ACTIVE_STAGES) leadCount += (b[s.id] || []).length;
+  for (const s of LEAD_ACTIVE_STAGES) {
+    if (s.bridge) continue; // bridge isn't an open lead
+    leadCount += (b[s.id] || []).length;
+  }
   for (const s of DEAL_ACTIVE_STAGES) {
     dealCount += (b[s.id] || []).length;
     dealAmt += (b[s.id] || []).reduce((sum, r) => sum + (r.amount || 0), 0);
@@ -1448,15 +1520,13 @@ function renderByOwner() {
       if (isDuped(c)) continue;
       leads++;
     }
-    // Deals: Mid B (Opportunity Identified) counts as a lead per the new model, with $ rolled into pipeline.
-    // Active deal stages (Committed -> Routing) count as deals.
+    // Deals: only active deal stages (Client Committed -> Routing) count as deals.
+    // Mid B bridge deal-records (Brand Indirect at "Opportunity") are intentionally excluded from both
+    // Leads and Deals to match the open-lead filter — they show up in the Mid B funnel card only.
     for (const d of state.deals) {
       if (String(d.owner) !== String(oid)) continue;
       if (state.filter.type && !matchesFilter(d)) continue;
-      if (isMidBLeadStage(d.stage)) {
-        leads++;
-        amt += d.amount || 0;
-      } else if (isActiveDealStage(d.stage)) {
+      if (isActiveDealStage(d.stage)) {
         deals++;
         amt += d.amount || 0;
       }
@@ -1491,8 +1561,7 @@ function renderByType() {
     for (const d of state.deals) {
       if (state.filter.owner && String(d.owner) !== String(state.filter.owner)) continue;
       if (!t.deal.includes(d.dealType)) continue;
-      if (isMidBLeadStage(d.stage)) { leads++; amt += d.amount || 0; }
-      else if (isActiveDealStage(d.stage)) { deals++; amt += d.amount || 0; }
+      if (isActiveDealStage(d.stage)) { deals++; amt += d.amount || 0; }
     }
     const tr = document.createElement('tr');
     tr.className = 'clickable' + (state.filter.type === t.id ? ' selected' : '');
@@ -1503,8 +1572,9 @@ function renderByType() {
 }
 
 function isActiveContactLeadStage(stageRaw) {
-  // Lead stages stored on contacts (Top A, Top B, Mid A)
+  // "Open Lead" — Top A + Top B + Mid A. Excludes bridge stages (Mid B is at the deal-creation moment).
   for (const s of LEAD_ACTIVE_STAGES) {
+    if (s.bridge) continue;
     if (s.src === 'contact' && s.match.includes(stageRaw)) return true;
   }
   return false;
@@ -1535,8 +1605,6 @@ function openDrill(stageId, stageLabel, records) {
   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 function closeDrill() { state.drill = null; render(); }
-// Expose closeDrill for inline onclick handler on the drill panel's close button
-window.closeDrill = closeDrill;
 
 function renderDrill() {
   const drill = document.getElementById('drill');
@@ -1551,7 +1619,7 @@ function renderDrill() {
   const isDeal = state.drillRecords[0].type === 'deal';
   let html = '<table class="records"><thead><tr>';
   if (isDeal) html += '<th>Deal</th><th>Manufacturer</th><th>Brand</th><th>Agency</th><th>Owner</th><th>Type</th><th class="num">Amount</th><th>Last modified</th><th></th>';
-  else        html += '<th>Contact</th><th>Owner</th><th>Type</th><th>Last modified</th><th></th>';
+  else        html += '<th>Contact</th><th>Company</th><th>Next Steps</th><th>Owner</th><th>Type</th><th>Last modified</th><th></th>';
   html += '</tr></thead><tbody>';
   // Sort by last modified desc
   const sorted = [...state.drillRecords].sort((a,b) => (b.modified || '').localeCompare(a.modified || ''));
@@ -1564,10 +1632,13 @@ function renderDrill() {
       const agency = r.agency ? escapeHtml(r.agency) : '<span style="color:#d1d5db">—</span>';
       html += `<tr><td>${escapeHtml(r.name)}</td><td>${mfg}</td><td>${brand}</td><td>${agency}</td><td>${escapeHtml(ownerName)}</td><td>${escapeHtml(r.dealType || '—')}</td><td class="num">${fmtMoney(r.amount)}</td><td>${mod}</td><td><a href="${r.url}" target="_blank">↗</a></td></tr>`;
     } else {
-      html += `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(ownerName)}</td><td>${escapeHtml(r.contactType || '—')}</td><td>${mod}</td><td><a href="${r.url}" target="_blank">↗</a></td></tr>`;
+      const company = r.company ? escapeHtml(r.company) : '<span style="color:#d1d5db">—</span>';
+      const nextStep = r.nextActivity ? `Next: ${r.nextActivity.split('T')[0]}` : '<span style="color:#d1d5db">—</span>';
+      html += `<tr><td>${escapeHtml(r.name)}</td><td>${company}</td><td>${nextStep}</td><td>${escapeHtml(ownerName)}</td><td>${escapeHtml(r.contactType || '—')}</td><td>${mod}</td><td><a href="${r.url}" target="_blank">↗</a></td></tr>`;
     }
   }
   html += '</tbody></table>';
+  if (!isDeal) html += '<div class="hint" style="margin-top:6px">Next Steps column shows <code>notes_next_activity_date</code> as a proxy — the actual Lead "Next Steps" text lives on the native Lead object, which isn\'t accessible via the current HubSpot MCP. If you mirror it to a contact property via workflow, I can wire that in.</div>';
   if (sorted.length > 100) html += `<div class="hint">Showing 100 of ${sorted.length} records — narrow with filters to see more.</div>`;
   body.innerHTML = html;
 }
@@ -1580,6 +1651,7 @@ function escapeHtml(s) {
 // ============================================================
 // Kickoff
 // ============================================================
+window.closeDrill = typeof closeDrill === 'function' ? closeDrill : window.closeDrill;
 loadAll();
 }
 </script>
