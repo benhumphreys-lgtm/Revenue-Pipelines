@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Referral Partners — Revenue Pipeline</title>
+<link rel="stylesheet" href="/_shared.css">
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script src="/_api.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/gridjs@5.0.2/dist/gridjs.umd.js" integrity="sha384-/XXDzxe4FsGiAe50i/u9pY/Vy/uX654MHB1xoc1BJNnH1WXHhqHga9g3q5tF4gj7" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridjs@5.0.2/dist/theme/mermaid.min.css" integrity="sha384-jZvDSsmGB9oGGT/4l9bHXGoAv1OxvG/cFmSo0dZaSqmBgvQTKDBFAMftlXTmMbNW" crossorigin="anonymous">
+<style>
+:root{ color-scheme: light;
+ --bg:#f5f7fa; --card:#ffffff; --ink:#16263a; --muted:#647489; --line:#e6ebf1;
+ --navy:#1f3a5f; --navy2:#2c5282; --teal:#2bb3a3; --amber:#e0a83e; --rose:#d2607a; --green:#3a9d6e; --slate:#8a98a8; --violet:#7a6cc4; --blue:#4a7fb5;
+ --shadow:0 1px 2px rgba(16,38,58,.06),0 4px 16px rgba(16,38,58,.06);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.45}
+.wrap{max-width:1180px;margin:0 auto;padding:22px 22px 60px}
+header.top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:6px}
+h1{font-size:22px;margin:0;letter-spacing:-.01em}
+.sub{color:var(--muted);font-size:12.5px;margin-top:4px}
+.meta{text-align:right;font-size:12px;color:var(--muted);min-width:200px}
+.meta b{color:var(--ink)}
+.pill{display:inline-block;background:#f3e8ff;color:#6b21a8;border:1px solid #e9d5ff;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:600;margin-left:6px}
+.section-h{display:flex;align-items:baseline;gap:10px;margin:22px 0 10px}
+.section-h h2{font-size:15px;margin:0;letter-spacing:-.01em}
+.section-h .rng{font-size:12px;color:var(--muted)}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;box-shadow:var(--shadow)}
+.kpi .v{font-size:25px;font-weight:700;letter-spacing:-.02em}
+.kpi .l{font-size:11.5px;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.03em}
+.kpi .d{font-size:11px;margin-top:6px;color:var(--slate)}
+.kpi .accent{color:var(--violet)}
+.grid{display:grid;gap:14px;margin-top:14px}
+.g2{grid-template-columns:1.35fr 1fr}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 16px 14px;box-shadow:var(--shadow)}
+.panel h2{font-size:13.5px;margin:0 0 2px;letter-spacing:.01em;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.panel .ph{color:var(--muted);font-size:11.5px;margin-bottom:12px}
+.chartbox{position:relative;width:100%}
+table.mini{width:100%;border-collapse:collapse;font-size:12.5px}
+table.mini th,table.mini td{text-align:left;padding:5px 7px;border-bottom:1px solid var(--line)}
+table.mini th{color:var(--muted);font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.03em}
+table.mini td.num,table.mini th.num{text-align:right;font-variant-numeric:tabular-nums}
+.note{font-size:11.5px;color:var(--muted);background:#fbfcfe;border:1px dashed var(--line);border-radius:10px;padding:12px 14px;margin-top:16px;line-height:1.5}
+.note b{color:var(--ink)}
+.loading,.error{padding:60px 20px;text-align:center;color:var(--muted)}
+.error{color:#b23b54}
+.spinner{width:26px;height:26px;border:3px solid #d9e2ec;border-top-color:var(--violet);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.diag{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 12px;font-size:11.5px;color:#92400e;margin-bottom:14px}
+.diag code{background:#fef3c7;padding:1px 4px;border-radius:3px;font-family:ui-monospace,monospace}
+@media(max-width:900px){.kpis{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <div class="brand">Revenue Pipeline</div>
+  <div class="tabs">
+    <a class="tab" href="/unified-pipeline.html">Unified Pipeline</a>
+    <a class="tab" href="/pipeline.html">Pipeline Confidence</a>
+    <a class="tab" href="/brand-direct.html">Brand Direct</a>
+    <a class="tab" href="/meeting-factory.html">Meeting Factory</a>
+    <a class="tab active" href="/referral-partners.html">Referral Partners</a>
+  </div>
+  <div class="userbox">
+    <span id="user-email">—</span>
+    <button onclick="window.appAuth.logout()">Log out</button>
+  </div>
+</nav>
+
+<div id="auth-loading" class="auth-gate">
+  <h1>Loading…</h1>
+  <p>Checking authentication.</p>
+</div>
+
+<div id="main-content" style="display:none">
+<div class="wrap">
+ <header class="top">
+  <div>
+   <h1>Referral Partners <span class="pill">LIVE</span></h1>
+   <div class="sub">RP-sourced lead & meeting performance &middot; sourced from <b>HubSpot MASTER → Leads</b> + <b>Referral Partners</b> sheet</div>
+  </div>
+  <div class="meta" id="meta">&nbsp;</div>
+ </header>
+ <div id="content">
+  <div class="loading"><div class="spinner"></div>Pulling live RP + lead data from the sheet…</div>
+ </div>
+</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  window.appAuth.init(user => {
+    document.getElementById('auth-loading').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+    document.getElementById('user-email').textContent = user.email;
+    initApp();
+  });
+});
+
+function initApp() {
+const FILE_ID = "1XYQ8v68z3z5Jnz2rxIcHRrWP4cMu82PZbj0V5dDcLO8";
+const EXPORT_TOOL = "mcp__6b11666e-7029-4baf-a491-3791bd8d9175__gdrive_export_file";
+const HS_PORTAL = "21389996";
+const HS_LEADS_LIST = "https://app.hubspot.com/contacts/"+HS_PORTAL+"/objects/0-136/views/all/list";
+
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function leadUrl(name){ return HS_LEADS_LIST+"?query="+encodeURIComponent(name); }
+const fmt = n => Number(n||0).toLocaleString('en-US');
+const pct = (a,b) => b ? (100*a/b).toFixed(1)+'%' : '–';
+
+function csvParse(s){const rows=[];let f='',row=[],q=false;for(let i=0;i<s.length;i++){const c=s[i];if(q){if(c=='"'){if(s[i+1]=='"'){f+='"';i++;}else q=false;}else f+=c;}else{if(c=='"')q=true;else if(c==','){row.push(f);f='';}else if(c=='\n'){row.push(f);rows.push(row);row=[];f='';}else if(c=='\r'){}else f+=c;}}if(f.length||row.length){row.push(f);rows.push(row);}return rows;}
+
+async function fetchSheet(sheetName) {
+  // Pass sheet_name → function uses Sheets API to fetch that specific tab as CSV
+  return await window.cowork.callMcpTool(EXPORT_TOOL, sheetName
+    ? { file_id: FILE_ID, sheet_name: sheetName }
+    : { file_id: FILE_ID, export_format: 'csv' });
+}
+
+// Find the column index in a header row whose name matches any of the provided
+// patterns (case-insensitive). Returns -1 if not found.
+function findCol(headers, patterns) {
+  for (let i = 0; i < headers.length; i++) {
+    const h = String(headers[i] || '').toLowerCase().trim();
+    for (const p of patterns) {
+      if (h === p || h.includes(p)) return i;
+    }
+  }
+  return -1;
+}
+
+function fail(msg){ document.getElementById('content').innerHTML='<div class="error">⚠ '+msg+'</div>'; }
+
+async function load() {
+  try {
+    // Fetch both sheets in parallel
+    const [leadsCsv, rpCsv] = await Promise.all([
+      fetchSheet(null),                  // default sheet = main MASTER → Leads
+      fetchSheet('Referral Partners')    // canonical RP list
+    ]);
+
+    const leadsRows = csvParse(String(leadsCsv || ''));
+    const rpRows    = csvParse(String(rpCsv    || ''));
+
+    if (!leadsRows.length) return fail('Main leads sheet came back empty.');
+    if (!rpRows.length)    return fail('Referral Partners sheet came back empty.');
+
+    render({ leadsRows, rpRows });
+  } catch (err) {
+    fail("Couldn't reach the live data source.<br><small>" + (err && err.message ? err.message : err) + "</small>");
+  }
+}
+
+function render({ leadsRows, rpRows }) {
+  const leadHeaders = leadsRows[0] || [];
+  const rpHeaders   = rpRows[0]    || [];
+
+  // ---- Identify columns ----
+  // RP sheet: column N is the RP name (per spec). Index 13 (zero-based).
+  const RP_NAME_COL = 13;
+
+  // Leads sheet: look for a column that names the specific RP.
+  // Try common header names first; fall back to inspection.
+  const leadRpCol = findCol(leadHeaders, [
+    'referral partner', 'referral_partner', 'rp name', 'rp_name',
+    'partner name', 'associated rp', 'rp', 'referrer'
+  ]);
+  const leadOriginCol  = findCol(leadHeaders, ['origin']);
+  const leadStageCol   = findCol(leadHeaders, ['lead status', 'stage', 'hs_lead_status']);
+  const leadSchedCol   = findCol(leadHeaders, ['meeting scheduled', 'scheduled date', 'first meeting']);
+  const leadCreatedCol = findCol(leadHeaders, ['create date', 'created']);
+  const leadNameCol    = findCol(leadHeaders, ['name', 'full name']);
+  const leadOwnerCol   = findCol(leadHeaders, ['owner']);
+
+  let diagHtml = '';
+  if (leadRpCol < 0) {
+    diagHtml = '<div class="diag"><b>Heads up:</b> couldn\'t auto-detect the RP-name column in the leads sheet. Falling back to the coarse <code>Origin</code> column (Referral Partner / Direct). Headers I see in the leads sheet (first 30): ' +
+      leadHeaders.slice(0, 30).map((h, i) => '<code>' + i + ': ' + esc(h) + '</code>').join(' · ') +
+      ' &mdash; tell me which one to use and I\'ll lock it in.</div>';
+  }
+
+  // ---- Build canonical RP list from Referral Partners sheet ----
+  // Column N (index 13) is the RP name. Skip header row.
+  const rpList = [];
+  const seenRp = new Set();
+  for (let i = 1; i < rpRows.length; i++) {
+    const name = String(rpRows[i][RP_NAME_COL] || '').trim();
+    if (!name || seenRp.has(name.toLowerCase())) continue;
+    seenRp.add(name.toLowerCase());
+    rpList.push(name);
+  }
+
+  // ---- Aggregate leads by RP ----
+  // Strategy: if leadRpCol is found, use it directly. Else, use Origin = "Referral Partner" as the cohort.
+  // Meeting heuristic: we count a lead as a "meeting booked" if Meeting Scheduled column is populated,
+  // or if the lead has advanced past Top A.
+  const aggByRp = {};           // { rpName -> { leads, meetingsBooked, meetingsHeld } }
+  let totalRpLeads = 0, totalRpMeetingsBooked = 0, totalRpMeetingsHeld = 0;
+
+  const HELD_STAGE_HINTS = ['connected', 'qualified', 'hand-off', '1009181988'];
+  const isHeldStage = (s) => {
+    const v = String(s || '').toLowerCase();
+    return HELD_STAGE_HINTS.some(h => v.includes(h));
+  };
+
+  for (let i = 1; i < leadsRows.length; i++) {
+    const row = leadsRows[i];
+    if (!row || row.length < 3) continue;
+    // Skip rows that are clearly not data (e.g. blanks)
+    if (!String(row[0] || '').trim()) continue;
+
+    const origin = leadOriginCol >= 0 ? String(row[leadOriginCol] || '').trim() : '';
+    const rpName = leadRpCol >= 0 ? String(row[leadRpCol] || '').trim() : '';
+    const stage  = leadStageCol >= 0 ? String(row[leadStageCol] || '').trim() : '';
+    const sched  = leadSchedCol >= 0 ? String(row[leadSchedCol] || '').trim() : '';
+
+    // RP membership rule
+    const isRpLead = leadRpCol >= 0
+      ? !!rpName
+      : /referral partner/i.test(origin);
+    if (!isRpLead) continue;
+
+    const bucketKey = (rpName || origin || 'Referral Partner').trim();
+    if (!aggByRp[bucketKey]) aggByRp[bucketKey] = { leads: 0, meetingsBooked: 0, meetingsHeld: 0 };
+    aggByRp[bucketKey].leads++;
+    totalRpLeads++;
+
+    if (sched) {
+      aggByRp[bucketKey].meetingsBooked++;
+      totalRpMeetingsBooked++;
+    }
+    if (isHeldStage(stage)) {
+      aggByRp[bucketKey].meetingsHeld++;
+      totalRpMeetingsHeld++;
+    }
+  }
+
+  // Ensure every canonical RP appears in the leaderboard, even with 0 leads
+  for (const rp of rpList) {
+    if (!aggByRp[rp]) aggByRp[rp] = { leads: 0, meetingsBooked: 0, meetingsHeld: 0 };
+  }
+
+  const activeRpCount = Object.values(aggByRp).filter(a => a.leads > 0).length;
+  const totalRpInList = rpList.length;
+  const conv = totalRpLeads ? Math.round(100 * totalRpMeetingsHeld / totalRpLeads) : 0;
+
+  // ---- META ----
+  document.getElementById('meta').innerHTML = '<b>' + fmt(totalRpInList) + '</b> RPs on record · <b>' + fmt(totalRpLeads) + '</b> RP-sourced leads · refreshed ' + new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+
+  // ---- KPIs ----
+  let html = diagHtml;
+  html += '<div class="kpis">'+
+    '<div class="kpi"><div class="v accent">'+fmt(totalRpInList)+'</div><div class="l">RPs on the Roster</div><div class="d">canonical list from "Referral Partners" tab</div></div>'+
+    '<div class="kpi"><div class="v accent">'+fmt(activeRpCount)+'</div><div class="l">Active RPs</div><div class="d">at least 1 lead delivered</div></div>'+
+    '<div class="kpi"><div class="v">'+fmt(totalRpLeads)+'</div><div class="l">RP-Sourced Leads</div><div class="d">all-time</div></div>'+
+    '<div class="kpi"><div class="v">'+fmt(totalRpMeetingsBooked)+'</div><div class="l">Meetings Booked</div><div class="d">'+pct(totalRpMeetingsBooked,totalRpLeads)+' of RP leads</div></div>'+
+    '<div class="kpi"><div class="v">'+fmt(totalRpMeetingsHeld)+'</div><div class="l">Meetings Held</div><div class="d">'+conv+'% lead→meeting conversion</div></div>'+
+  '</div>';
+
+  // ---- Leaderboard chart + table ----
+  const ranked = Object.entries(aggByRp)
+    .map(([name, a]) => ({ name, ...a }))
+    .sort((a, b) => b.meetingsHeld - a.meetingsHeld || b.meetingsBooked - a.meetingsBooked || b.leads - a.leads);
+
+  const topRanked = ranked.filter(r => r.leads > 0).slice(0, 12);
+
+  html += '<div class="grid g2">'+
+    '<div class="panel"><h2>Top RPs by Meetings Held</h2><div class="ph">leads · meetings booked · meetings held</div><div class="chartbox" style="height:'+ (Math.max(220, topRanked.length * 26)) +'px"><canvas id="rpChart"></canvas></div></div>'+
+    '<div class="panel"><h2>Quick Read</h2><div class="ph">how RPs are contributing</div>'+
+      '<table class="mini">'+
+        '<tr><td>RPs with 0 leads</td><td class="num">'+(totalRpInList-activeRpCount)+'</td></tr>'+
+        '<tr><td>RPs with 1–5 leads</td><td class="num">'+ranked.filter(r=>r.leads>=1&&r.leads<=5).length+'</td></tr>'+
+        '<tr><td>RPs with 6+ leads</td><td class="num">'+ranked.filter(r=>r.leads>=6).length+'</td></tr>'+
+        '<tr><td>Avg meetings held per active RP</td><td class="num">'+(activeRpCount?(totalRpMeetingsHeld/activeRpCount).toFixed(1):'–')+'</td></tr>'+
+      '</table>'+
+    '</div>'+
+  '</div>';
+
+  // ---- Full RP leaderboard table ----
+  html += '<div class="panel" style="margin-top:14px"><h2>Full RP Leaderboard</h2><div class="ph">every RP from the roster · search and sort · click any name to open lead view in HubSpot</div><div id="rpGrid"></div></div>';
+
+  html += '<div class="note"><b>How to read this.</b> "RP-Sourced Leads" counts leads whose ' +
+    (leadRpCol >= 0 ? 'Referral Partner column has a value' : 'Origin = "Referral Partner"') + '. ' +
+    '"Meetings Booked" = leads with a Meeting Scheduled date filled in. "Meetings Held" = leads that have advanced to Mid A (First Meeting Complete), Mid B (Opportunity), or Hand-off. ' +
+    'The canonical RP list comes from the <b>Referral Partners</b> sheet (column N), so even RPs with zero referrals appear in the leaderboard. Everything recomputes on each open.</div>';
+
+  document.getElementById('content').innerHTML = html;
+
+  // Render the chart
+  if (topRanked.length) {
+    new Chart(document.getElementById('rpChart'), {
+      type: 'bar',
+      data: {
+        labels: topRanked.map(r => r.name),
+        datasets: [
+          { label: 'Leads',           data: topRanked.map(r => r.leads),           backgroundColor: '#7a6cc4' },
+          { label: 'Meetings booked', data: topRanked.map(r => r.meetingsBooked), backgroundColor: '#2bb3a3' },
+          { label: 'Meetings held',   data: topRanked.map(r => r.meetingsHeld),   backgroundColor: '#3a9d6e' }
+        ]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { grid: { color: '#eef2f6' }, ticks: { font: { size: 10 }, precision: 0 } },
+          y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+        },
+        plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } }
+      }
+    });
+  }
+
+  // Render the full leaderboard with GridJS
+  const gd = ranked.map(r => [r.name, r.leads, r.meetingsBooked, r.meetingsHeld, r.leads ? Math.round(100*r.meetingsHeld/r.leads)+'%' : '–']);
+  new gridjs.Grid({
+    columns: [
+      { name: 'Referral Partner', formatter: (c) => gridjs.html('<a href="' + leadUrl(c) + '" target="_blank" rel="noopener" style="color:#2c5282;font-weight:600;text-decoration:none">' + esc(c) + ' ↗</a>') },
+      { name: 'Leads', attributes: { style: 'text-align:right' } },
+      { name: 'Meetings booked', attributes: { style: 'text-align:right' } },
+      { name: 'Meetings held', attributes: { style: 'text-align:right' } },
+      { name: 'Lead → Meeting %', attributes: { style: 'text-align:right' } }
+    ],
+    data: gd,
+    search: true,
+    sort: true,
+    pagination: { limit: 25, summary: true },
+    style: { table: { 'font-size': '12.5px' }, th: { 'font-size': '11px', 'text-transform': 'uppercase', 'letter-spacing': '.03em', 'background': '#fafbfd', 'color': '#647489' } }
+  }).render(document.getElementById('rpGrid'));
+}
+
+load();
+}
+</script>
+</body>
+</html>

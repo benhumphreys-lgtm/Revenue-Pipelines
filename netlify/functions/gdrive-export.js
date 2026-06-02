@@ -57,7 +57,7 @@ exports.handler = async (event, context) => {
     return { statusCode: 400, body: JSON.stringify({ error: 'Invalid JSON body.' }) };
   }
 
-  const { file_id, export_format } = body;
+  const { file_id, export_format, sheet_name, range } = body;
   if (!file_id) {
     return { statusCode: 400, body: JSON.stringify({ error: 'file_id required.' }) };
   }
@@ -65,12 +65,37 @@ exports.handler = async (event, context) => {
   const fmt = String(export_format || 'csv').toLowerCase();
   const mimeType = MIME_MAP[fmt] || MIME_MAP.csv;
 
-  // ---- Call Google Drive ----
+  // ---- Auth scopes vary by API: Drive readonly for export, Sheets readonly for ranges ----
+  const useSheetsApi = !!(sheet_name || range);
+  const scopes = useSheetsApi
+    ? ['https://www.googleapis.com/auth/spreadsheets.readonly', 'https://www.googleapis.com/auth/drive.readonly']
+    : ['https://www.googleapis.com/auth/drive.readonly'];
+
   try {
-    const auth = new google.auth.GoogleAuth({
-      credentials,
-      scopes: ['https://www.googleapis.com/auth/drive.readonly']
-    });
+    const auth = new google.auth.GoogleAuth({ credentials, scopes });
+
+    // Path A: fetch a specific sheet/tab by name via Sheets API
+    if (useSheetsApi) {
+      const sheets = google.sheets({ version: 'v4', auth });
+      const sheetRange = range || `${sheet_name}!A:ZZ`;
+      const resp = await sheets.spreadsheets.values.get({
+        spreadsheetId: file_id,
+        range: sheetRange
+      });
+      // Return as CSV-compatible string for parity with the Drive export path
+      const rows = (resp.data && resp.data.values) || [];
+      const csv = rows.map(row => row.map(cell => {
+        const s = cell == null ? '' : String(cell);
+        return /[,"\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+      }).join(',')).join('\n');
+      return {
+        statusCode: 200,
+        headers: { 'Content-Type': 'text/csv; charset=utf-8' },
+        body: csv
+      };
+    }
+
+    // Path B (default): export whole spreadsheet as CSV (first sheet) via Drive API
     const drive = google.drive({ version: 'v3', auth });
     const resp = await drive.files.export(
       { fileId: file_id, mimeType },
