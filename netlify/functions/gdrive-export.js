@@ -77,14 +77,59 @@ exports.handler = async (event, context) => {
     // Path A: fetch a specific sheet/tab by name via Sheets API
     if (useSheetsApi) {
       const sheets = google.sheets({ version: 'v4', auth });
-      // Sheet names with spaces require single-quote wrapping in range notation,
-      // e.g. 'Referral Partners'!A:ZZ — otherwise the API parses the first word as
-      // the sheet name and chokes on the rest.
-      const sheetRange = range || `'${String(sheet_name).replace(/'/g, "''")}'!A:Z`;
-      const resp = await sheets.spreadsheets.values.get({
-        spreadsheetId: file_id,
-        range: sheetRange
-      });
+
+      // Try multiple range syntaxes — Google's parser is finicky with sheet
+      // names containing spaces or special characters. Try the simplest first.
+      // Note: just the sheet name (no !A:Z suffix) returns all data in that tab.
+      const cleanName = String(sheet_name).trim();
+      const escaped = cleanName.replace(/'/g, "''");
+      const candidates = range
+        ? [range]
+        : [
+            `'${escaped}'`,           // simplest: just quoted sheet name
+            `'${escaped}'!A:Z`,       // quoted + column range
+            cleanName,                // unquoted (works if no spaces)
+            `${cleanName}!A:Z`        // unquoted + column range
+          ];
+
+      let lastErr = null;
+      let resp = null;
+      for (const candidate of candidates) {
+        try {
+          resp = await sheets.spreadsheets.values.get({
+            spreadsheetId: file_id,
+            range: candidate
+          });
+          break;
+        } catch (e) {
+          lastErr = e;
+          continue;
+        }
+      }
+
+      // If every candidate failed, fetch the actual sheet titles so we can
+      // surface a helpful error showing what tabs actually exist.
+      if (!resp) {
+        try {
+          const meta = await sheets.spreadsheets.get({
+            spreadsheetId: file_id,
+            fields: 'sheets.properties.title'
+          });
+          const availableTabs = (meta.data.sheets || []).map(s => s.properties && s.properties.title).filter(Boolean);
+          return {
+            statusCode: 400,
+            body: JSON.stringify({
+              error: `Sheet "${cleanName}" not found in the spreadsheet.`,
+              detail: `Available tabs: ${availableTabs.join(' | ')}. Check spelling, capitalization, and whitespace.`,
+              availableTabs
+            })
+          };
+        } catch (metaErr) {
+          // Fall through to generic error below
+          throw lastErr || metaErr;
+        }
+      }
+
       // Return as CSV-compatible string for parity with the Drive export path
       const rows = (resp.data && resp.data.values) || [];
       const csv = rows.map(row => row.map(cell => {
