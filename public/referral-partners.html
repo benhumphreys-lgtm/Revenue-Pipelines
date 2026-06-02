@@ -14,6 +14,7 @@
 :root{ color-scheme: light;
  --bg:#f5f7fa; --card:#ffffff; --ink:#16263a; --muted:#647489; --line:#e6ebf1;
  --navy:#1f3a5f; --navy2:#2c5282; --teal:#2bb3a3; --amber:#e0a83e; --rose:#d2607a; --green:#3a9d6e; --slate:#8a98a8; --violet:#7a6cc4; --blue:#4a7fb5;
+ --up:#1d7a57; --down:#b23b54;
  --shadow:0 1px 2px rgba(16,38,58,.06),0 4px 16px rgba(16,38,58,.06);
 }
 *{box-sizing:border-box}
@@ -25,9 +26,14 @@ h1{font-size:22px;margin:0;letter-spacing:-.01em}
 .meta{text-align:right;font-size:12px;color:var(--muted);min-width:200px}
 .meta b{color:var(--ink)}
 .pill{display:inline-block;background:#f3e8ff;color:#6b21a8;border:1px solid #e9d5ff;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:600;margin-left:6px}
+.tier-pill{display:inline-block;padding:1px 8px;border-radius:6px;font-size:10.5px;font-weight:600;letter-spacing:.02em}
+.tier-1{background:#dcfce7;color:#166534}
+.tier-2{background:#fef3c7;color:#92400e}
+.tier-3{background:#e0e7ff;color:#3730a3}
+.tier-dnc{background:#fee2e2;color:#991b1b}
+.tier-na{background:#f1f5f9;color:#64748b}
 .section-h{display:flex;align-items:baseline;gap:10px;margin:22px 0 10px}
 .section-h h2{font-size:15px;margin:0;letter-spacing:-.01em}
-.section-h .rng{font-size:12px;color:var(--muted)}
 .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
 .kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;box-shadow:var(--shadow)}
 .kpi .v{font-size:25px;font-weight:700;letter-spacing:-.02em}
@@ -37,7 +43,7 @@ h1{font-size:22px;margin:0;letter-spacing:-.01em}
 .grid{display:grid;gap:14px;margin-top:14px}
 .g2{grid-template-columns:1.35fr 1fr}
 .panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 16px 14px;box-shadow:var(--shadow)}
-.panel h2{font-size:13.5px;margin:0 0 2px;letter-spacing:.01em;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.panel h2{font-size:13.5px;margin:0 0 2px;letter-spacing:.01em}
 .panel .ph{color:var(--muted);font-size:11.5px;margin-bottom:12px}
 .chartbox{position:relative;width:100%}
 table.mini{width:100%;border-collapse:collapse;font-size:12.5px}
@@ -50,8 +56,11 @@ table.mini td.num,table.mini th.num{text-align:right;font-variant-numeric:tabula
 .error{color:#b23b54}
 .spinner{width:26px;height:26px;border:3px solid #d9e2ec;border-top-color:var(--violet);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px}
 @keyframes spin{to{transform:rotate(360deg)}}
-.diag{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 12px;font-size:11.5px;color:#92400e;margin-bottom:14px}
-.diag code{background:#fef3c7;padding:1px 4px;border-radius:3px;font-family:ui-monospace,monospace}
+.diag{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px 14px;font-size:11.5px;color:#92400e;margin-bottom:14px}
+.diag b{color:#7c2d12}
+.diag code{background:#fef3c7;padding:1px 4px;border-radius:3px;font-family:ui-monospace,monospace;font-size:10.5px;display:inline-block;margin:1px 2px}
+.diag details{margin-top:6px}
+.diag summary{cursor:pointer;color:#7c2d12;font-weight:600;font-size:11px}
 @media(max-width:900px){.kpis{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:1fr}}
 </style>
 </head>
@@ -81,12 +90,12 @@ table.mini td.num,table.mini th.num{text-align:right;font-variant-numeric:tabula
  <header class="top">
   <div>
    <h1>Referral Partners <span class="pill">LIVE</span></h1>
-   <div class="sub">RP-sourced lead & meeting performance &middot; sourced from <b>HubSpot MASTER → Leads</b> + <b>Referral Partners</b> sheet</div>
+   <div class="sub">RP-sourced lead funnel · sourced from <b>HubSpot MASTER</b> (Leads + Contacts + Referral Partners tabs)</div>
   </div>
   <div class="meta" id="meta">&nbsp;</div>
  </header>
  <div id="content">
-  <div class="loading"><div class="spinner"></div>Pulling live RP + lead data from the sheet…</div>
+  <div class="loading"><div class="spinner"></div>Pulling live RP + lead + contact data from the master sheet…</div>
  </div>
 </div>
 </div>
@@ -102,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initApp() {
-// HubSpot MASTER file (multi-tab) — has Sheet1, Companies, Contacts, Leads, Deals, Referral Partners
+// HubSpot MASTER file (multi-tab)
 const FILE_ID = "169LdHU6e-GFGs7XLEB6a5s7AewAvMD3qHWoMBorluzE";
 const EXPORT_TOOL = "mcp__6b11666e-7029-4baf-a491-3791bd8d9175__gdrive_export_file";
 const HS_PORTAL = "21389996";
@@ -116,221 +125,320 @@ const pct = (a,b) => b ? (100*a/b).toFixed(1)+'%' : '–';
 function csvParse(s){const rows=[];let f='',row=[],q=false;for(let i=0;i<s.length;i++){const c=s[i];if(q){if(c=='"'){if(s[i+1]=='"'){f+='"';i++;}else q=false;}else f+=c;}else{if(c=='"')q=true;else if(c==','){row.push(f);f='';}else if(c=='\n'){row.push(f);rows.push(row);row=[];f='';}else if(c=='\r'){}else f+=c;}}if(f.length||row.length){row.push(f);rows.push(row);}return rows;}
 
 async function fetchSheet(sheetName) {
-  // Pass sheet_name → function uses Sheets API to fetch that specific tab as CSV
-  return await window.cowork.callMcpTool(EXPORT_TOOL, sheetName
-    ? { file_id: FILE_ID, sheet_name: sheetName }
-    : { file_id: FILE_ID, export_format: 'csv' });
+  return await window.cowork.callMcpTool(EXPORT_TOOL, { file_id: FILE_ID, sheet_name: sheetName });
 }
 
-// Find the column index in a header row whose name matches any of the provided
-// patterns (case-insensitive). Returns -1 if not found.
+// Find the row most likely to be the header row by looking for one with many
+// distinct, non-empty cells. HubSpot MASTER tabs prepend a metadata row.
+function findHeaderRow(rows, maxScan=5) {
+  let best = { idx: 0, score: 0 };
+  const scanLimit = Math.min(maxScan, rows.length);
+  for (let i = 0; i < scanLimit; i++) {
+    const row = rows[i] || [];
+    const nonEmpty = row.filter(v => String(v || '').trim()).length;
+    if (nonEmpty > best.score) best = { idx: i, score: nonEmpty };
+  }
+  return best.idx;
+}
+
+// Case-insensitive header → column index. Tries each pattern as exact match
+// first, then as a substring match.
 function findCol(headers, patterns) {
-  for (let i = 0; i < headers.length; i++) {
-    const h = String(headers[i] || '').toLowerCase().trim();
-    for (const p of patterns) {
-      if (h === p || h.includes(p)) return i;
+  const lc = headers.map(h => String(h || '').toLowerCase().trim());
+  for (const p of patterns) {
+    const exact = lc.indexOf(p.toLowerCase());
+    if (exact >= 0) return exact;
+  }
+  for (const p of patterns) {
+    for (let i = 0; i < lc.length; i++) {
+      if (lc[i].includes(p.toLowerCase())) return i;
     }
   }
   return -1;
+}
+
+function tierClass(tier) {
+  const t = String(tier || '').toUpperCase();
+  if (t.includes('TIER 1')) return 'tier-1';
+  if (t.includes('TIER 2')) return 'tier-2';
+  if (t.includes('TIER 3')) return 'tier-3';
+  if (t.includes('DNC')) return 'tier-dnc';
+  return 'tier-na';
 }
 
 function fail(msg){ document.getElementById('content').innerHTML='<div class="error">⚠ '+msg+'</div>'; }
 
 async function load() {
   try {
-    // Fetch both tabs in parallel — both from the master file
-    const [leadsCsv, rpCsv] = await Promise.all([
-      fetchSheet('Leads'),               // master file's Leads tab
-      fetchSheet('Referral Partners')    // canonical RP list
+    const [rpRaw, leadsRaw, contactsRaw] = await Promise.all([
+      fetchSheet('Referral Partners'),
+      fetchSheet('Leads').catch(e => { console.warn('Leads fetch failed:', e); return null; }),
+      fetchSheet('Contacts').catch(e => { console.warn('Contacts fetch failed:', e); return null; })
     ]);
-
-    const leadsRows = csvParse(String(leadsCsv || ''));
-    const rpRows    = csvParse(String(rpCsv    || ''));
-
-    if (!leadsRows.length) return fail('Main leads sheet came back empty.');
-    if (!rpRows.length)    return fail('Referral Partners sheet came back empty.');
-
-    render({ leadsRows, rpRows });
+    render({
+      rpRows:       csvParse(String(rpRaw || '')),
+      leadsRows:    leadsRaw    ? csvParse(String(leadsRaw))    : [],
+      contactsRows: contactsRaw ? csvParse(String(contactsRaw)) : []
+    });
   } catch (err) {
     fail("Couldn't reach the live data source.<br><small>" + (err && err.message ? err.message : err) + "</small>");
   }
 }
 
-function render({ leadsRows, rpRows }) {
-  const leadHeaders = leadsRows[0] || [];
-  const rpHeaders   = rpRows[0]    || [];
+function render({ rpRows, leadsRows, contactsRows }) {
+  // ---- Identify header rows on each sheet ----
+  const rpHeaderIdx     = findHeaderRow(rpRows);
+  const leadsHeaderIdx  = findHeaderRow(leadsRows);
+  const contactsHeaderIdx = findHeaderRow(contactsRows);
+  const rpHeaders     = rpRows[rpHeaderIdx]     || [];
+  const leadsHeaders  = leadsRows[leadsHeaderIdx]  || [];
+  const contactsHeaders = contactsRows[contactsHeaderIdx] || [];
 
-  // ---- Identify columns ----
-  // RP sheet: column N is the RP name (per spec). Index 13 (zero-based).
-  const RP_NAME_COL = 13;
+  // ---- Locate columns in each sheet ----
+  // RP sheet (per the screenshot, column N is RP name, but be defensive)
+  const rpNameCol     = findCol(rpHeaders, ['referral partner', 'rp name', 'partner name']) >= 0 ? findCol(rpHeaders, ['referral partner', 'rp name', 'partner name']) : 13;
+  const rpRecordIdCol = findCol(rpHeaders, ['record id', 'rp record id', 'rp id']);
+  const rpContactsCol = findCol(rpHeaders, ['count of contacts', 'contacts count', 'num contacts']);
+  const rpRpql2Col    = findCol(rpHeaders, ['count of rpql2', 'rpql2', 'rpql 2']);
+  const rpSqlCol      = findCol(rpHeaders, ['count of sql', 'sql', 'sqo']);
+  const rpStatusCol   = findCol(rpHeaders, ['rp status', 'status']);
+  const rpTierCol     = findCol(rpHeaders, ['rp tier', 'tier']);
+  const rpCityCol     = findCol(rpHeaders, ['city, state', 'city']);
 
-  // Leads sheet: look for a column that names the specific RP.
-  // Try common header names first; fall back to inspection.
-  const leadRpCol = findCol(leadHeaders, [
-    'referral partner', 'referral_partner', 'rp name', 'rp_name',
-    'partner name', 'associated rp', 'rp', 'referrer'
-  ]);
-  const leadOriginCol  = findCol(leadHeaders, ['origin']);
-  const leadStageCol   = findCol(leadHeaders, ['lead status', 'stage', 'hs_lead_status']);
-  const leadSchedCol   = findCol(leadHeaders, ['meeting scheduled', 'scheduled date', 'first meeting']);
-  const leadCreatedCol = findCol(leadHeaders, ['create date', 'created']);
-  const leadNameCol    = findCol(leadHeaders, ['name', 'full name']);
-  const leadOwnerCol   = findCol(leadHeaders, ['owner']);
+  // Leads sheet: look for an RP association column
+  const leadRpCol           = findCol(leadsHeaders, ['referral partner', 'associated referral partner', 'rp name', 'rp']);
+  const leadRpIdCol         = findCol(leadsHeaders, ['referral partner record id', 'rp record id', 'associated rp id']);
+  const leadStageCol        = findCol(leadsHeaders, ['lead status', 'stage', 'hs_lead_status', 'pipeline stage']);
+  const leadCreatedCol      = findCol(leadsHeaders, ['create date', 'created date', 'created']);
+  const leadSchedCol        = findCol(leadsHeaders, ['meeting scheduled', 'first meeting', 'meeting date']);
+  const leadOriginCol       = findCol(leadsHeaders, ['origin']);
+  const leadContactIdCol    = findCol(leadsHeaders, ['primary associated contact id', 'associated contact id', 'contact id']);
+
+  // Contacts sheet: RP per contact
+  const contactIdCol      = findCol(contactsHeaders, ['record id', 'contact id', 'hs_object_id']);
+  const contactRpCol      = findCol(contactsHeaders, ['referral partner', 'associated referral partner', 'rp']);
+
+  // ---- Build canonical RP roster from Referral Partners sheet ----
+  // Row after header is data. Skip rows that don't have a name in column N.
+  const rpRoster = [];
+  for (let i = rpHeaderIdx + 1; i < rpRows.length; i++) {
+    const row = rpRows[i] || [];
+    const name = String(row[rpNameCol] || '').trim();
+    if (!name) continue;
+    const recordId = rpRecordIdCol >= 0 ? String(row[rpRecordIdCol] || '').trim() : '';
+    rpRoster.push({
+      name,
+      recordId,
+      city:     rpCityCol     >= 0 ? String(row[rpCityCol]     || '').trim() : '',
+      contacts: rpContactsCol >= 0 ? Number(row[rpContactsCol] || 0) : 0,
+      rpql2:    rpRpql2Col    >= 0 ? Number(row[rpRpql2Col]    || 0) : 0,
+      sql:      rpSqlCol      >= 0 ? Number(row[rpSqlCol]      || 0) : 0,
+      status:   rpStatusCol   >= 0 ? String(row[rpStatusCol]   || '').trim() : '',
+      tier:     rpTierCol     >= 0 ? String(row[rpTierCol]     || '').trim() : '',
+      // Computed (filled in below if Leads/Contacts join succeeds)
+      leads: 0, meetingsBooked: 0, meetingsHeld: 0, opportunities: 0, leadsThisWk: 0, meetingsThisWk: 0
+    });
+  }
+
+  // ---- Build contact → RP map (if Contacts sheet has the join) ----
+  const contactToRp = {};
+  if (contactIdCol >= 0 && contactRpCol >= 0) {
+    for (let i = contactsHeaderIdx + 1; i < contactsRows.length; i++) {
+      const row = contactsRows[i] || [];
+      const cid = String(row[contactIdCol] || '').trim();
+      const rp  = String(row[contactRpCol] || '').trim();
+      if (cid && rp) contactToRp[cid] = rp;
+    }
+  }
+
+  // ---- Aggregate leads against the RP roster ----
+  // Strategy priority:
+  //  1) lead has an RP column directly → use it
+  //  2) lead has a contact ID that's in the contact→RP map → use that
+  //  3) lead has Origin = "Referral Partner" → count toward an aggregate "unassigned RP" bucket
+  const rosterByName = {};
+  rpRoster.forEach(r => { rosterByName[r.name.toLowerCase()] = r; });
+
+  const HELD_STAGE_HINTS  = ['mid a', 'first meeting complete', 'connected', 'qualified', 'hand-off', 'handoff', 'closed', 'sql'];
+  const OPP_STAGE_HINTS   = ['mid b', 'opportunity', 'qualified'];
+  const isHeldStage = (s) => { const v = String(s||'').toLowerCase(); return HELD_STAGE_HINTS.some(h => v.includes(h)); };
+  const isOppStage  = (s) => { const v = String(s||'').toLowerCase(); return OPP_STAGE_HINTS.some(h => v.includes(h));  };
+
+  // Week boundary (UTC, Monday-start)
+  const tm = (() => { const d=new Date(); const u=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate())); const day=(u.getUTCDay()+6)%7; u.setUTCDate(u.getUTCDate()-day); return u.toISOString().slice(0,10); })();
+
+  let totalRpLeads = 0, totalMeetingsBooked = 0, totalMeetingsHeld = 0, totalOpps = 0, totalLeadsTW = 0, totalMtgsTW = 0;
+  let leadsWithoutRp = 0;
+  if (leadsRows.length > 1) {
+    for (let i = leadsHeaderIdx + 1; i < leadsRows.length; i++) {
+      const row = leadsRows[i] || [];
+      if (!row.length) continue;
+
+      let rpName = '';
+      if (leadRpCol >= 0) rpName = String(row[leadRpCol] || '').trim();
+      if (!rpName && leadContactIdCol >= 0) {
+        const cid = String(row[leadContactIdCol] || '').trim();
+        if (cid && contactToRp[cid]) rpName = contactToRp[cid];
+      }
+      // If still no RP, skip this lead unless Origin says it's RP-sourced
+      if (!rpName) {
+        const origin = leadOriginCol >= 0 ? String(row[leadOriginCol] || '').trim() : '';
+        if (!/referral partner/i.test(origin)) continue;
+        leadsWithoutRp++;
+        continue;  // count as RP-sourced but can't attribute to a specific RP
+      }
+      const r = rosterByName[rpName.toLowerCase()];
+      if (!r) continue;  // RP exists in leads sheet but not in canonical roster
+
+      const stage = leadStageCol >= 0 ? String(row[leadStageCol] || '').trim() : '';
+      const created = leadCreatedCol >= 0 ? String(row[leadCreatedCol] || '').slice(0, 10) : '';
+      const sched   = leadSchedCol   >= 0 ? String(row[leadSchedCol]   || '').slice(0, 10) : '';
+
+      r.leads++;
+      totalRpLeads++;
+      if (created >= tm) { r.leadsThisWk++; totalLeadsTW++; }
+      if (sched) { r.meetingsBooked++; totalMeetingsBooked++; if (sched >= tm) { r.meetingsThisWk++; totalMtgsTW++; } }
+      if (isHeldStage(stage)) { r.meetingsHeld++; totalMeetingsHeld++; }
+      if (isOppStage(stage))  { r.opportunities++; totalOpps++; }
+    }
+  }
+
+  // ---- Render diagnostic if the join didn't catch enough ----
+  const haveLeadJoin = (leadRpCol >= 0) || (contactIdCol >= 0 && contactRpCol >= 0 && leadContactIdCol >= 0);
+  const fellBackToRpSheetOnly = !haveLeadJoin || totalRpLeads === 0;
 
   let diagHtml = '';
-  if (leadRpCol < 0) {
-    diagHtml = '<div class="diag"><b>Heads up:</b> couldn\'t auto-detect the RP-name column in the leads sheet. Falling back to the coarse <code>Origin</code> column (Referral Partner / Direct). Headers I see in the leads sheet (first 30): ' +
-      leadHeaders.slice(0, 30).map((h, i) => '<code>' + i + ': ' + esc(h) + '</code>').join(' · ') +
-      ' &mdash; tell me which one to use and I\'ll lock it in.</div>';
+  if (fellBackToRpSheetOnly) {
+    diagHtml = '<div class="diag">' +
+      '<b>Data source note.</b> ' +
+      (haveLeadJoin
+        ? 'Found join columns but no leads matched a known RP. Funnel metrics (Meetings Booked / Held / Opportunities) will show 0 until leads are associated.'
+        : 'Couldn\'t auto-detect an RP-association column on the Leads sheet or a Contact→RP map on the Contacts sheet. Showing per-RP metrics from the <b>Referral Partners</b> sheet directly (Count of Contacts, RPQL2, SQL, Tier, Status).') +
+      '<details><summary>Show column headers we detected</summary>' +
+      '<div style="margin-top:6px"><b>Referral Partners</b> (row ' + (rpHeaderIdx+1) + ' is the header): ' +
+        rpHeaders.slice(0, 25).map((h,i)=>'<code>'+i+': '+esc(h)+'</code>').join(' ') + '</div>' +
+      (leadsHeaders.length ? '<div style="margin-top:6px"><b>Leads</b> (row ' + (leadsHeaderIdx+1) + ' is the header): ' +
+        leadsHeaders.slice(0, 30).map((h,i)=>'<code>'+i+': '+esc(h)+'</code>').join(' ') + '</div>' : '') +
+      (contactsHeaders.length ? '<div style="margin-top:6px"><b>Contacts</b> (row ' + (contactsHeaderIdx+1) + ' is the header): ' +
+        contactsHeaders.slice(0, 30).map((h,i)=>'<code>'+i+': '+esc(h)+'</code>').join(' ') + '</div>' : '') +
+      '<div style="margin-top:8px;color:#7c2d12;font-weight:600">→ Tell me which Leads-sheet column has the RP name (or contact-ID for join), and I\'ll lock it in.</div>' +
+      '</details></div>';
   }
 
-  // ---- Build canonical RP list from Referral Partners sheet ----
-  // Column N (index 13) is the RP name. Skip header row.
-  const rpList = [];
-  const seenRp = new Set();
-  for (let i = 1; i < rpRows.length; i++) {
-    const name = String(rpRows[i][RP_NAME_COL] || '').trim();
-    if (!name || seenRp.has(name.toLowerCase())) continue;
-    seenRp.add(name.toLowerCase());
-    rpList.push(name);
-  }
+  // ---- KPIs (prefer joined funnel data; fall back to RP-sheet aggregates) ----
+  const totalRoster = rpRoster.length;
+  const activeRp = rpRoster.filter(r => (r.leads > 0) || (r.contacts > 0)).length;
+  const sumContactsFromSheet = rpRoster.reduce((s,r) => s + (r.contacts || 0), 0);
+  const sumSqlFromSheet      = rpRoster.reduce((s,r) => s + (r.sql      || 0), 0);
 
-  // ---- Aggregate leads by RP ----
-  // Strategy: if leadRpCol is found, use it directly. Else, use Origin = "Referral Partner" as the cohort.
-  // Meeting heuristic: we count a lead as a "meeting booked" if Meeting Scheduled column is populated,
-  // or if the lead has advanced past Top A.
-  const aggByRp = {};           // { rpName -> { leads, meetingsBooked, meetingsHeld } }
-  let totalRpLeads = 0, totalRpMeetingsBooked = 0, totalRpMeetingsHeld = 0;
+  document.getElementById('meta').innerHTML =
+    '<b>' + fmt(totalRoster) + '</b> RPs on record · <b>' + fmt(totalRpLeads || sumContactsFromSheet) + '</b> RP-sourced ' +
+    (totalRpLeads ? 'leads' : 'contacts (from RP sheet)') +
+    ' · refreshed ' + new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 
-  const HELD_STAGE_HINTS = ['connected', 'qualified', 'hand-off', '1009181988'];
-  const isHeldStage = (s) => {
-    const v = String(s || '').toLowerCase();
-    return HELD_STAGE_HINTS.some(h => v.includes(h));
-  };
-
-  for (let i = 1; i < leadsRows.length; i++) {
-    const row = leadsRows[i];
-    if (!row || row.length < 3) continue;
-    // Skip rows that are clearly not data (e.g. blanks)
-    if (!String(row[0] || '').trim()) continue;
-
-    const origin = leadOriginCol >= 0 ? String(row[leadOriginCol] || '').trim() : '';
-    const rpName = leadRpCol >= 0 ? String(row[leadRpCol] || '').trim() : '';
-    const stage  = leadStageCol >= 0 ? String(row[leadStageCol] || '').trim() : '';
-    const sched  = leadSchedCol >= 0 ? String(row[leadSchedCol] || '').trim() : '';
-
-    // RP membership rule
-    const isRpLead = leadRpCol >= 0
-      ? !!rpName
-      : /referral partner/i.test(origin);
-    if (!isRpLead) continue;
-
-    const bucketKey = (rpName || origin || 'Referral Partner').trim();
-    if (!aggByRp[bucketKey]) aggByRp[bucketKey] = { leads: 0, meetingsBooked: 0, meetingsHeld: 0 };
-    aggByRp[bucketKey].leads++;
-    totalRpLeads++;
-
-    if (sched) {
-      aggByRp[bucketKey].meetingsBooked++;
-      totalRpMeetingsBooked++;
-    }
-    if (isHeldStage(stage)) {
-      aggByRp[bucketKey].meetingsHeld++;
-      totalRpMeetingsHeld++;
-    }
-  }
-
-  // Ensure every canonical RP appears in the leaderboard, even with 0 leads
-  for (const rp of rpList) {
-    if (!aggByRp[rp]) aggByRp[rp] = { leads: 0, meetingsBooked: 0, meetingsHeld: 0 };
-  }
-
-  const activeRpCount = Object.values(aggByRp).filter(a => a.leads > 0).length;
-  const totalRpInList = rpList.length;
-  const conv = totalRpLeads ? Math.round(100 * totalRpMeetingsHeld / totalRpLeads) : 0;
-
-  // ---- META ----
-  document.getElementById('meta').innerHTML = '<b>' + fmt(totalRpInList) + '</b> RPs on record · <b>' + fmt(totalRpLeads) + '</b> RP-sourced leads · refreshed ' + new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
-
-  // ---- KPIs ----
   let html = diagHtml;
-  html += '<div class="kpis">'+
-    '<div class="kpi"><div class="v accent">'+fmt(totalRpInList)+'</div><div class="l">RPs on the Roster</div><div class="d">canonical list from "Referral Partners" tab</div></div>'+
-    '<div class="kpi"><div class="v accent">'+fmt(activeRpCount)+'</div><div class="l">Active RPs</div><div class="d">at least 1 lead delivered</div></div>'+
-    '<div class="kpi"><div class="v">'+fmt(totalRpLeads)+'</div><div class="l">RP-Sourced Leads</div><div class="d">all-time</div></div>'+
-    '<div class="kpi"><div class="v">'+fmt(totalRpMeetingsBooked)+'</div><div class="l">Meetings Booked</div><div class="d">'+pct(totalRpMeetingsBooked,totalRpLeads)+' of RP leads</div></div>'+
-    '<div class="kpi"><div class="v">'+fmt(totalRpMeetingsHeld)+'</div><div class="l">Meetings Held</div><div class="d">'+conv+'% lead→meeting conversion</div></div>'+
+  html += '<div class="kpis">' +
+    '<div class="kpi"><div class="v accent">'+fmt(totalRoster)+'</div><div class="l">RPs on Roster</div><div class="d">canonical list</div></div>' +
+    '<div class="kpi"><div class="v accent">'+fmt(activeRp)+'</div><div class="l">Active RPs</div><div class="d">' + (haveLeadJoin ? '≥1 lead delivered' : '≥1 contact on RP sheet') + '</div></div>' +
+    '<div class="kpi"><div class="v">'+fmt(totalRpLeads || sumContactsFromSheet)+'</div><div class="l">' + (haveLeadJoin ? 'RP-Sourced Leads' : 'Total Contacts (RP sheet)') + '</div><div class="d">all-time</div></div>' +
+    '<div class="kpi"><div class="v">'+fmt(totalMeetingsBooked || sumSqlFromSheet)+'</div><div class="l">' + (haveLeadJoin ? 'Meetings Booked' : 'SQLs (RP sheet)') + '</div><div class="d">' + pct(totalMeetingsBooked || sumSqlFromSheet, totalRpLeads || sumContactsFromSheet) + ' of RP-sourced</div></div>' +
+    '<div class="kpi"><div class="v">'+fmt(totalOpps)+'</div><div class="l">Opportunities</div><div class="d">' + (haveLeadJoin ? 'Mid B+ stage' : 'requires Leads join') + '</div></div>' +
   '</div>';
 
-  // ---- Leaderboard chart + table ----
-  const ranked = Object.entries(aggByRp)
-    .map(([name, a]) => ({ name, ...a }))
-    .sort((a, b) => b.meetingsHeld - a.meetingsHeld || b.meetingsBooked - a.meetingsBooked || b.leads - a.leads);
+  // ---- WoW row (only meaningful if leads join worked) ----
+  if (haveLeadJoin && totalRpLeads > 0) {
+    html += '<div class="section-h"><h2>This Week (RP-sourced)</h2></div>' +
+      '<div class="kpis" style="grid-template-columns:repeat(2,1fr)">' +
+        '<div class="kpi"><div class="v">'+fmt(totalLeadsTW)+'</div><div class="l">New Leads</div><div class="d">created since Monday</div></div>' +
+        '<div class="kpi"><div class="v">'+fmt(totalMtgsTW)+'</div><div class="l">Meetings Scheduled</div><div class="d">scheduled since Monday</div></div>' +
+      '</div>';
+  }
 
-  const topRanked = ranked.filter(r => r.leads > 0).slice(0, 12);
+  // ---- Top-RP chart + Tier rollup ----
+  const ranked = rpRoster.slice().sort((a,b) => (b.leads + b.contacts) - (a.leads + a.contacts));
+  const topRanked = ranked.filter(r => (r.leads + r.contacts) > 0).slice(0, 12);
 
-  html += '<div class="grid g2">'+
-    '<div class="panel"><h2>Top RPs by Meetings Held</h2><div class="ph">leads · meetings booked · meetings held</div><div class="chartbox" style="height:'+ (Math.max(220, topRanked.length * 26)) +'px"><canvas id="rpChart"></canvas></div></div>'+
-    '<div class="panel"><h2>Quick Read</h2><div class="ph">how RPs are contributing</div>'+
-      '<table class="mini">'+
-        '<tr><td>RPs with 0 leads</td><td class="num">'+(totalRpInList-activeRpCount)+'</td></tr>'+
-        '<tr><td>RPs with 1–5 leads</td><td class="num">'+ranked.filter(r=>r.leads>=1&&r.leads<=5).length+'</td></tr>'+
-        '<tr><td>RPs with 6+ leads</td><td class="num">'+ranked.filter(r=>r.leads>=6).length+'</td></tr>'+
-        '<tr><td>Avg meetings held per active RP</td><td class="num">'+(activeRpCount?(totalRpMeetingsHeld/activeRpCount).toFixed(1):'–')+'</td></tr>'+
-      '</table>'+
-    '</div>'+
+  const tierRoll = {};
+  rpRoster.forEach(r => { const k = r.tier || '(no tier)'; tierRoll[k] = (tierRoll[k] || 0) + 1; });
+
+  html += '<div class="grid g2">' +
+    '<div class="panel"><h2>Top RPs by ' + (haveLeadJoin ? 'Leads + Meetings' : 'Contacts') + '</h2><div class="ph">canonical roster · ranked</div>' +
+      '<div class="chartbox" style="height:' + (Math.max(220, topRanked.length * 26)) + 'px"><canvas id="rpChart"></canvas></div></div>' +
+    '<div class="panel"><h2>RPs by Tier</h2><div class="ph">from RP sheet · column R</div>' +
+      '<table class="mini"><tr><th>Tier</th><th class="num">RPs</th></tr>' +
+      Object.entries(tierRoll).sort((a,b)=>b[1]-a[1]).map(([t,n]) => '<tr><td><span class="tier-pill ' + tierClass(t) + '">' + esc(t) + '</span></td><td class="num">' + n + '</td></tr>').join('') +
+      '</table></div>' +
   '</div>';
 
-  // ---- Full RP leaderboard table ----
+  // ---- Full leaderboard table ----
   html += '<div class="panel" style="margin-top:14px"><h2>Full RP Leaderboard</h2><div class="ph">every RP from the roster · search and sort · click any name to open lead view in HubSpot</div><div id="rpGrid"></div></div>';
 
-  html += '<div class="note"><b>How to read this.</b> "RP-Sourced Leads" counts leads whose ' +
-    (leadRpCol >= 0 ? 'Referral Partner column has a value' : 'Origin = "Referral Partner"') + '. ' +
-    '"Meetings Booked" = leads with a Meeting Scheduled date filled in. "Meetings Held" = leads that have advanced to Mid A (First Meeting Complete), Mid B (Opportunity), or Hand-off. ' +
-    'The canonical RP list comes from the <b>Referral Partners</b> sheet (column N), so even RPs with zero referrals appear in the leaderboard. Everything recomputes on each open.</div>';
+  html += '<div class="note"><b>How to read this.</b> The canonical RP roster (column N of the Referral Partners tab) drives the leaderboard — every RP appears even if zero leads. ' +
+    (haveLeadJoin
+      ? 'Funnel metrics (Leads, Meetings Booked, Meetings Held, Opportunities) come from joining the Leads tab to the roster.'
+      : 'Per-RP aggregates (Contacts, RPQL2, SQL) come straight from the RP sheet today; once we identify the lead-sheet RP column, the full funnel (Meetings, Opps, WoW) will populate too.') +
+    ' Tier badges come from column R · Status from column Q · everything recomputes on each open.</div>';
 
   document.getElementById('content').innerHTML = html;
 
-  // Render the chart
+  // ---- Render chart ----
   if (topRanked.length) {
     new Chart(document.getElementById('rpChart'), {
       type: 'bar',
       data: {
         labels: topRanked.map(r => r.name),
-        datasets: [
-          { label: 'Leads',           data: topRanked.map(r => r.leads),           backgroundColor: '#7a6cc4' },
-          { label: 'Meetings booked', data: topRanked.map(r => r.meetingsBooked), backgroundColor: '#2bb3a3' },
-          { label: 'Meetings held',   data: topRanked.map(r => r.meetingsHeld),   backgroundColor: '#3a9d6e' }
-        ]
+        datasets: haveLeadJoin && totalRpLeads > 0
+          ? [
+              { label: 'Leads',           data: topRanked.map(r => r.leads),           backgroundColor: '#7a6cc4' },
+              { label: 'Meetings booked', data: topRanked.map(r => r.meetingsBooked), backgroundColor: '#2bb3a3' },
+              { label: 'Meetings held',   data: topRanked.map(r => r.meetingsHeld),   backgroundColor: '#3a9d6e' }
+            ]
+          : [
+              { label: 'Contacts',        data: topRanked.map(r => r.contacts), backgroundColor: '#7a6cc4' },
+              { label: 'RPQL2',           data: topRanked.map(r => r.rpql2),    backgroundColor: '#2bb3a3' },
+              { label: 'SQL',             data: topRanked.map(r => r.sql),      backgroundColor: '#3a9d6e' }
+            ]
       },
       options: {
-        indexAxis: 'y',
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: { grid: { color: '#eef2f6' }, ticks: { font: { size: 10 }, precision: 0 } },
-          y: { grid: { display: false }, ticks: { font: { size: 11 } } }
-        },
+        indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+        scales: { x: { grid: { color: '#eef2f6' }, ticks: { font: { size: 10 }, precision: 0 } }, y: { grid: { display: false }, ticks: { font: { size: 11 } } } },
         plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } }
       }
     });
   }
 
-  // Render the full leaderboard with GridJS
-  const gd = ranked.map(r => [r.name, r.leads, r.meetingsBooked, r.meetingsHeld, r.leads ? Math.round(100*r.meetingsHeld/r.leads)+'%' : '–']);
+  // ---- Render full grid ----
+  const gd = ranked.map(r => [
+    r.name,
+    r.tier ? '<span class="tier-pill ' + tierClass(r.tier) + '">' + esc(r.tier) + '</span>' : '',
+    r.status,
+    r.contacts,
+    r.rpql2,
+    r.sql,
+    r.leads,
+    r.meetingsBooked,
+    r.meetingsHeld,
+    r.opportunities,
+    r.leadsThisWk,
+    r.meetingsThisWk
+  ]);
   new gridjs.Grid({
     columns: [
       { name: 'Referral Partner', formatter: (c) => gridjs.html('<a href="' + leadUrl(c) + '" target="_blank" rel="noopener" style="color:#2c5282;font-weight:600;text-decoration:none">' + esc(c) + ' ↗</a>') },
-      { name: 'Leads', attributes: { style: 'text-align:right' } },
-      { name: 'Meetings booked', attributes: { style: 'text-align:right' } },
-      { name: 'Meetings held', attributes: { style: 'text-align:right' } },
-      { name: 'Lead → Meeting %', attributes: { style: 'text-align:right' } }
+      { name: 'Tier', formatter: (c) => gridjs.html(c) },
+      { name: 'Status' },
+      { name: 'Contacts (RP sheet)', attributes: { style: 'text-align:right' } },
+      { name: 'RPQL2', attributes: { style: 'text-align:right' } },
+      { name: 'SQL', attributes: { style: 'text-align:right' } },
+      { name: 'Leads (joined)', attributes: { style: 'text-align:right' } },
+      { name: 'Mtgs Booked', attributes: { style: 'text-align:right' } },
+      { name: 'Mtgs Held', attributes: { style: 'text-align:right' } },
+      { name: 'Opps', attributes: { style: 'text-align:right' } },
+      { name: 'New Leads this wk', attributes: { style: 'text-align:right' } },
+      { name: 'Mtgs Sched this wk', attributes: { style: 'text-align:right' } }
     ],
-    data: gd,
-    search: true,
-    sort: true,
-    pagination: { limit: 25, summary: true },
-    style: { table: { 'font-size': '12.5px' }, th: { 'font-size': '11px', 'text-transform': 'uppercase', 'letter-spacing': '.03em', 'background': '#fafbfd', 'color': '#647489' } }
+    data: gd, search: true, sort: true, pagination: { limit: 25, summary: true },
+    style: { table: { 'font-size': '12px' }, th: { 'font-size': '10.5px', 'text-transform': 'uppercase', 'letter-spacing': '.03em', 'background': '#fafbfd', 'color': '#647489' } }
   }).render(document.getElementById('rpGrid'));
 }
 
