@@ -77,7 +77,10 @@ exports.handler = async (event, context) => {
     // Path A: fetch a specific sheet/tab by name via Sheets API
     if (useSheetsApi) {
       const sheets = google.sheets({ version: 'v4', auth });
-      const sheetRange = range || `${sheet_name}!A:ZZ`;
+      // Sheet names with spaces require single-quote wrapping in range notation,
+      // e.g. 'Referral Partners'!A:ZZ — otherwise the API parses the first word as
+      // the sheet name and chokes on the rest.
+      const sheetRange = range || `'${String(sheet_name).replace(/'/g, "''")}'!A:ZZ`;
       const resp = await sheets.spreadsheets.values.get({
         spreadsheetId: file_id,
         range: sheetRange
@@ -109,17 +112,30 @@ exports.handler = async (event, context) => {
     };
   } catch (err) {
     const msg = err && err.message ? err.message : String(err);
-    const code = err && err.code ? err.code : 500;
+    const code = (err && (err.code || (err.response && err.response.status))) || 500;
     // Surface common errors helpfully
     if (msg.includes('insufficient') || msg.includes('not found') || code === 404) {
       return { statusCode: 403, body: JSON.stringify({
-        error: 'Service account cannot access this file. Share the sheet with the service account email (found in your GOOGLE_SERVICE_ACCOUNT_JSON under client_email).',
+        error: 'Service account cannot access this file. Share the sheet with the service account email.',
         detail: msg
       })};
     }
-    return { statusCode: 500, body: JSON.stringify({
-      error: 'Google Drive export failed.',
-      detail: msg
+    if (msg.toLowerCase().includes('unable to parse range') || msg.toLowerCase().includes('invalid range')) {
+      return { statusCode: 400, body: JSON.stringify({
+        error: 'Invalid sheet range. Check that the sheet_name matches a tab in the spreadsheet (case-sensitive).',
+        detail: msg
+      })};
+    }
+    if (msg.toLowerCase().includes('sheets api') && msg.toLowerCase().includes('not been used')) {
+      return { statusCode: 500, body: JSON.stringify({
+        error: 'Google Sheets API not enabled on the project. Enable it at https://console.cloud.google.com/apis/library/sheets.googleapis.com',
+        detail: msg
+      })};
+    }
+    return { statusCode: code === 200 ? 500 : code, body: JSON.stringify({
+      error: useSheetsApi ? 'Google Sheets API call failed.' : 'Google Drive export failed.',
+      detail: msg,
+      sheet_name: sheet_name || null
     })};
   }
 };

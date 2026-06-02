@@ -81,7 +81,9 @@
     if (!response.ok) {
       let errData = {};
       try { errData = await response.json(); } catch (e) {}
-      throw new Error(`Google Drive export failed (${response.status}): ${errData.error || response.statusText}`);
+      const errBits = [errData.error || response.statusText];
+      if (errData.detail && errData.detail !== errData.error) errBits.push(errData.detail);
+      throw new Error(`Google Drive export failed (${response.status}): ${errBits.join(' — ')}`);
     }
     return await response.text();
   }
