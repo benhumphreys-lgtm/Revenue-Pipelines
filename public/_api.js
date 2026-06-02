@@ -58,6 +58,34 @@
     return _ownersCache;
   }
 
+  // Google Drive export: fetches a Sheet/Doc as CSV (or other format) via the
+  // gdrive-export Netlify Function. Used by the Meeting Factory dashboard.
+  // Returns the raw export text (e.g. CSV string).
+  async function gdriveExport(params) {
+    if (!window.netlifyIdentity) {
+      throw new Error('Netlify Identity widget not loaded.');
+    }
+    const user = window.netlifyIdentity.currentUser();
+    if (!user) {
+      throw new Error('Not authenticated. Please log in.');
+    }
+    const jwt = await user.jwt();
+    const response = await fetch('/api/gdrive-export', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${jwt}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(params || {})
+    });
+    if (!response.ok) {
+      let errData = {};
+      try { errData = await response.json(); } catch (e) {}
+      throw new Error(`Google Drive export failed (${response.status}): ${errData.error || response.statusText}`);
+    }
+    return await response.text();
+  }
+
   // Compat shim: lets the Cowork artifact code work with minimal changes.
   window.cowork = {
     callMcpTool: function (toolName, params) {
@@ -70,6 +98,9 @@
       if (toolName.includes('search_owners')) {
         return hubspotOwners(params);
       }
+      if (toolName.includes('gdrive_export_file')) {
+        return gdriveExport(params);
+      }
       return Promise.reject(new Error('Unsupported MCP tool in Netlify build: ' + toolName));
     }
   };
@@ -77,6 +108,7 @@
   // Also expose directly for any new code
   window.hubspotSearch = hubspotSearch;
   window.hubspotOwners = hubspotOwners;
+  window.gdriveExport = gdriveExport;
 
   // Auth helpers used by tab pages
   window.appAuth = {

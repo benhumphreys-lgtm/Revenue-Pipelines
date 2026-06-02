@@ -4,12 +4,40 @@ Live, team-shared HubSpot dashboards for the PrescriberPoint revenue team.
 
 **Live URL (after deploy):** `https://<your-site-name>.netlify.app`
 
-**Tabs:**
-- **Asembia 2026 Tracker** — event ROI, conversion funnel, post-event momentum
-- **First Meeting Tracker** — multi-source first-meeting volume, WoW (coming in v0.2)
-- **Pipeline Confidence Scorecard** — per-rep coverage vs. the $4M ARR gap (coming in v0.2)
+**Tabs (4):**
+- **Unified Pipeline** — executive overview: lead funnel + deal funnel + velocity tracker
+- **Pipeline Confidence** — per-rep coverage vs. the $4M ARR gap
+- **Brand Direct** — Brand Direct pipeline with 4 sub-tabs (Summary / Pipeline / Roll-Over / Agency RFP)
+- **Meeting Factory** — live lead pipeline mirror from Google Sheets
 
 Access restricted to `@prescriberpoint.com` Google accounts via Netlify Identity.
+
+## Required environment variables in Netlify
+
+| Key | Value | Used by |
+|---|---|---|
+| `HUBSPOT_TOKEN` | HubSpot Private App token (scopes: contacts.read, deals.read, schemas.read, owners.read) | Unified Pipeline, Brand Direct, Pipeline Confidence |
+| `GOOGLE_SERVICE_ACCOUNT_JSON` | Full JSON of a Google Cloud service account with Drive read access. Service account email must be invited to the source Google Sheet as a viewer. | Meeting Factory |
+
+See "Setting up the Google service account" section below for the Meeting Factory.
+
+## Setting up the Google service account (Meeting Factory)
+
+The Meeting Factory tab pulls live data from a Google Sheet (the HubSpot MASTER → Leads mirror). To enable it:
+
+1. Go to **Google Cloud Console** → https://console.cloud.google.com → create or pick a project
+2. Enable the **Google Drive API** for that project (APIs & Services → Library → search "Google Drive API" → Enable)
+3. Create a service account: APIs & Services → Credentials → **Create credentials** → Service account
+   - Name: `revenue-pipeline-mf-reader` (or anything memorable)
+   - Skip granting roles to the service account (it gets per-sheet permissions instead)
+4. After creation, click the service account → **Keys** tab → **Add key** → **Create new key** → **JSON** → download. This downloads a `.json` file — DO NOT commit it to git.
+5. Open the downloaded `.json` file in TextEdit. Copy the entire contents (it's a single JSON object starting with `{`).
+6. In Netlify → **Site configuration** → **Environment variables** → **Add a variable**:
+   - Key: `GOOGLE_SERVICE_ACCOUNT_JSON`
+   - Value: paste the entire JSON file contents
+   - Scopes: All scopes
+7. Open the source Google Sheet (the HubSpot Master → Leads mirror at file ID `1XYQ8v68z3z5Jnz2rxIcHRrWP4cMu82PZbj0V5dDcLO8`). Click **Share** → enter the service account's email (it's `client_email` in the JSON, looks like `revenue-pipeline-mf-reader@your-project.iam.gserviceaccount.com`) → **Viewer** access → uncheck "Notify people" → Share.
+8. The Meeting Factory tab should now load on the live site after Netlify finishes the next deploy.
 
 ---
 

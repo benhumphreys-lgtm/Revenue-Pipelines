@@ -15,6 +15,11 @@
   to = "/.netlify/functions/hubspot-owners"
   status = 200
 
+[[redirects]]
+  from = "/api/gdrive-export"
+  to = "/.netlify/functions/gdrive-export"
+  status = 200
+
 [[headers]]
   for = "/*"
   [headers.values]

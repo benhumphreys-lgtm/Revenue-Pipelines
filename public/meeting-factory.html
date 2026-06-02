@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meeting Factory Dashboard — Revenue Pipeline</title>
+<link rel="stylesheet" href="/_shared.css">
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script src="/_api.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/gridjs@5.0.2/dist/gridjs.umd.js" integrity="sha384-/XXDzxe4FsGiAe50i/u9pY/Vy/uX654MHB1xoc1BJNnH1WXHhqHga9g3q5tF4gj7" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridjs@5.0.2/dist/theme/mermaid.min.css" integrity="sha384-jZvDSsmGB9oGGT/4l9bHXGoAv1OxvG/cFmSo0dZaSqmBgvQTKDBFAMftlXTmMbNW" crossorigin="anonymous">
+<style>
+:root{ color-scheme: light;
+ --bg:#f5f7fa; --card:#ffffff; --ink:#16263a; --muted:#647489; --line:#e6ebf1;
+ --navy:#1f3a5f; --navy2:#2c5282; --teal:#2bb3a3; --amber:#e0a83e; --rose:#d2607a; --green:#3a9d6e; --slate:#8a98a8; --violet:#7a6cc4; --blue:#4a7fb5;
+ --up:#1d7a57; --down:#b23b54;
+ --shadow:0 1px 2px rgba(16,38,58,.06),0 4px 16px rgba(16,38,58,.06);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.45}
+.wrap{max-width:1180px;margin:0 auto;padding:22px 22px 60px}
+header.top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:6px}
+h1{font-size:22px;margin:0;letter-spacing:-.01em}
+.sub{color:var(--muted);font-size:12.5px;margin-top:4px}
+.meta{text-align:right;font-size:12px;color:var(--muted);min-width:200px}
+.meta b{color:var(--ink)}
+.pill{display:inline-block;background:#eaf6f4;color:#177a6e;border:1px solid #cdeae5;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:600;margin-left:6px}
+.section-h{display:flex;align-items:baseline;gap:10px;margin:22px 0 10px}
+.section-h h2{font-size:15px;margin:0;letter-spacing:-.01em}
+.section-h .rng{font-size:12px;color:var(--muted)}
+.wowrow{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.wowtile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:space-between;gap:14px}
+.wowtile .l{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+.wowtile .big{font-size:34px;font-weight:700;letter-spacing:-.02em;line-height:1}
+.wowtile .vs{font-size:12px;color:var(--muted);margin-top:6px}
+.wowtile .vs b{color:var(--ink)}
+.delta{font-size:13px;font-weight:700;padding:4px 10px;border-radius:8px;white-space:nowrap}
+.delta.up{background:#e2f4ee;color:var(--up)}
+.delta.down{background:#fbe7ec;color:var(--down)}
+.delta.flat{background:#eef2f6;color:var(--muted)}
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;box-shadow:var(--shadow)}
+.kpi .v{font-size:25px;font-weight:700;letter-spacing:-.02em}
+.kpi .l{font-size:11.5px;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.03em}
+.kpi .d{font-size:11px;margin-top:6px;color:var(--slate)}
+.kpi .accent{color:var(--teal)}
+.grid{display:grid;gap:14px;margin-top:14px}
+.g2{grid-template-columns:1.35fr 1fr}
+.g3{grid-template-columns:repeat(3,1fr)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 16px 14px;box-shadow:var(--shadow)}
+.panel h2{font-size:13.5px;margin:0 0 2px;letter-spacing:.01em;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.panel .ph{color:var(--muted);font-size:11.5px;margin-bottom:12px}
+.chartbox{position:relative;width:100%}
+select.dim{font-size:12px;border:1px solid var(--line);border-radius:8px;padding:4px 8px;background:#fff;color:var(--ink);font-weight:600}
+.funnel-row{display:flex;align-items:center;gap:10px;margin:7px 0}
+.funnel-bar{height:28px;border-radius:6px;display:flex;align-items:center;color:#fff;font-weight:600;font-size:12px;padding-left:10px;min-width:28px;transition:width .4s}
+.funnel-lab{width:172px;font-size:12px;color:var(--ink);flex:none}
+.funnel-lab small{display:block;color:var(--muted);font-weight:400;font-size:10.5px}
+.funnel-val{font-size:12px;color:var(--muted);white-space:nowrap}
+.legend{display:flex;flex-wrap:wrap;gap:10px 16px;margin-top:8px;font-size:11.5px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+table.mini{width:100%;border-collapse:collapse;font-size:12.5px}
+table.mini th,table.mini td{text-align:left;padding:5px 7px;border-bottom:1px solid var(--line)}
+table.mini th{color:var(--muted);font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.03em}
+table.mini td.num,table.mini th.num{text-align:right;font-variant-numeric:tabular-nums}
+.dn{color:var(--down);font-weight:600}.up{color:var(--up);font-weight:600}.fl{color:var(--muted)}
+.note{font-size:11.5px;color:var(--muted);background:#fbfcfe;border:1px dashed var(--line);border-radius:10px;padding:12px 14px;margin-top:16px;line-height:1.5}
+.note b{color:var(--ink)}
+.loading,.error{padding:60px 20px;text-align:center;color:var(--muted)}
+.error{color:#b23b54}
+.spinner{width:26px;height:26px;border:3px solid #d9e2ec;border-top-color:var(--teal);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.tag{display:inline-block;font-size:10.5px;padding:1px 7px;border-radius:6px;font-weight:600}
+@media(max-width:900px){.kpis{grid-template-columns:repeat(3,1fr)}.g2,.g3,.wowrow{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <div class="brand">Revenue Pipeline</div>
+  <div class="tabs">
+    <a class="tab" href="/unified-pipeline.html">Unified Pipeline</a>
+    <a class="tab" href="/pipeline.html">Pipeline Confidence</a>
+    <a class="tab" href="/brand-direct.html">Brand Direct</a>
+    <a class="tab active" href="/meeting-factory.html">Meeting Factory</a>
+  </div>
+  <div class="userbox">
+    <span id="user-email">—</span>
+    <button onclick="window.appAuth.logout()">Log out</button>
+  </div>
+</nav>
+
+<div id="auth-loading" class="auth-gate">
+  <h1>Loading…</h1>
+  <p>Checking authentication.</p>
+</div>
+
+<div id="main-content" style="display:none">
+<div class="wrap">
+ <header class="top">
+  <div>
+   <h1>Meeting Factory <span class="pill">LIVE</span></h1>
+   <div class="sub">Lead &amp; meeting pipeline across all revenue functions &middot; sourced from <b>HubSpot MASTER → Leads</b> (auto-refreshes on open)</div>
+  </div>
+  <div class="meta" id="meta">&nbsp;</div>
+ </header>
+ <div id="content">
+  <div class="loading"><div class="spinner"></div>Pulling live lead data from the sheet…</div>
+ </div>
+</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  window.appAuth.init(user => {
+    document.getElementById('auth-loading').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+    document.getElementById('user-email').textContent = user.email;
+    initApp();
+  });
+});
+
+function initApp() {
+const MIRROR_ID = "1XYQ8v68z3z5Jnz2rxIcHRrWP4cMu82PZbj0V5dDcLO8";
+const EXPORT_TOOL = "mcp__6b11666e-7029-4baf-a491-3791bd8d9175__gdrive_export_file";
+const HS_PORTAL = "21389996";
+const HS_LEADS_LIST = "https://app.hubspot.com/contacts/"+HS_PORTAL+"/objects/0-136/views/all/list";
+function leadUrl(name){ return HS_LEADS_LIST+"?query="+encodeURIComponent(name); }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+const STAGE_LABELS = {
+ "new-stage-id":"Top A · Pending First Meeting","attempting-stage-id":"Top B · First Meeting Scheduled",
+ "connected-stage-id":"Mid A · First Meeting Complete","qualified-stage-id":"Mid B · Opportunity Identified",
+ "unqualified-stage-id":"Bad Timing","968123417":"Idle","259798673":"Didn't Respond",
+ "972389929":"Not a Fit","1009181988":"Hand-off to Sales"
+};
+const OWNER_NAMES = {
+ "78606761":"Anne Foelsch","79878581":"Michelle Bornstein","153408573":"Daniel Cornwell",
+ "176792101":"John Robinson","314753596":"Kyle McCaig","637028764":"Shawn Moriarty",
+ "359503422":"John Zarifis","83860592":"Owner 83860592","247184460":"Owner 247184460"
+};
+const G = {pending:["new-stage-id"],scheduled:["attempting-stage-id"],metMidA:["connected-stage-id"],oppMidB:["qualified-stage-id"],handoff:["1009181988"],lost:["unqualified-stage-id","968123417","259798673","972389929"]};
+const inG=(s,k)=>G[k].indexOf(s)>=0;
+const reachedScheduled=s=>inG(s,'scheduled')||inG(s,'metMidA')||inG(s,'oppMidB')||inG(s,'handoff');
+const reachedComplete=s=>inG(s,'metMidA')||inG(s,'oppMidB')||inG(s,'handoff');
+function stageGroup(s){ if(reachedComplete(s))return 'Meeting+ / Hand-off'; if(inG(s,'lost'))return 'Lost / Closed'; return 'Working (pre-meeting)'; }
+
+const C={navy:'#1f3a5f',navy2:'#2c5282',teal:'#2bb3a3',amber:'#e0a83e',rose:'#d2607a',green:'#3a9d6e',slate:'#8a98a8',blue:'#4a7fb5',violet:'#7a6cc4',gray:'#c2ccd6'};
+const CYCLE=[C.navy2,C.teal,C.amber,C.violet,C.green,C.rose,C.blue,C.slate,'#b9772e','#5a8f7b','#9c5d8a','#c2ccd6'];
+
+function csvParse(s){const rows=[];let f='',row=[],q=false;for(let i=0;i<s.length;i++){const c=s[i];if(q){if(c=='"'){if(s[i+1]=='"'){f+='"';i++;}else q=false;}else f+=c;}else{if(c=='"')q=true;else if(c==','){row.push(f);f='';}else if(c=='\n'){row.push(f);rows.push(row);row=[];f='';}else if(c=='\r'){}else f+=c;}}if(f.length||row.length){row.push(f);rows.push(row);}return rows;}
+function extractCsv(res){
+ if(res==null)return '';
+ if(typeof res==='string'){ if(/^\s*[\[{]/.test(res)){try{return extractCsv(JSON.parse(res));}catch(e){}} return res; }
+ if(typeof res==='object'){
+  if(typeof res.result==='string'){ const r=res.result; if(/^\s*[\[{]/.test(r)){try{const j=JSON.parse(r); if(j&&typeof j==='object')return extractCsv(j);}catch(e){}} return r; }
+  if(Array.isArray(res.content)){ return extractCsv(res.content.map(c=>c&&c.text?c.text:'').join('')); }
+  if(typeof res.text==='string')return extractCsv(res.text);
+  if(typeof res.csv==='string')return res.csv;
+ }
+ return '';
+}
+const fmt=n=>n.toLocaleString('en-US');
+const pct=(a,b)=>b?(100*a/b).toFixed(1)+'%':'–';
+
+// ---- week helpers (UTC, Monday start) ----
+function weekStart(dStr){ const m=String(dStr||'').match(/(\d{4})-(\d{2})-(\d{2})/); if(!m)return null; const dt=new Date(Date.UTC(+m[1],+m[2]-1,+m[3])); const day=(dt.getUTCDay()+6)%7; dt.setUTCDate(dt.getUTCDate()-day); return dt.toISOString().slice(0,10); }
+function curMonday(){ const n=new Date(); const dt=new Date(Date.UTC(n.getUTCFullYear(),n.getUTCMonth(),n.getUTCDate())); const day=(dt.getUTCDay()+6)%7; dt.setUTCDate(dt.getUTCDate()-day); return dt; }
+function addDays(d,n){ const x=new Date(d); x.setUTCDate(x.getUTCDate()+n); return x; }
+const iso=d=>d.toISOString().slice(0,10);
+function genWeeks(n){ const out=[]; const tm=curMonday(); for(let i=n-1;i>=0;i--) out.push(iso(addDays(tm,-7*i))); return out; }
+function wkLabel(k){ const m=k.match(/(\d{4})-(\d{2})-(\d{2})/); return (+m[2])+'/'+(+m[3]); }
+function deltaHtml(t,l){ const d=t-l; if(d===0)return '<span class="delta flat">±0</span>'; const p=l>0?Math.round(100*d/l)+'%':'new'; return '<span class="delta '+(d>0?'up':'down')+'">'+(d>0?'▲ +':'▼ ')+d+' ('+p+')</span>'; }
+
+async function load(){
+ let csv='';
+ try{ csv = extractCsv(await window.cowork.callMcpTool(EXPORT_TOOL,{file_id:MIRROR_ID,export_format:'csv'})); }
+ catch(e){ return fail("Couldn't reach the live data source.<br><small>"+(e&&e.message?e.message:e)+"</small>"); }
+ if(!csv||csv.length<50) return fail("The live export came back empty — the mirror sheet may be recalculating. Try Reload in a moment.");
+ const rows=csvParse(csv);
+ const data=rows.filter(r=>r.length>5 && /^\d{5,}$/.test((r[0]||'').trim()));
+ if(!data.length) return fail("No lead rows found in the export.");
+ render(compute(data));
+}
+function fail(msg){ document.getElementById('content').innerHTML='<div class="error">⚠ '+msg+'</div>'; }
+
+function compute(D){
+ const I={created:2,type:3,stage:4,source:6,label:7,owner:8,company:9,origin:11,deals:12,outcome:22,sched:23};
+ const N=D.length;
+ const stageCount={},ownerAgg={},originAgg={},sourceCount={},labelCount={},typeCount={},monthAgg={};
+ const leads=[];
+ let scheduled=0,completed=0,opp=0,handoff=0,lost=0,active=0,withDeal=0,outcomeCompleted=0,schedField=0;
+ const dates=[];
+ D.forEach(r=>{
+  const s=(r[I.stage]||'').trim();
+  const lab=STAGE_LABELS[s]||(s?('Other: '+s):'(no stage)');
+  stageCount[lab]=(stageCount[lab]||0)+1;
+  if(reachedScheduled(s))scheduled++; if(reachedComplete(s))completed++;
+  if(inG(s,'oppMidB'))opp++; if(inG(s,'handoff'))handoff++; if(inG(s,'lost'))lost++;
+  if(inG(s,'pending')||inG(s,'scheduled')||inG(s,'metMidA')||inG(s,'oppMidB'))active++;
+  if((r[I.outcome]||'').trim()==='Completed')outcomeCompleted++;
+  if((r[I.sched]||'').trim())schedField++;
+  if((r[I.deals]||'').trim()&&(r[I.deals]||'').trim()!=='0')withDeal++;
+  const oid=(r[I.owner]||'').trim(); const onm=OWNER_NAMES[oid]||(oid?('Owner '+oid):'(unassigned)');
+  const oa=ownerAgg[onm]||(ownerAgg[onm]={leads:0,met:0,opp:0}); oa.leads++; if(reachedComplete(s))oa.met++; if(inG(s,'oppMidB'))oa.opp++;
+  const org=(r[I.origin]||'').trim()||'Unspecified';
+  const ra=originAgg[org]||(originAgg[org]={leads:0,met:0}); ra.leads++; if(reachedComplete(s))ra.met++;
+  const typ=(r[I.type]||'').trim()||'(none)';
+  const src=(r[I.source]||'').trim()||'(blank)'; sourceCount[src]=(sourceCount[src]||0)+1;
+  const lb=(r[I.label]||'').trim()||'Untagged'; labelCount[lb]=(labelCount[lb]||0)+1;
+  typeCount[typ]=(typeCount[typ]||0)+1;
+  const created=(r[I.created]||'').slice(0,10); const sched=(r[I.sched]||'').slice(0,10);
+  leads.push({name:(r[1]||'').trim(),stage:lab,group:stageGroup(s),owner:onm,origin:org,type:typ,company:(r[I.company]||'').trim(),created:created,sched:sched,met:reachedComplete(s)?'Yes':''});
+  if(created)dates.push(created);
+ });
+ dates.sort();
+ return {N,stageCount,ownerAgg,originAgg,sourceCount,labelCount,typeCount,leads,
+  scheduled,completed,opp,handoff,lost,active,withDeal,outcomeCompleted,schedField,
+  dmin:dates[0],dmax:dates[dates.length-1]};
+}
+
+let M=null;
+function render(m){
+ M=m;
+ const tm=iso(curMonday()), lm=iso(addDays(curMonday(),-7));
+ const tmEnd=iso(addDays(curMonday(),6)), lmEnd=iso(addDays(curMonday(),-1));
+ document.getElementById('meta').innerHTML='Data window: <b>'+(m.dmin||'?')+'</b> → <b>'+(m.dmax||'?')+'</b><br><b>'+fmt(m.N)+'</b> leads · refreshed '+new Date().toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+
+ // ---- WoW core ----
+ const inWk=(d,w)=>weekStart(d)===w;
+ const created_tw=m.leads.filter(l=>inWk(l.created,tm)), created_lw=m.leads.filter(l=>inWk(l.created,lm));
+ const sched_tw=m.leads.filter(l=>l.sched&&inWk(l.sched,tm)).length, sched_lw=m.leads.filter(l=>l.sched&&inWk(l.sched,lm)).length;
+
+ let html='';
+ html+='<div class="section-h"><h2>This Week vs Last Week</h2><span class="rng">This week '+tm+' → '+tmEnd+' (to date) &nbsp;•&nbsp; Last week '+lm+' → '+lmEnd+'</span></div>';
+ html+='<div class="wowrow">'+
+   wowTile('Leads Created', created_tw.length, created_lw.length)+
+   wowTile('Meetings Scheduled', sched_tw, sched_lw)+
+ '</div>';
+
+ // WoW breakdown tables
+ html+='<div class="grid g3">'+
+   '<div class="panel"><h2>Leads by Rep</h2><div class="ph">week over week</div>'+wowTable(created_tw,created_lw,'owner')+'</div>'+
+   '<div class="panel"><h2>Leads by Origin</h2><div class="ph">booking source · week over week</div>'+wowTable(created_tw,created_lw,'origin')+'</div>'+
+   '<div class="panel"><h2>Leads by Type</h2><div class="ph">new vs existing · week over week</div>'+wowTable(created_tw,created_lw,'type')+'</div>'+
+ '</div>';
+
+ // ---- all-time KPIs ----
+ html+='<div class="section-h"><h2>All-Time Totals</h2><span class="rng">full pipeline since '+(m.dmin||'')+'</span></div>';
+ const kpi=[
+  {v:fmt(m.N),l:'Leads Created',d:'all revenue functions'},
+  {v:fmt(m.scheduled),l:'First Meetings Booked',d:pct(m.scheduled,m.N)+' of leads',a:1},
+  {v:fmt(m.completed),l:'Meetings Held',d:pct(m.completed,m.N)+' · '+m.outcomeCompleted+' flagged Completed',a:1},
+  {v:fmt(m.opp),l:'Opportunities ID\'d',d:'Mid B stage'},
+  {v:fmt(m.handoff),l:'Handed to Sales',d:m.withDeal+' linked deal'},
+  {v:fmt(m.active),l:'Active in Pipeline',d:fmt(m.lost)+' stalled / lost'}
+ ];
+ html+='<div class="kpis">'+kpi.map(k=>'<div class="kpi"><div class="v '+(k.a?'accent':'')+'">'+k.v+'</div><div class="l">'+k.l+'</div><div class="d">'+k.d+'</div></div>').join('')+'</div>';
+
+ // ---- weekly throughput (6 mo) + funnel ----
+ html+='<div class="grid g2">'+
+   '<div class="panel"><h2><span>Weekly Throughput — Last 6 Months</span>'+
+     '<select class="dim" id="dimSel"><option value="owner">By Rep</option><option value="origin">By Origin</option><option value="type">By Lead Type</option><option value="group">By Outcome</option><option value="none">Volume only</option></select></h2>'+
+     '<div class="ph">Leads created per week, stacked by the selected dimension · dotted line = meetings scheduled (by Meeting Scheduled Date)</div>'+
+     '<div class="chartbox" style="height:300px"><canvas id="weekChart"></canvas></div></div>'+
+   '<div class="panel"><h2>Meeting Funnel</h2><div class="ph">Where leads stand today (current stage)</div><div id="funnel"></div>'+
+     '<div class="legend"><span><i class="dot" style="background:'+C.navy+'"></i>Pre-meeting</span><span><i class="dot" style="background:'+C.blue+'"></i>Scheduled</span><span><i class="dot" style="background:'+C.teal+'"></i>Meeting complete</span><span><i class="dot" style="background:'+C.green+'"></i>Opportunity / Hand-off</span><span><i class="dot" style="background:'+C.slate+'"></i>Stalled / lost</span></div></div>'+
+ '</div>';
+
+ // ---- attribution: origin + owner ----
+ html+='<div class="grid g2">'+
+   '<div class="panel"><h2>Booking Source (Origin)</h2><div class="ph">all-time · meetings-held overlay</div><div class="chartbox" style="height:230px"><canvas id="originChart"></canvas></div><div id="originTbl"></div></div>'+
+   '<div class="panel"><h2>Owner Leaderboard</h2><div class="ph">all-time · leads · meetings held · opportunities</div><div class="chartbox" style="height:260px"><canvas id="ownerChart"></canvas></div></div>'+
+ '</div>';
+
+ // ---- stage / label / type ----
+ html+='<div class="grid g3">'+
+   '<div class="panel"><h2>Current Stage</h2><div class="ph">full lead-pipeline breakdown</div><div id="stageTbl"></div></div>'+
+   '<div class="panel"><h2>Lead Temperature</h2><div class="ph">Lead Label</div><div class="chartbox" style="height:200px"><canvas id="labelChart"></canvas></div></div>'+
+   '<div class="panel"><h2>Lead Type &amp; Source</h2><div class="ph">deal type · HubSpot source</div><div id="typeTbl"></div></div>'+
+ '</div>';
+
+ // ---- lead explorer ----
+ html+='<div class="panel" style="margin-top:14px"><h2><span>Lead Explorer <span style="font-weight:400;color:var(--muted);font-size:11px">— click any lead to open it in HubSpot ↗</span></span></h2><div class="ph">All '+fmt(m.N)+' leads · search and sort · the lead name opens the filtered record in HubSpot</div><div id="leadGrid"></div></div>';
+
+ html+='<div class="note"><b>How to read this.</b> Meetings are tracked as <b>Leads</b> moving through the lead pipeline: <b>Top A</b> (pending first meeting) → <b>Top B</b> (scheduled) → <b>Mid A</b> (complete) → <b>Mid B</b> (opportunity), then <b>Hand-off</b> or a closed reason. '+
+  '“First Meetings Booked” = leads at Top B or beyond; “Meetings Held” = Mid A + Mid B + Hand-off. '+
+  '<b>Week-over-week:</b> “Leads Created” counts by lead create date; “Meetings Scheduled” counts by the <i>Meeting Scheduled Date</i> field (populated on '+m.schedField+' leads so far — the most recently adopted field). The current week is partial (week-to-date). Weeks start Monday. '+
+  '<b>Attribution:</b> rep (owner) and lead type are well populated; <i>Origin</i> (Referral Partner vs Direct) is set on '+(m.N-(m.originAgg['Unspecified']?m.originAgg['Unspecified'].leads:0))+' of '+fmt(m.N)+' leads; there is no dedicated marketing/event tag in the source yet. Everything recomputes on each open/reload.</div>';
+
+ document.getElementById('content').innerHTML=html;
+ draw(m);
+ document.getElementById('dimSel').addEventListener('change',function(){ drawWeekly(this.value); });
+}
+
+function wowTile(label,tw,lw){
+ return '<div class="wowtile"><div><div class="l">'+label+'</div><div class="big">'+tw+'</div><div class="vs">this week &nbsp;·&nbsp; last week <b>'+lw+'</b></div></div>'+deltaHtml(tw,lw)+'</div>';
+}
+function wowTable(twArr,lwArr,dim){
+ const cats={};
+ twArr.forEach(l=>{const k=l[dim]||'(none)';(cats[k]=cats[k]||{t:0,l:0}).t++;});
+ lwArr.forEach(l=>{const k=l[dim]||'(none)';(cats[k]=cats[k]||{t:0,l:0}).l++;});
+ const keys=Object.keys(cats).sort((a,b)=>(cats[b].t+cats[b].l)-(cats[a].t+cats[a].l));
+ if(!keys.length) return '<div style="color:var(--muted);font-size:12px;padding:6px 2px">No leads created in either week.</div>';
+ let h='<table class="mini"><tr><th>'+(dim==='owner'?'Rep':dim==='origin'?'Origin':'Type')+'</th><th class="num">This wk</th><th class="num">Last wk</th><th class="num">Δ</th></tr>';
+ keys.forEach(k=>{const c=cats[k];const d=c.t-c.l;const cls=d>0?'up':d<0?'dn':'fl';h+='<tr><td>'+esc(k)+'</td><td class="num">'+c.t+'</td><td class="num">'+c.l+'</td><td class="num '+cls+'">'+(d>0?'+'+d:d)+'</td></tr>';});
+ h+='</table>';return h;
+}
+
+let weekChart=null;
+function drawWeekly(dim){
+ const weeks=genWeeks(26);
+ const labels=weeks.map(wkLabel);
+ // meetings scheduled line
+ const schedByWk={}; M.leads.forEach(l=>{ if(l.sched){const w=weekStart(l.sched); if(w)schedByWk[w]=(schedByWk[w]||0)+1;} });
+ const schedSeries=weeks.map(w=>schedByWk[w]||0);
+ let datasets=[];
+ if(dim==='none'){
+  const byWk={}; M.leads.forEach(l=>{const w=weekStart(l.created); if(w)byWk[w]=(byWk[w]||0)+1;});
+  datasets=[{type:'bar',label:'Leads created',data:weeks.map(w=>byWk[w]||0),backgroundColor:C.navy2,stack:'s'}];
+ } else {
+  // categories present in last 6 months
+  const win=new Set(weeks);
+  const catTotals={};
+  M.leads.forEach(l=>{const w=weekStart(l.created); if(win.has(w)){const k=l[dim]||'(none)';catTotals[k]=(catTotals[k]||0)+1;}});
+  let cats=Object.keys(catTotals).sort((a,b)=>catTotals[b]-catTotals[a]);
+  if(cats.length>8){ const keep=cats.slice(0,7); const other='Other'; const map={}; cats.forEach(c=>map[c]=keep.indexOf(c)>=0?c:other); cats=keep.concat([other]);
+    var remap=l=>map[l[dim]||'(none)']||other; } else { var remap=l=>l[dim]||'(none)'; }
+  const grid={}; cats.forEach(c=>grid[c]={});
+  M.leads.forEach(l=>{const w=weekStart(l.created); if(win.has(w)){const c=remap(l); grid[c][w]=(grid[c][w]||0)+1;}});
+  datasets=cats.map((c,i)=>({type:'bar',label:c,data:weeks.map(w=>grid[c][w]||0),backgroundColor:CYCLE[i%CYCLE.length],stack:'s'}));
+ }
+ datasets.push({type:'line',label:'Meetings scheduled',data:schedSeries,borderColor:C.rose,backgroundColor:C.rose,borderDash:[4,3],borderWidth:2,pointRadius:2,tension:.25,fill:false,stack:'line'});
+ if(weekChart)weekChart.destroy();
+ weekChart=new Chart(document.getElementById('weekChart'),{data:{labels:labels,datasets:datasets},
+  options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+   scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:9},maxRotation:60,minRotation:60}},y:{stacked:true,beginAtZero:true,grid:{color:'#eef2f6'},ticks:{font:{size:10},precision:0}}},
+   plugins:{legend:{position:'bottom',labels:{boxWidth:11,font:{size:10.5}}}}}});
+}
+
+function draw(m){
+ drawWeekly('owner');
+
+ // FUNNEL
+ const order=[
+  {lab:"Top A · Pending First Meeting",c:C.navy},{lab:"Top B · First Meeting Scheduled",c:C.blue},
+  {lab:"Mid A · First Meeting Complete",c:C.teal},{lab:"Mid B · Opportunity Identified",c:C.teal},
+  {lab:"Hand-off to Sales",c:C.green},{lab:"Didn't Respond",c:C.slate},{lab:"Idle",c:C.slate},{lab:"Not a Fit",c:C.slate},{lab:"Bad Timing",c:C.slate}
+ ];
+ const maxv=Math.max.apply(null,order.map(o=>m.stageCount[o.lab]||0))||1;
+ let f='';
+ order.forEach(o=>{const v=m.stageCount[o.lab]||0;const w=Math.max(2,Math.round(100*v/maxv));
+  f+='<div class="funnel-row"><div class="funnel-lab">'+(o.lab.indexOf(' · ')>=0?o.lab.replace(' · ','<small>')+'</small>':o.lab)+'</div><div class="funnel-bar" style="width:'+w+'%;background:'+o.c+'">'+(v>0?v:'')+'</div><div class="funnel-val">'+pct(v,m.N)+'</div></div>';});
+ document.getElementById('funnel').innerHTML=f;
+
+ // ORIGIN
+ const oKeys=Object.keys(m.originAgg).sort((a,b)=>m.originAgg[b].leads-m.originAgg[a].leads);
+ const oCol={'Referral Partner':C.violet,'Direct':C.navy2,'Unspecified':C.gray};
+ new Chart(document.getElementById('originChart'),{type:'doughnut',data:{labels:oKeys,datasets:[{data:oKeys.map(k=>m.originAgg[k].leads),backgroundColor:oKeys.map(k=>oCol[k]||C.amber),borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:11}}}},cutout:'58%'}});
+ let ot='<table class="mini"><tr><th>Origin</th><th class="num">Leads</th><th class="num">Met</th><th class="num">Conv.</th></tr>';
+ oKeys.forEach(k=>{const a=m.originAgg[k];ot+='<tr><td>'+k+'</td><td class="num">'+a.leads+'</td><td class="num">'+a.met+'</td><td class="num">'+pct(a.met,a.leads)+'</td></tr>';});
+ ot+='</table>';document.getElementById('originTbl').innerHTML=ot;
+
+ // OWNER
+ const ow=Object.keys(m.ownerAgg).sort((a,b)=>m.ownerAgg[b].leads-m.ownerAgg[a].leads).slice(0,8);
+ new Chart(document.getElementById('ownerChart'),{type:'bar',data:{labels:ow,datasets:[
+   {label:'Leads',data:ow.map(k=>m.ownerAgg[k].leads),backgroundColor:C.navy2},
+   {label:'Meetings held',data:ow.map(k=>m.ownerAgg[k].met),backgroundColor:C.teal},
+   {label:'Opportunities',data:ow.map(k=>m.ownerAgg[k].opp),backgroundColor:C.green}]},
+  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,scales:{x:{grid:{color:'#eef2f6'},ticks:{font:{size:10}}},y:{grid:{display:false},ticks:{font:{size:11}}}},plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:11}}}}}});
+
+ // STAGE table
+ const sKeys=Object.keys(m.stageCount).sort((a,b)=>m.stageCount[b]-m.stageCount[a]);
+ let st='<table class="mini"><tr><th>Stage</th><th class="num">Leads</th><th class="num">%</th></tr>';
+ sKeys.forEach(k=>{st+='<tr><td>'+k+'</td><td class="num">'+m.stageCount[k]+'</td><td class="num">'+pct(m.stageCount[k],m.N)+'</td></tr>';});
+ st+='</table>';document.getElementById('stageTbl').innerHTML=st;
+
+ // LABEL
+ const lKeys=['Hot','Warm','Cold','Untagged'].filter(k=>m.labelCount[k]);
+ const lCol={'Hot':C.rose,'Warm':C.amber,'Cold':C.blue,'Untagged':C.gray};
+ new Chart(document.getElementById('labelChart'),{type:'doughnut',data:{labels:lKeys,datasets:[{data:lKeys.map(k=>m.labelCount[k]),backgroundColor:lKeys.map(k=>lCol[k]),borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:11}}}},cutout:'55%'}});
+
+ // TYPE + SOURCE
+ const tKeys=Object.keys(m.typeCount).filter(k=>k!=='(none)').sort((a,b)=>m.typeCount[b]-m.typeCount[a]);
+ let tt='<table class="mini"><tr><th>Lead Type</th><th class="num">Leads</th></tr>';
+ tKeys.forEach(k=>{tt+='<tr><td>'+k+'</td><td class="num">'+m.typeCount[k]+'</td></tr>';});
+ tt+='</table><table class="mini" style="margin-top:10px"><tr><th>Lead Source</th><th class="num">Leads</th></tr>';
+ Object.keys(m.sourceCount).filter(k=>k!=='(blank)').sort((a,b)=>m.sourceCount[b]-m.sourceCount[a]).forEach(k=>{tt+='<tr><td>'+k+'</td><td class="num">'+m.sourceCount[k]+'</td></tr>';});
+ tt+='</table>';document.getElementById('typeTbl').innerHTML=tt;
+
+ // LEAD EXPLORER
+ const gd=m.leads.slice().sort((a,b)=>(b.created||'').localeCompare(a.created||'')).map(l=>[l.name,l.stage,l.owner,l.origin,l.type,l.company,l.created,l.met]);
+ new gridjs.Grid({columns:[
+   {name:'Lead',width:'190px',formatter:(c)=>gridjs.html('<a href="'+leadUrl(c)+'" target="_blank" rel="noopener" style="color:#2c5282;font-weight:600;text-decoration:none">'+esc(c)+' ↗</a>')},
+   {name:'Stage',width:'160px'},{name:'Owner',width:'120px'},{name:'Origin',width:'100px'},{name:'Type',width:'120px'},{name:'Company',width:'140px'},{name:'Created',width:'92px'},
+   {name:'Met?',width:'66px',formatter:(c)=>gridjs.html(c==='Yes'?'<span class="tag" style="background:#e2f4ee;color:#1d7a57">Yes</span>':'<span style="color:#c2ccd6">—</span>')}
+  ],data:gd,search:true,sort:true,resizable:true,pagination:{limit:12,summary:true},
+  style:{table:{'font-size':'12.5px'},th:{'font-size':'11px','text-transform':'uppercase','letter-spacing':'.03em','background':'#fafbfd','color':'#647489'}}
+ }).render(document.getElementById('leadGrid'));
+}
+
+load();
+}
+</script>
+</body>
+</html>

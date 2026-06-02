@@ -1,9 +1,12 @@
 {
   "name": "revenue-pipeline",
-  "version": "0.1.0",
+  "version": "0.12.0",
   "private": true,
   "description": "PrescriberPoint revenue team's live HubSpot dashboards.",
   "engines": {
     "node": ">=18"
+  },
+  "dependencies": {
+    "googleapis": "^144.0.0"
   }
 }
