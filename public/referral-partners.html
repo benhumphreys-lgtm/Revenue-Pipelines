@@ -102,7 +102,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initApp() {
-const FILE_ID = "1XYQ8v68z3z5Jnz2rxIcHRrWP4cMu82PZbj0V5dDcLO8";
+// HubSpot MASTER file (multi-tab) — has Sheet1, Companies, Contacts, Leads, Deals, Referral Partners
+const FILE_ID = "169LdHU6e-GFGs7XLEB6a5s7AewAvMD3qHWoMBorluzE";
 const EXPORT_TOOL = "mcp__6b11666e-7029-4baf-a491-3791bd8d9175__gdrive_export_file";
 const HS_PORTAL = "21389996";
 const HS_LEADS_LIST = "https://app.hubspot.com/contacts/"+HS_PORTAL+"/objects/0-136/views/all/list";
@@ -137,9 +138,9 @@ function fail(msg){ document.getElementById('content').innerHTML='<div class="er
 
 async function load() {
   try {
-    // Fetch both sheets in parallel
+    // Fetch both tabs in parallel — both from the master file
     const [leadsCsv, rpCsv] = await Promise.all([
-      fetchSheet(null),                  // default sheet = main MASTER → Leads
+      fetchSheet('Leads'),               // master file's Leads tab
       fetchSheet('Referral Partners')    // canonical RP list
     ]);
 
