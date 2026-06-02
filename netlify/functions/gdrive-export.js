@@ -80,7 +80,7 @@ exports.handler = async (event, context) => {
       // Sheet names with spaces require single-quote wrapping in range notation,
       // e.g. 'Referral Partners'!A:ZZ — otherwise the API parses the first word as
       // the sheet name and chokes on the rest.
-      const sheetRange = range || `'${String(sheet_name).replace(/'/g, "''")}'!A:ZZ`;
+      const sheetRange = range || `'${String(sheet_name).replace(/'/g, "''")}'!A:Z`;
       const resp = await sheets.spreadsheets.values.get({
         spreadsheetId: file_id,
         range: sheetRange
