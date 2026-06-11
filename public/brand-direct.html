@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridjs@5.0.2/dist/theme/mermaid.min.css" integrity="sha384-jZvDSsmGB9oGGT/4l9bHXGoAv1OxvG/cFmSo0dZaSqmBgvQTKDBFAMftlXTmMbNW" crossorigin="anonymous">
 <script src="https://cdn.jsdelivr.net/npm/gridjs@5.0.2/dist/gridjs.umd.js" integrity="sha384-/XXDzxe4FsGiAe50i/u9pY/Vy/uX654MHB1xoc1BJNnH1WXHhqHga9g3q5tF4gj7" crossorigin="anonymous"></script>
 <style>
+  :root { color-scheme: light; }
   html, body { background:#f6f7f9; color:#0f172a; }
   body { font-size:14px; }
   .page { max-width: 1280px; margin: 0 auto; padding: 24px; }
@@ -77,9 +78,9 @@
   <div class="tabs">
     <a class="tab" href="/unified-pipeline.html">Unified Pipeline</a>
     <a class="tab" href="/pipeline.html">Pipeline Confidence</a>
+    <a class="tab active" href="/brand-direct.html">Brand Direct</a>
     <a class="tab" href="/meeting-factory.html">Meeting Factory</a>
     <a class="tab" href="/referral-partners.html">Referral Partners</a>
-    <a class="tab active" href="/brand-direct.html">Brand Direct</a>
   </div>
   <div class="userbox">
     <span id="user-email">—</span>
@@ -116,7 +117,7 @@
         <div class="kpi"><div class="lbl">Total ARR</div><div class="val" id="kpi-arr">—</div><div class="sublbl" id="kpi-arr-full">—</div></div>
         <div class="kpi"><div class="lbl">Weighted</div><div class="val" id="kpi-wtd">—</div><div class="sublbl" id="kpi-wtd-full">—</div></div>
       </div>
-      <div class="note" id="scope-note">Scope: <code>pipeline = Brand (Direct)</code>, <code>dealtype ≠ Existing (Roll-Over)</code>, <code>dealtype ≠ Agency RFP</code> (matches both <code>"Agency RFP"</code> and <code>"Agency (RFP)"</code> spellings — see the dedicated <strong>Agency RFP</strong> sub-tab), excluding Closed Won / Closed Lost.</div>
+      <div class="note" id="scope-note">Scope: <code>pipeline = Brand (Direct)</code>, <code>dealtype &ne; Existing (Roll-Over)</code>, <code>dealtype &ne; Agency RFP</code> (matches both <code>"Agency RFP"</code> and <code>"Agency (RFP)"</code> spellings — see the dedicated <strong>Agency RFP</strong> sub-tab), excluding Closed Won / Closed Lost.</div>
     </div>
 
     <!-- ============ THIS WEEK PANEL ============ -->
@@ -169,7 +170,7 @@
   <div class="pane" id="pane-pipeline">
     <div class="panel">
       <h2>Pipeline · Live From HubSpot</h2>
-      <div class="note">Filter: <code>pipeline = Brand (Direct)</code>, <code>dealtype ≠ Existing (Roll-Over)</code>, <code>dealtype ≠ Agency RFP</code>, excluding Closed Won/Lost. Click any deal name to open it in HubSpot.</div>
+      <div class="note">Filter: <code>pipeline = Brand (Direct)</code>, <code>dealtype &ne; Existing (Roll-Over)</code>, <code>dealtype &ne; Agency RFP</code> (matches both <code>"Agency RFP"</code> and <code>"Agency (RFP)"</code> spellings), excluding Closed Won/Lost. Click any deal name to open it in HubSpot.</div>
       <div class="kpi-row" style="grid-template-columns: repeat(4, 1fr); margin-top: 16px;">
         <div class="kpi"><div class="lbl">Deals</div><div class="val" id="p-count">—</div></div>
         <div class="kpi"><div class="lbl">TCV</div><div class="val" id="p-tcv">—</div></div>
@@ -227,27 +228,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function initApp() {
   // ============ STATIC REFERENCE DATA (from HubSpot get_properties) ============
+  // Synced to live HubSpot dealstage definitions (verified 2026-06-10).
   const STAGE_LABEL = {
-    "1341411420": "Opportunity (Brand & Budget Identified)",
-    "143018394":  "Proposal Delivered",
-    "1341581069": "Proposal Under Evaluation",
-    "972397872":  "Verbal Agreement",
-    "1341581070": "Legal / Regulatory / Internal Alignment",
-    "143018398":  "Paperwork Complete",
+    "1341411420": "Client Committed / Proposal Meeting Pending",
+    "143018394":  "Proposal / RFP Delivered",
+    "1341581069": "Contract Negotiation",
     "972397873":  "Routing for Signature",
     "143017564":  "Closed Won",
     "143017565":  "Closed Lost",
     "972641437":  "On Hold",
+    "1363467602": "Did Not Respond",
     "1340846889": "Rollover"
   };
+  // Synced to live HubSpot dealtype definitions (verified 2026-06-10).
   const DEALTYPE_LABEL = {
     "newbusiness": "New Business",
     "existingbusiness": "Existing (Up-Sell)",
     "Existing (Expansion)": "Existing (Expansion)",
     "Existing (Roll-Over)": "Existing (Roll-Over)",
     "Win-back": "Win-back",
+    "Agency": "Agency",
     "Agency RFP": "Agency RFP",
-    "Agency (RFP)": "Agency RFP"   // legacy HubSpot value — normalize to canonical
+    "Agency (RFP)": "Agency RFP",   // legacy HubSpot value — normalize to canonical
+    "Specialty Pharma": "Specialty Pharma"
   };
   // Match either "Agency RFP" or "Agency (RFP)" (HubSpot has both spellings live).
   function isAgencyRfp(s) {
@@ -299,38 +302,50 @@ function initApp() {
 
   // ============ DATA LOAD ============
   async function loadAll() {
-    // Fetch up to 200 deals in one call. HubSpot's search API max limit is 200.
-    // Current Brand (Direct) open pipeline is well under that; if it grows, we'll
-    // need to implement `after`-based cursor pagination.
-    const resp = await window.cowork.callMcpTool(
-      "mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects",
-      {
-        objectType: "deals",
-        filterGroups: [{
-          filters: [
-            { propertyName: "pipeline", operator: "EQ", value: BRAND_DIRECT_PIPELINE_ID },
-            { propertyName: "dealstage", operator: "NOT_IN", values: CLOSED_STAGE_IDS }
-          ]
-        }],
-        properties: PROPS,
-        limit: 200,
-        sorts: [{ propertyName: "amount", direction: "DESCENDING" }]
-      }
-    );
-    const data = parseToolResult(resp);
-    const allDeals = data.results || [];
-
-    // Build owner lookup from the full HubSpot owners list
-    let ownerMap = {};
-    try {
-      const ownerResp = await window.cowork.callMcpTool(
-        "mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_owners",
-        {}
+    let allDeals = [];
+    let offset = 0;
+    // Page through up to ~600 deals (current Brand (Direct) open pipeline is well under this)
+    for (let i = 0; i < 6; i++) {
+      const resp = await window.cowork.callMcpTool(
+        "mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects",
+        {
+          objectType: "deals",
+          filterGroups: [{
+            filters: [
+              { propertyName: "pipeline", operator: "EQ", value: BRAND_DIRECT_PIPELINE_ID },
+              { propertyName: "dealstage", operator: "NOT_IN", values: CLOSED_STAGE_IDS }
+            ]
+          }],
+          properties: PROPS,
+          limit: 100,
+          offset: offset,
+          sorts: [{ propertyName: "amount", direction: "DESCENDING" }],
+          chatInsights: { userIntent: "Live Brand Direct pipeline dashboard", satisfaction: "NEUTRAL" }
+        }
       );
-      const ownerData = parseToolResult(ownerResp);
-      (ownerData.owners || []).forEach(o => { ownerMap[String(o.ownerId)] = o.name; });
-    } catch (e) {
-      console.warn("Owner lookup failed; falling back to numeric owner IDs.", e);
+      const data = parseToolResult(resp);
+      const results = data.results || [];
+      allDeals = allDeals.concat(results);
+      if (results.length < 100) break;
+      offset += 100;
+    }
+
+    // Build owner lookup from unique IDs in the result
+    const ownerIds = Array.from(new Set(
+      allDeals.map(d => d.properties && d.properties.hubspot_owner_id).filter(Boolean)
+    )).map(x => parseInt(x, 10)).filter(x => !isNaN(x));
+    let ownerMap = {};
+    if (ownerIds.length) {
+      try {
+        const ownerResp = await window.cowork.callMcpTool(
+          "mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_owners",
+          { ownerIds }
+        );
+        const ownerData = parseToolResult(ownerResp);
+        (ownerData.owners || []).forEach(o => { ownerMap[String(o.ownerId)] = o.name; });
+      } catch (e) {
+        console.warn("Owner lookup failed; falling back to numeric owner IDs.", e);
+      }
     }
 
     return { allDeals, ownerMap };
