@@ -2,66 +2,125 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Referral Partners — Revenue Pipeline</title>
 <link rel="stylesheet" href="/_shared.css">
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 <script src="/_api.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/gridjs@5.0.2/dist/gridjs.umd.js" integrity="sha384-/XXDzxe4FsGiAe50i/u9pY/Vy/uX654MHB1xoc1BJNnH1WXHhqHga9g3q5tF4gj7" crossorigin="anonymous"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridjs@5.0.2/dist/theme/mermaid.min.css" integrity="sha384-jZvDSsmGB9oGGT/4l9bHXGoAv1OxvG/cFmSo0dZaSqmBgvQTKDBFAMftlXTmMbNW" crossorigin="anonymous">
+<title>Referral Partners — Revenue Pipeline</title>
 <style>
-:root{ color-scheme: light;
- --bg:#f5f7fa; --card:#ffffff; --ink:#16263a; --muted:#647489; --line:#e6ebf1;
- --navy:#1f3a5f; --navy2:#2c5282; --teal:#2bb3a3; --amber:#e0a83e; --rose:#d2607a; --green:#3a9d6e; --slate:#8a98a8; --violet:#7a6cc4; --blue:#4a7fb5;
- --up:#1d7a57; --down:#b23b54;
- --shadow:0 1px 2px rgba(16,38,58,.06),0 4px 16px rgba(16,38,58,.06);
-}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.45}
-.wrap{max-width:1180px;margin:0 auto;padding:22px 22px 60px}
-header.top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:6px}
-h1{font-size:22px;margin:0;letter-spacing:-.01em}
-.sub{color:var(--muted);font-size:12.5px;margin-top:4px}
-.meta{text-align:right;font-size:12px;color:var(--muted);min-width:200px}
-.meta b{color:var(--ink)}
-.pill{display:inline-block;background:#f3e8ff;color:#6b21a8;border:1px solid #e9d5ff;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:600;margin-left:6px}
-.tier-pill{display:inline-block;padding:1px 8px;border-radius:6px;font-size:10.5px;font-weight:600;letter-spacing:.02em}
-.tier-1{background:#dcfce7;color:#166534}
-.tier-2{background:#fef3c7;color:#92400e}
-.tier-3{background:#e0e7ff;color:#3730a3}
-.tier-dnc{background:#fee2e2;color:#991b1b}
-.tier-na{background:#f1f5f9;color:#64748b}
-.section-h{display:flex;align-items:baseline;gap:10px;margin:22px 0 10px}
-.section-h h2{font-size:15px;margin:0;letter-spacing:-.01em}
-.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
-.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;box-shadow:var(--shadow)}
-.kpi .v{font-size:25px;font-weight:700;letter-spacing:-.02em}
-.kpi .l{font-size:11.5px;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.03em}
-.kpi .d{font-size:11px;margin-top:6px;color:var(--slate)}
-.kpi .accent{color:var(--violet)}
-.grid{display:grid;gap:14px;margin-top:14px}
-.g2{grid-template-columns:1.35fr 1fr}
-.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 16px 14px;box-shadow:var(--shadow)}
-.panel h2{font-size:13.5px;margin:0 0 2px;letter-spacing:.01em}
-.panel .ph{color:var(--muted);font-size:11.5px;margin-bottom:12px}
-.chartbox{position:relative;width:100%}
-table.mini{width:100%;border-collapse:collapse;font-size:12.5px}
-table.mini th,table.mini td{text-align:left;padding:5px 7px;border-bottom:1px solid var(--line)}
-table.mini th{color:var(--muted);font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.03em}
-table.mini td.num,table.mini th.num{text-align:right;font-variant-numeric:tabular-nums}
-.note{font-size:11.5px;color:var(--muted);background:#fbfcfe;border:1px dashed var(--line);border-radius:10px;padding:12px 14px;margin-top:16px;line-height:1.5}
-.note b{color:var(--ink)}
-.loading,.error{padding:60px 20px;text-align:center;color:var(--muted)}
-.error{color:#b23b54}
-.spinner{width:26px;height:26px;border:3px solid #d9e2ec;border-top-color:var(--violet);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px}
-@keyframes spin{to{transform:rotate(360deg)}}
-.diag{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px 14px;font-size:11.5px;color:#92400e;margin-bottom:14px}
-.diag b{color:#7c2d12}
-.diag code{background:#fef3c7;padding:1px 4px;border-radius:3px;font-family:ui-monospace,monospace;font-size:10.5px;display:inline-block;margin:1px 2px}
-.diag details{margin-top:6px}
-.diag summary{cursor:pointer;color:#7c2d12;font-weight:600;font-size:11px}
-@media(max-width:900px){.kpis{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:1fr}}
+  :root { color-scheme: light; }
+  body { margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #ffffff; color: #1a1a1a; font-size: 14px; line-height: 1.5; }
+  h1 { font-size: 22px; font-weight: 600; margin: 0 0 4px; color: #1a1a1a; }
+  h2 { font-size: 13px; font-weight: 600; margin: 0 0 12px; color: #4a4a4a; text-transform: uppercase; letter-spacing: 0.04em; }
+  .h2-hint { text-transform: none; color: #8a8a8a; font-weight: 400; font-size: 11px; letter-spacing: 0; }
+  .sub { color: #6b6b6b; font-size: 13px; margin: 0 0 24px; }
+  .section-label { font-size: 12px; font-weight: 600; color: #4a4a4a; text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 1px solid #e6e8eb; }
+  .kanban { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; }
+  .kanban-col { flex: 0 0 220px; background: #f6f7f9; border-radius: 10px; padding: 10px; display: flex; flex-direction: column; min-width: 0; }
+  .kanban-header { font-size: 12px; font-weight: 600; padding: 4px 6px 10px; color: #2c2c2a; display: flex; justify-content: space-between; align-items: center; gap: 8px; border-bottom: 1px solid #e6e8eb; margin-bottom: 8px; }
+  .kanban-stage { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .kanban-count { background: #e0e3e8; color: #2c2c2a; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; flex: 0 0 auto; }
+  .kanban-cards { display: flex; flex-direction: column; gap: 6px; max-height: 520px; overflow-y: auto; }
+  .kanban-card { background: #ffffff; padding: 10px 12px; border-radius: 8px; border: 1px solid #e6e8eb; cursor: pointer; transition: border-color 0.15s, transform 0.1s; }
+  .kanban-card:hover { border-color: #b5d4f4; }
+  .kanban-card:active { transform: scale(0.99); }
+  .kanban-name { font-weight: 600; font-size: 13px; color: #185FA5; margin-bottom: 6px; word-break: break-word; }
+  .kanban-meta { font-size: 11px; color: #4a4a4a; line-height: 1.5; }
+  .kanban-meta strong { font-weight: 500; color: #6b6b6b; }
+  .kanban-empty { font-size: 11px; color: #9aa0a6; padding: 12px 4px; text-align: center; font-style: italic; }
+  .kpis { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 24px; }
+  .kpi { background: #f6f7f9; border-radius: 10px; padding: 14px; cursor: pointer; transition: background 0.15s, transform 0.1s; }
+  .kpi:hover { background: #eef0f3; }
+  .kpi:active { transform: scale(0.98); }
+  .kpi-label { font-size: 11px; color: #6b6b6b; text-transform: uppercase; letter-spacing: 0.03em; }
+  .kpi-value { font-size: 24px; font-weight: 600; margin: 4px 0 2px; color: #111; line-height: 1.1; }
+  .kpi-hint { font-size: 11px; color: #8a8a8a; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .card { background: #ffffff; border: 1px solid #e6e8eb; border-radius: 12px; padding: 16px 18px; margin-bottom: 16px; }
+  .row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; cursor: pointer; padding: 3px 4px; border-radius: 6px; transition: background 0.15s; }
+  .row:hover { background: #f6f7f9; }
+  .row-label { width: 170px; font-size: 12px; color: #4a4a4a; }
+  .bar-wrap { flex: 1; height: 16px; background: #f0f2f5; border-radius: 4px; position: relative; overflow: hidden; }
+  .bar { height: 100%; border-radius: 4px; transition: width 0.3s ease; }
+  .bar-blue { background: #378ADD; }
+  .bar-teal { background: #1D9E75; }
+  .bar-gray { background: #888780; }
+  .bar-val { position: absolute; right: 8px; top: 0; font-size: 11px; line-height: 16px; color: #042C53; font-weight: 500; }
+
+  /* Funnel — active row */
+  .funnel { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 12px; }
+  .funnel-6 { grid-template-columns: repeat(6, 1fr); }
+  /* Off-funnel (dead-end stages) */
+  .deadend { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .funnel-cell { padding: 14px 10px; border-radius: 8px; text-align: center; cursor: pointer; transition: transform 0.1s, box-shadow 0.15s; }
+  .funnel-cell:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); transform: translateY(-1px); }
+  .funnel-cell:active { transform: scale(0.98); }
+  .funnel-cell.s-top-a { background: #E6F1FB; color: #042C53; }
+  .funnel-cell.s-top-b { background: #B5D4F4; color: #042C53; }
+  .funnel-cell.s-mid-a { background: #FAEEDA; color: #412402; }
+  .funnel-cell.s-mid-b { background: #FAC775; color: #412402; }
+  .funnel-cell.s-handoff { background: #E1F5EE; color: #04342C; }
+  .funnel-cell.s-closed-lost { background: #FCEBEB; color: #501313; }
+  .funnel-cell.s-dead { background: #f0f2f5; color: #4a4a4a; }
+  .funnel-num { font-size: 22px; font-weight: 600; }
+  .funnel-lab { font-size: 11px; text-transform: none; letter-spacing: 0; margin-top: 6px; min-height: 48px; line-height: 1.3; display: flex; align-items: center; justify-content: center; padding: 0 4px; font-weight: 500; }
+  .funnel-tap { font-size: 10px; opacity: 0.6; margin-top: 4px; }
+  .deadend-label { font-size: 11px; color: #8a8a8a; text-transform: uppercase; letter-spacing: 0.04em; margin: 8px 0 6px; }
+
+  .tier { display: flex; justify-content: space-between; align-items: center; padding: 9px 14px; border-radius: 8px; margin-bottom: 6px; cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
+  .tier:hover { opacity: 0.85; }
+  .tier:active { transform: scale(0.99); }
+  .tier-1 { background: #E1F5EE; color: #04342C; }
+  .tier-2 { background: #FAEEDA; color: #412402; }
+  .tier-3 { background: #EEEDFE; color: #26215C; }
+  .tier-dnc { background: #f0f2f5; color: #4a4a4a; }
+  .tier-none { background: #fcfcfc; color: #8a8a8a; border: 1px dashed #e0e0e0; }
+  .tier-name { font-size: 12px; font-weight: 500; }
+  .tier-count { font-size: 16px; font-weight: 600; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; font-weight: 500; color: #6b6b6b; padding: 8px 6px; border-bottom: 1px solid #e6e8eb; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; }
+  td { padding: 9px 6px; border-bottom: 1px solid #f0f2f5; vertical-align: middle; }
+  tr.clickable { cursor: pointer; transition: background 0.15s; }
+  tr.clickable:hover { background: #f6f7f9; }
+  td a { color: #185FA5; text-decoration: none; }
+  td a:hover { text-decoration: underline; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500; white-space: nowrap; }
+  .pill-t1 { background: #E1F5EE; color: #04342C; }
+  .pill-t2 { background: #FAEEDA; color: #412402; }
+  .pill-t3 { background: #EEEDFE; color: #26215C; }
+  .pill-dnc { background: #f0f2f5; color: #4a4a4a; }
+  .pill-none { background: #fcfcfc; color: #8a8a8a; }
+  .pill-stage { background: #E6F1FB; color: #042C53; }
+  .pill-stage-active { background: #E1F5EE; color: #04342C; }
+  .pill-stage-retired { background: #f0f2f5; color: #4a4a4a; }
+  .pill-stage-slow { background: #FCEBEB; color: #501313; }
+  .pill-confirmed { background: #E1F5EE; color: #04342C; }
+  .pill-origin-only { background: #FAEEDA; color: #412402; }
+  .pill-mismatch { background: #FCEBEB; color: #501313; }
+  .pill-checking { background: #f0f2f5; color: #6b6b6b; }
+  .empty { color: #8a8a8a; font-size: 13px; padding: 12px 0; }
+  .err { color: #A32D2D; font-size: 13px; padding: 12px 0; }
+  .loading { color: #8a8a8a; font-size: 13px; }
+  .table-scroll { max-height: 480px; overflow-y: auto; }
+  .footer-note { padding-top: 16px; font-size: 12px; color: #8a8a8a; }
+  code { background: #f6f7f9; padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+  .xref-banner { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 12px; background: #f0f2f5; font-size: 11px; color: #4a4a4a; margin-left: 8px; }
+  .xref-banner.live { background: #E1F5EE; color: #04342C; }
+
+  /* Modal styles */
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(15, 18, 22, 0.45); display: none; align-items: flex-start; justify-content: center; padding: 50px 20px 20px; z-index: 100; }
+  .modal-backdrop.open { display: flex; }
+  .modal { background: #ffffff; border-radius: 12px; max-width: 1000px; width: 100%; max-height: calc(100vh - 80px); display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+  .modal-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 18px 22px 12px; border-bottom: 1px solid #e6e8eb; }
+  .modal-title { font-size: 16px; font-weight: 600; margin: 0; color: #1a1a1a; }
+  .modal-sub { font-size: 12px; color: #6b6b6b; margin-top: 2px; }
+  .modal-close { background: transparent; border: 0; font-size: 22px; line-height: 1; color: #6b6b6b; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
+  .modal-close:hover { background: #f0f2f5; color: #1a1a1a; }
+  .modal-body { overflow-y: auto; padding: 4px 22px 18px; }
+  .modal-body table th { position: sticky; top: 0; background: #ffffff; z-index: 1; }
+  .btn-hs { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: #185FA5; color: #ffffff; border-radius: 6px; font-size: 11px; text-decoration: none; font-weight: 500; }
+  .btn-hs:hover { background: #0C447C; text-decoration: none; }
 </style>
 </head>
 <body>
@@ -86,18 +145,71 @@ table.mini td.num,table.mini th.num{text-align:right;font-variant-numeric:tabula
 </div>
 
 <div id="main-content" style="display:none">
-<div class="wrap">
- <header class="top">
-  <div>
-   <h1>Referral Partners <span class="pill">LIVE</span></h1>
-   <div class="sub">RP-sourced lead funnel · sourced from <b>HubSpot MASTER</b> (Leads + Contacts + Referral Partners tabs)</div>
-  </div>
-  <div class="meta" id="meta">&nbsp;</div>
- </header>
- <div id="content">
-  <div class="loading"><div class="spinner"></div>Pulling live RP + lead + contact data from the master sheet…</div>
- </div>
+
+<h1>Referral partner dashboard</h1>
+<p class="sub">Three views of RP-driven pipeline momentum: <strong>① where partners sit</strong> in their relationship arc, <strong>② new-business leads</strong> with origin = Referral Partner (going-forward attribution), and <strong>③ deals in Brand Direct</strong> where any associated contact has an RP link (retroactive North Star — captures legacy, renewal, and win-back deals the lead system can't see).</p>
+
+<div id="err-banner" style="display:none; background:#FCEBEB; border:1px solid #E24B4A; color:#501313; padding:12px 14px; border-radius:10px; margin: 0 0 16px; font-size:13px;"></div>
+
+<div class="kpis">
+  <div class="kpi" data-drill="active-rps"><div class="kpi-label">Active RPs</div><div class="kpi-value" id="kpi-active-rps">—</div><div class="kpi-hint" id="kpi-rps-hint">of total</div></div>
+  <div class="kpi" data-drill="all-leads"><div class="kpi-label">RP-sourced leads</div><div class="kpi-value" id="kpi-leads">—</div><div class="kpi-hint">origin = Referral Partner</div></div>
+  <div class="kpi" data-drill="xref-confirmed"><div class="kpi-label">Cross-confirmed</div><div class="kpi-value" id="kpi-xref">—</div><div class="kpi-hint" id="kpi-xref-hint">via contact link</div></div>
+  <div class="kpi" data-drill="leads-with-deals"><div class="kpi-label">Attributed deals</div><div class="kpi-value" id="kpi-deals">—</div><div class="kpi-hint">across RP leads</div></div>
+  <div class="kpi" data-drill="leads-closed-won"><div class="kpi-label">Closed-won revenue</div><div class="kpi-value" id="kpi-rev-won">—</div><div class="kpi-hint">RP-attributed</div></div>
+  <div class="kpi" data-drill="leads-open-pipeline"><div class="kpi-label">Open pipeline</div><div class="kpi-value" id="kpi-rev-open">—</div><div class="kpi-hint">in active RP leads</div></div>
 </div>
+
+<div class="section-label">① RP lifecycle pipeline — click a card to open in HubSpot</div>
+<div class="card">
+  <div id="rp-kanban" class="kanban"><div class="loading">Loading…</div></div>
+</div>
+
+<div class="section-label" style="margin-top: 24px;">② Lead funnel — RP-origin leads (going forward, new business)</div>
+<div class="card">
+  <h2>RP-sourced lead funnel <span class="h2-hint">— origin = Referral Partner · click a stage to view those leads</span><span class="xref-banner" id="xref-banner">Cross-reference: pending…</span></h2>
+  <div id="funnel" class="funnel"><div class="loading">Loading…</div></div>
+</div>
+
+<div class="section-label" style="margin-top: 24px;">③ Deal pipeline — RP-attributed deals (North Star · retroactive · contact-RP link)</div>
+<div class="card">
+  <h2>RP-attributed deal funnel — Brand (Direct) <span class="h2-hint">— every Brand Direct deal with a direct Deal → Referral Partner association · click a stage to view deals</span><span class="xref-banner" id="deal-banner">Deal walk: pending…</span></h2>
+  <div id="deal-funnel" class="funnel funnel-6"><div class="loading">Loading…</div></div>
+  <div id="bridge-note" style="margin-top: 12px; padding: 10px 12px; background: #f6f7f9; border-radius: 8px; font-size: 12px; color: #4a4a4a; display: none;"></div>
+</div>
+
+<div class="card">
+  <h2>Top performing RPs <span class="h2-hint">— click a row to view that RP's leads</span></h2>
+  <div id="top-rps"><div class="loading">Loading…</div></div>
+</div>
+
+<div class="card">
+  <h2>All referral partners</h2>
+  <div id="rp-table" class="table-scroll"><div class="loading">Loading partners…</div></div>
+</div>
+
+<div class="card">
+  <h2>RP-sourced leads</h2>
+  <div id="leads-table" class="table-scroll"><div class="loading">Loading leads…</div></div>
+</div>
+
+<div class="footer-note">
+  Data sources — RPs: <code>2-37656252</code> (61 records). Leads: <code>0-136</code> filtered to <code>origin = "Referral Partner"</code>. Deals: pipeline <code>74379150</code> "Brand (Direct)" including Closed Won and Closed Lost. Lead funnel = origin-tag attribution (going-forward, new business only). Deal funnel = direct Deal → Referral Partner association walked from the RP side (matches the "Deal → Referral Partners" segment column in HubSpot). Momentum bridge tracks adoption of the new lead-tagging process by comparing the two paths.
+</div>
+
+<div class="modal-backdrop" id="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <h3 class="modal-title" id="modal-title">—</h3>
+        <div class="modal-sub" id="modal-sub">—</div>
+      </div>
+      <button class="modal-close" id="modal-close" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body" id="modal-body">—</div>
+  </div>
+</div>
+
 </div>
 
 <script>
@@ -111,338 +223,743 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initApp() {
-// HubSpot MASTER file (multi-tab)
-const FILE_ID = "169LdHU6e-GFGs7XLEB6a5s7AewAvMD3qHWoMBorluzE";
-const EXPORT_TOOL = "mcp__6b11666e-7029-4baf-a491-3791bd8d9175__gdrive_export_file";
-const HS_PORTAL = "21389996";
-const HS_LEADS_LIST = "https://app.hubspot.com/contacts/"+HS_PORTAL+"/objects/0-136/views/all/list";
+const HUBSPOT_PORTAL = 21389996;
 
-function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function leadUrl(name){ return HS_LEADS_LIST+"?query="+encodeURIComponent(name); }
-const fmt = n => Number(n||0).toLocaleString('en-US');
-const pct = (a,b) => b ? (100*a/b).toFixed(1)+'%' : '–';
+// Live RP pipeline stage labels (from hubspot_list_pipelines on 2-37656252)
+const RP_STAGE_MAP = {
+  "1018743895": { label: "In Recruitment (First Meeting Held)", cls: "pill-stage" },
+  "1018771080": { label: "Actively Introing", cls: "pill-stage-active" },
+  "1018771081": { label: "Unique (Limited Productivity)", cls: "pill-stage-slow" },
+  "1018771082": { label: "Slowing Down", cls: "pill-stage-slow" },
+  "1162158241": { label: "Retired (DNC)", cls: "pill-stage-retired" },
+  "1347878431": { label: "Demo Scheduled", cls: "pill-stage-active" },
+  "967596115": { label: "Ramping Up (Signed)", cls: "pill-stage-active" },
+  "967596116": { label: "Retired (Reachable)", cls: "pill-stage-retired" }
+};
+// Order matches the HubSpot Referral Partner Pipeline board view
+const RP_STAGE_ORDER = [
+  "1347878431",  // Demo Scheduled
+  "1018743895",  // In Recruitment
+  "967596115",   // Ramping Up (Signed)
+  "1018771080",  // Actively Introing
+  "1018771081",  // Unique (Limited Productivity)
+  "1018771082",  // Slowing Down
+  "967596116",   // Retired (Reachable)
+  "1162158241"   // Retired (DNC)
+];
+const RP_TIERS = ["TIER 1: ACTIVE PUSH", "TIER 2: STAY WARM", "TIER 3: LIGHT DRIP", "DNC"];
+const TIER_PILL = { "TIER 1: ACTIVE PUSH": "pill-t1", "TIER 2: STAY WARM": "pill-t2", "TIER 3: LIGHT DRIP": "pill-t3", "DNC": "pill-dnc" };
+const TIER_BAR = { "TIER 1: ACTIVE PUSH": "tier-1", "TIER 2: STAY WARM": "tier-2", "TIER 3: LIGHT DRIP": "tier-3", "DNC": "tier-dnc" };
 
-function csvParse(s){const rows=[];let f='',row=[],q=false;for(let i=0;i<s.length;i++){const c=s[i];if(q){if(c=='"'){if(s[i+1]=='"'){f+='"';i++;}else q=false;}else f+=c;}else{if(c=='"')q=true;else if(c==','){row.push(f);f='';}else if(c=='\n'){row.push(f);rows.push(row);row=[];f='';}else if(c=='\r'){}else f+=c;}}if(f.length||row.length){row.push(f);rows.push(row);}return rows;}
+// Lead pipeline (0-136) — from hubspot_list_pipelines
+const LEAD_FUNNEL = [
+  { id: "new-stage-id",         label: "Top A — Pending First Meeting", cls: "s-top-a" },
+  { id: "attempting-stage-id",  label: "Top B — First Meeting Scheduled", cls: "s-top-b" },
+  { id: "connected-stage-id",   label: "Mid A — First meeting complete", cls: "s-mid-a" },
+  { id: "qualified-stage-id",   label: "Mid B — Opportunity Identified", cls: "s-mid-b" },
+  { id: "1009181988",           label: "Hand-off", cls: "s-handoff" }
+];
+const LEAD_DEADEND = [
+  { id: "968123417",           label: "Idle" },
+  { id: "259798673",           label: "Didn't Respond" },
+  { id: "unqualified-stage-id", label: "Bad Timing" },
+  { id: "972389929",           label: "Not a fit" }
+];
+const LEAD_STAGE_BY_ID = Object.fromEntries([...LEAD_FUNNEL, ...LEAD_DEADEND].map(s => [s.id, s]));
 
-async function fetchSheet(sheetName) {
-  return await window.cowork.callMcpTool(EXPORT_TOOL, { file_id: FILE_ID, sheet_name: sheetName });
+// Brand Direct deal pipeline (deals object, pipeline 74379150) — from hubspot_list_pipelines
+const BRAND_DIRECT_PIPELINE_ID = "74379150";
+const DEAL_FUNNEL = [
+  { id: "1341411420", label: "Client committed", cls: "s-top-a" },
+  { id: "143018394",  label: "Proposal / RFP Delivered", cls: "s-top-b" },
+  { id: "1341581069", label: "Contract Negotiation", cls: "s-mid-a" },
+  { id: "972397873",  label: "Routing for Signature", cls: "s-mid-b" },
+  { id: "143017564",  label: "Closed Won", cls: "s-handoff" },
+  { id: "143017565",  label: "Closed Lost", cls: "s-closed-lost" }
+];
+const DEAL_STAGE_BY_ID = Object.fromEntries(DEAL_FUNNEL.map(s => [s.id, s]));
+
+const LEAD_SOURCE_LABELS = {
+  "ORGANIC_SEARCH": "Organic Search", "PAID_SEARCH": "Paid Search", "EMAIL_MARKETING": "Email Marketing",
+  "SOCIAL_MEDIA": "Organic Social", "REFERRALS": "Referrals", "OTHER_CAMPAIGNS": "Other Campaigns",
+  "DIRECT_TRAFFIC": "Direct Traffic", "OFFLINE": "Offline", "PAID_SOCIAL": "Paid Social", "AI_REFERRALS": "AI Referrals"
+};
+const RETIRED_STAGE_IDS = new Set(["967596116", "1162158241"]);
+
+let RPS = [];
+let LEADS = [];
+let OWNERS_BY_ID = {};
+let RP_BY_ID = {};
+let RP_BY_KEY = {};
+// xrefMap[leadId] = { status: "confirmed"|"origin_only"|"mismatch"|"checking", rpName, rpId, contactId }
+let XREF = {};
+// dealId → { deal record, sourceLeadIds: [..], sourceRpNames: [..] }
+let RP_DEALS = {};
+// leadId → [dealId, ...]
+let LEAD_DEALS = {};
+
+function fmtMoney(n) {
+  n = parseFloat(n) || 0;
+  if (n >= 1_000_000) return "$" + (n / 1_000_000).toFixed(2) + "M";
+  if (n >= 1_000) return "$" + Math.round(n / 1_000) + "k";
+  if (n === 0) return "$0";
+  return "$" + Math.round(n);
+}
+function num(v) { return parseFloat(v) || 0; }
+function rpUrl(id) { return "https://app.hubspot.com/contacts/" + HUBSPOT_PORTAL + "/record/2-37656252/" + id; }
+function leadUrl(id) { return "https://app.hubspot.com/contacts/" + HUBSPOT_PORTAL + "/record/0-136/" + id; }
+function esc(s) { return (s || "").toString().replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+function nameKey(s) { return (s || "").toString().trim().toLowerCase().replace(/\s+/g, " "); }
+function ownerName(id) {
+  if (!id) return "Unassigned";
+  const o = OWNERS_BY_ID[String(id)];
+  if (!o) return "Owner #" + id;
+  const full = ((o.firstName || "") + " " + (o.lastName || "")).trim();
+  return full || o.email || ("Owner #" + id);
+}
+function leadStageLabel(l) { return LEAD_STAGE_BY_ID[l.hs_pipeline_stage] ? LEAD_STAGE_BY_ID[l.hs_pipeline_stage].label : (l.hs_pipeline_stage || "—"); }
+function leadSourceLabel(l) { return LEAD_SOURCE_LABELS[l.hs_lead_source] || (l.hs_lead_source || "—"); }
+function rpStageLabel(r) { return r.hs_pipeline_stage && RP_STAGE_MAP[r.hs_pipeline_stage] ? RP_STAGE_MAP[r.hs_pipeline_stage].label : "Unset"; }
+function xrefPill(status) {
+  if (status === "confirmed") return '<span class="pill pill-confirmed">✓ Confirmed</span>';
+  if (status === "origin_only") return '<span class="pill pill-origin-only">⚠ Origin only</span>';
+  if (status === "mismatch") return '<span class="pill pill-mismatch">✗ Mismatch</span>';
+  return '<span class="pill pill-checking">…</span>';
 }
 
-// Find the row most likely to be the header row by looking for one with many
-// distinct, non-empty cells. HubSpot MASTER tabs prepend a metadata row.
-function findHeaderRow(rows, maxScan=5) {
-  let best = { idx: 0, score: 0 };
-  const scanLimit = Math.min(maxScan, rows.length);
-  for (let i = 0; i < scanLimit; i++) {
-    const row = rows[i] || [];
-    const nonEmpty = row.filter(v => String(v || '').trim()).length;
-    if (nonEmpty > best.score) best = { idx: i, score: nonEmpty };
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function callMcp(name, args, opts) {
+  opts = opts || {};
+  const maxRetries = opts.maxRetries != null ? opts.maxRetries : 4;
+  let attempt = 0;
+  while (true) {
+    let r;
+    try {
+      r = await window.cowork.callMcpTool(name, args);
+    } catch (e) {
+      const msg = (e && e.message ? e.message : String(e));
+      if (/rate limit|too many|429/i.test(msg) && attempt < maxRetries) {
+        const wait = Math.min(8000, 1000 * Math.pow(2, attempt));
+        console.warn("[callMcp] rate-limited, retry in " + wait + "ms", name);
+        await sleep(wait);
+        attempt++;
+        continue;
+      }
+      throw new Error("Connector call failed: " + msg);
+    }
+    if (!r) throw new Error("No response from connector.");
+    if (r.isError) {
+      const t = (r.content && r.content[0] && r.content[0].text) || JSON.stringify(r.content || {});
+      if (/rate limit|too many|429/i.test(t) && attempt < maxRetries) {
+        const wait = Math.min(8000, 1000 * Math.pow(2, attempt));
+        console.warn("[callMcp] rate-limited (isError), retry in " + wait + "ms", name);
+        await sleep(wait);
+        attempt++;
+        continue;
+      }
+      throw new Error(t);
+    }
+    if (r.structuredContent) {
+      const p = r.structuredContent;
+      if (p && p.result != null) return typeof p.result === "string" ? JSON.parse(p.result) : p.result;
+      return p;
+    }
+    if (r.content && r.content[0] && r.content[0].text != null) {
+      const text = r.content[0].text;
+      try {
+        const p = JSON.parse(text);
+        if (p && p.result != null) return typeof p.result === "string" ? JSON.parse(p.result) : p.result;
+        return p;
+      } catch (e) {
+        if (/rate limit|too many|429/i.test(text) && attempt < maxRetries) {
+          const wait = Math.min(8000, 1000 * Math.pow(2, attempt));
+          console.warn("[callMcp] rate-limited (text), retry in " + wait + "ms", name);
+          await sleep(wait);
+          attempt++;
+          continue;
+        }
+        const snip = text.length > 300 ? text.substring(0, 300) + "…" : text;
+        throw new Error(snip);
+      }
+    }
+    return r;
   }
-  return best.idx;
 }
 
-// Case-insensitive header → column index. Tries each pattern as exact match
-// first, then as a substring match.
-function findCol(headers, patterns) {
-  const lc = headers.map(h => String(h || '').toLowerCase().trim());
-  for (const p of patterns) {
-    const exact = lc.indexOf(p.toLowerCase());
-    if (exact >= 0) return exact;
-  }
-  for (const p of patterns) {
-    for (let i = 0; i < lc.length; i++) {
-      if (lc[i].includes(p.toLowerCase())) return i;
+// ---- Modal ----
+function openModal(title, sub, body) {
+  document.getElementById("modal-title").textContent = title;
+  document.getElementById("modal-sub").textContent = sub;
+  document.getElementById("modal-body").innerHTML = body;
+  document.getElementById("modal-backdrop").classList.add("open");
+}
+function closeModal() { document.getElementById("modal-backdrop").classList.remove("open"); }
+document.getElementById("modal-close").addEventListener("click", closeModal);
+document.getElementById("modal-backdrop").addEventListener("click", (e) => { if (e.target.id === "modal-backdrop") closeModal(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+
+function renderLeadsTable(leads) {
+  if (!leads.length) return '<div class="empty">No leads match this filter.</div>';
+  const sorted = leads.slice().sort((a, b) => (num(b.hs_lead_closed_won_deals_amount) + num(b.hs_lead_pipeline_value)) - (num(a.hs_lead_closed_won_deals_amount) + num(a.hs_lead_pipeline_value)) || (b.hs_createdate || "").localeCompare(a.hs_createdate || ""));
+  return `<table>
+    <thead><tr><th>Lead</th><th>Owner</th><th>Stage</th><th>Type</th><th>Referred by</th><th>RP confirm</th><th class="num">Pipeline</th><th></th></tr></thead>
+    <tbody>${sorted.map(l => {
+      const xref = XREF[l.id] || { status: "checking" };
+      return `<tr>
+        <td><strong>${esc(l.hs_lead_name || "(no name)")}</strong></td>
+        <td>${esc(ownerName(l.hubspot_owner_id))}</td>
+        <td>${esc(leadStageLabel(l))}</td>
+        <td>${esc(leadSourceLabel(l))}</td>
+        <td>${esc(l.referral_partner || "—")}</td>
+        <td>${xrefPill(xref.status)}</td>
+        <td class="num">${fmtMoney(num(l.hs_lead_closed_won_deals_amount) + num(l.hs_lead_pipeline_value))}</td>
+        <td><a class="btn-hs" href="${leadUrl(l.id)}" target="_blank" rel="noopener">Open ↗</a></td>
+      </tr>`;
+    }).join("")}</tbody>
+  </table>`;
+}
+
+function renderRpsTable(rps) {
+  if (!rps.length) return '<div class="empty">No RPs match this filter.</div>';
+  const sorted = rps.slice().sort((a, b) => num(b.count_of_sql) - num(a.count_of_sql));
+  return `<table>
+    <thead><tr><th>Partner</th><th>Owner</th><th>Tier</th><th>Stage</th><th>City</th><th class="num">Contacts</th><th class="num">SQLs</th><th></th></tr></thead>
+    <tbody>${sorted.map(r => {
+      const tier = r.rp_tier;
+      const tierHtml = tier ? `<span class="pill ${TIER_PILL[tier] || "pill-none"}">${esc(tier.replace(/^TIER (\d): /, "T$1: "))}</span>` : `<span class="pill pill-none">—</span>`;
+      const stageInfo = r.hs_pipeline_stage && RP_STAGE_MAP[r.hs_pipeline_stage];
+      const stageHtml = stageInfo ? `<span class="pill ${stageInfo.cls}">${esc(stageInfo.label)}</span>` : `<span class="pill pill-none">—</span>`;
+      return `<tr>
+        <td><strong>${esc(r.referral_partner || "(unnamed)")}</strong></td>
+        <td>${esc(ownerName(r.hubspot_owner_id))}</td>
+        <td>${tierHtml}</td>
+        <td>${stageHtml}</td>
+        <td>${esc(r.city_state || "")}</td>
+        <td class="num">${r.count_of_contacts || 0}</td>
+        <td class="num">${r.count_of_sql || 0}</td>
+        <td><a class="btn-hs" href="${rpUrl(r.id)}" target="_blank" rel="noopener">Open ↗</a></td>
+      </tr>`;
+    }).join("")}</tbody>
+  </table>`;
+}
+
+// ---- Drill-down handlers ----
+const KPI_DRILLS = {
+  "active-rps": () => { const rps = RPS.filter(r => !RETIRED_STAGE_IDS.has(r.hs_pipeline_stage) && r.rp_tier !== "DNC"); return { title: "Active referral partners", sub: rps.length + " RPs · excludes DNC tier and retired pipeline stages", body: renderRpsTable(rps) }; },
+  "all-leads": () => ({ title: "All RP-sourced leads", sub: LEADS.length + " leads · origin = Referral Partner", body: renderLeadsTable(LEADS) }),
+  "xref-confirmed": () => { const ls = LEADS.filter(l => (XREF[l.id] || {}).status === "confirmed"); return { title: "Cross-confirmed RP leads", sub: ls.length + " leads · origin matches contact → RP association", body: renderLeadsTable(ls) }; },
+  "leads-with-deals": () => { const ds = Object.values(RP_DEALS); return { title: "RP-attributed deals — Brand Direct", sub: ds.length + " deals total · across all stages", body: renderDealsTable(ds) }; },
+  "leads-closed-won": () => { const ds = Object.values(RP_DEALS).filter(d => d.deal.dealstage === "143017564"); const sum = ds.reduce((s, d) => s + (parseFloat(d.deal.amount) || 0), 0); return { title: "RP-attributed deals — Closed Won", sub: ds.length + " deal" + (ds.length === 1 ? "" : "s") + " · " + fmtMoney(sum), body: renderDealsTable(ds) }; },
+  "leads-open-pipeline": () => { const open = new Set(["1341411420", "143018394", "1341581069", "972397873"]); const ds = Object.values(RP_DEALS).filter(d => open.has(d.deal.dealstage)); const sum = ds.reduce((s, d) => s + (parseFloat(d.deal.amount) || 0), 0); return { title: "RP-attributed deals — Open pipeline", sub: ds.length + " open deal" + (ds.length === 1 ? "" : "s") + " · " + fmtMoney(sum), body: renderDealsTable(ds) }; }
+};
+
+function drillStageId(stageId, label) {
+  const ls = LEADS.filter(l => l.hs_pipeline_stage === stageId);
+  openModal(label + " — RP-sourced leads", ls.length + " leads in this stage", renderLeadsTable(ls));
+}
+function drillTier(tier) {
+  const rps = tier === "_none" ? RPS.filter(r => !r.rp_tier) : RPS.filter(r => r.rp_tier === tier);
+  openModal((tier === "_none" ? "RPs with no tier set" : tier), rps.length + " referral partners", renderRpsTable(rps));
+}
+function drillRpStage(stageLabel) {
+  const rps = RPS.filter(r => rpStageLabel(r) === stageLabel);
+  openModal(stageLabel + " — referral partners", rps.length + " RPs in this lifecycle stage", renderRpsTable(rps));
+}
+function drillRp(rpName) {
+  const key = nameKey(rpName);
+  const ls = LEADS.filter(l => nameKey(l.referral_partner) === key);
+  const rp = RPS.find(r => nameKey(r.referral_partner) === key);
+  const sub = (rp ? (rp.rp_tier || "Untiered") + " · " + rpStageLabel(rp) + " · " : "") + ls.length + " leads attributed";
+  openModal(rpName, sub, renderLeadsTable(ls));
+}
+function drillKpi(key) {
+  const fn = KPI_DRILLS[key];
+  if (!fn) return;
+  const { title, sub, body } = fn();
+  openModal(title, sub, body);
+}
+
+// ---- Cross-reference: walk lead → contacts → RP for each lead ----
+async function crossReferenceLeads() {
+  const concurrency = 6;
+  let idx = 0;
+  let done = 0;
+  async function worker() {
+    while (idx < LEADS.length) {
+      const i = idx++;
+      const l = LEADS[i];
+      const expectedRpName = (l.referral_partner || "").trim();
+      try {
+        const [contactsRes, leadDealsRes] = await Promise.all([
+          callMcp("mcp__6b11666e-7029-4baf-a491-3791bd8d9175__hubspot_get_custom_object_associations", {
+            object_type: "0-136", object_id: String(l.id), to_object_type: "contacts", hydrate: false, limit: 10
+          }),
+          callMcp("mcp__6b11666e-7029-4baf-a491-3791bd8d9175__hubspot_get_custom_object_associations", {
+            object_type: "0-136", object_id: String(l.id), to_object_type: "deals", hydrate: false, limit: 20
+          }).catch(() => ({ results: [] }))
+        ]);
+        const leadDealIds = ((leadDealsRes && leadDealsRes.results) || []).map(r => String(r.id));
+        if (leadDealIds.length) LEAD_DEALS[l.id] = leadDealIds;
+        const contactIds = ((contactsRes && contactsRes.results) || []).map(r => String(r.id));
+        let foundRpId = null;
+        for (const cid of contactIds) {
+          const rpRes = await callMcp("mcp__6b11666e-7029-4baf-a491-3791bd8d9175__hubspot_get_custom_object_associations", {
+            object_type: "contacts",
+            object_id: cid,
+            to_object_type: "2-37656252",
+            hydrate: false,
+            limit: 10
+          });
+          const ids = ((rpRes && rpRes.results) || []).map(r => String(r.id));
+          if (ids.length) { foundRpId = ids[0]; break; }
+        }
+        if (foundRpId) {
+          const rp = RP_BY_ID[foundRpId];
+          const rpName = rp ? rp.referral_partner : null;
+          if (rpName && expectedRpName && nameKey(rpName) === nameKey(expectedRpName)) {
+            XREF[l.id] = { status: "confirmed", rpName, rpId: foundRpId };
+          } else if (rpName) {
+            XREF[l.id] = { status: "mismatch", rpName, rpId: foundRpId, expected: expectedRpName };
+          } else {
+            XREF[l.id] = { status: "confirmed", rpName: "(linked, name unknown)", rpId: foundRpId };
+          }
+        } else {
+          XREF[l.id] = { status: "origin_only" };
+        }
+      } catch (e) {
+        console.warn("xref failed for lead", l.id, e);
+        XREF[l.id] = { status: "origin_only" };
+      }
+      done++;
+      updateXrefBanner(done);
     }
   }
-  return -1;
+  const workers = Array(concurrency).fill(0).map(() => worker());
+  await Promise.all(workers);
+  finalizeXref();
+  // Deal funnel runs separately (called from loadDashboard before cross-reference)
+}
+function updateXrefBanner(done) {
+  const banner = document.getElementById("xref-banner");
+  if (done < LEADS.length) {
+    banner.textContent = "Cross-reference: " + done + "/" + LEADS.length + "…";
+  }
+}
+function finalizeXref() {
+  const banner = document.getElementById("xref-banner");
+  const counts = { confirmed: 0, origin_only: 0, mismatch: 0 };
+  LEADS.forEach(l => { const s = (XREF[l.id] || {}).status; if (counts[s] !== undefined) counts[s]++; });
+  banner.classList.add("live");
+  banner.textContent = "Cross-reference: " + counts.confirmed + " confirmed, " + counts.mismatch + " mismatch, " + counts.origin_only + " origin-only";
+  document.getElementById("kpi-xref").textContent = counts.confirmed;
+  document.getElementById("kpi-xref-hint").textContent = LEADS.length ? Math.round(100 * counts.confirmed / LEADS.length) + "% of RP leads" : "—";
 }
 
-function tierClass(tier) {
-  const t = String(tier || '').toUpperCase();
-  if (t.includes('TIER 1')) return 'tier-1';
-  if (t.includes('TIER 2')) return 'tier-2';
-  if (t.includes('TIER 3')) return 'tier-3';
-  if (t.includes('DNC')) return 'tier-dnc';
-  return 'tier-na';
+// Concurrency helper
+async function mapWithConcurrency(items, n, fn) {
+  const results = new Array(items.length);
+  let idx = 0;
+  async function worker() {
+    while (idx < items.length) {
+      const i = idx++;
+      try { results[i] = await fn(items[i], i); }
+      catch (e) { results[i] = { __error: e }; }
+    }
+  }
+  await Promise.all(Array(n).fill(0).map(() => worker()));
+  return results;
 }
 
-function fail(msg){ document.getElementById('content').innerHTML='<div class="error">⚠ '+msg+'</div>'; }
+// ---- Deal funnel: DEAL-SIDE walk — pull all Brand Direct deals, walk each → 2-37656252 ----
+// This direction works in the artifact context (RP→deals direction was failing).
+// Includes all 6 stages: Client committed → Closed Won, Closed Lost.
+async function loadDealFunnel() {
+  const dealBanner = document.getElementById("deal-banner");
 
-async function load() {
+  // Step 1: pull all Brand Direct deals in the 6 funnel stages
+  const stageIds = DEAL_FUNNEL.map(s => s.id);
+  dealBanner.textContent = "Pulling Brand Direct deals…";
+  let dealsResp;
   try {
-    const [rpRaw, leadsRaw, contactsRaw] = await Promise.all([
-      fetchSheet('Referral Partners'),
-      fetchSheet('Leads').catch(e => { console.warn('Leads fetch failed:', e); return null; }),
-      fetchSheet('Contacts').catch(e => { console.warn('Contacts fetch failed:', e); return null; })
+    dealsResp = await callMcp("mcp__6b11666e-7029-4baf-a491-3791bd8d9175__hubspot_search_custom_objects", {
+      object_type: "deals",
+      filters: JSON.stringify([
+        { property: "pipeline", operator: "EQ", value: BRAND_DIRECT_PIPELINE_ID },
+        { property: "dealstage", operator: "IN", value: stageIds }
+      ]),
+      properties: "dealname,amount,dealstage,pipeline,hubspot_owner_id,createdate,closedate",
+      limit: 100
+    });
+  } catch (e) {
+    dealBanner.textContent = "Failed to pull Brand Direct deals: " + ((e && e.message) || String(e)).slice(0, 200);
+    dealBanner.classList.add("live");
+    RP_DEALS = {};
+    renderDealFunnel();
+    updateDealKpis();
+    return;
+  }
+  const allDeals = (dealsResp && dealsResp.results) || [];
+  console.log("[deal-walk] Pulled", allDeals.length, "Brand Direct deals");
+  if (allDeals.length === 0) {
+    dealBanner.textContent = "No Brand Direct deals returned.";
+    dealBanner.classList.add("live");
+    RP_DEALS = {};
+    renderDealFunnel();
+    updateDealKpis();
+    return;
+  }
+
+  // Step 2: for each deal, walk deal → 2-37656252 to check for RP association
+  // Concurrency kept low (3) to avoid artifact MCP rate limits
+  dealBanner.textContent = "Checking " + allDeals.length + " deals → RP…";
+  RP_DEALS = {};
+  let walkErrors = 0;
+  let walked = 0;
+  const errorSamples = [];
+  await mapWithConcurrency(allDeals, 3, async (deal) => {
+    try {
+      const res = await callMcp("mcp__6b11666e-7029-4baf-a491-3791bd8d9175__hubspot_get_custom_object_associations", {
+        object_type: "deals", object_id: String(deal.id), to_object_type: "2-37656252", hydrate: false, limit: 10
+      });
+      walked++;
+      if (walked % 10 === 0) dealBanner.textContent = "Checked " + walked + " / " + allDeals.length + " deals…";
+      const rpIds = ((res && res.results) || []).map(r => String(r.id));
+      if (rpIds.length === 0) return;
+      const rpNames = rpIds.map(rid => (RP_BY_ID[rid] && RP_BY_ID[rid].referral_partner) || ("RP #" + rid)).filter(Boolean);
+      RP_DEALS[String(deal.id)] = { deal: { id: String(deal.id), ...deal }, rpIds, rpNames };
+    } catch (e) {
+      walkErrors++;
+      if (errorSamples.length < 1) errorSamples.push({ did: deal.id, msg: ((e && e.message) || String(e)).slice(0, 150) });
+      console.warn("[deal-walk] Failed for deal", deal.id, e && e.message);
+    }
+  });
+
+  const matched = Object.keys(RP_DEALS).length;
+  dealBanner.classList.add("live");
+  let banner = matched + " RP-tagged deal" + (matched === 1 ? "" : "s") + " in Brand Direct · checked " + allDeals.length + " deals";
+  if (walkErrors > 0) banner += " · ⚠ " + walkErrors + " walk error" + (walkErrors === 1 ? "" : "s");
+  if (errorSamples.length) banner += " (e.g. deal " + errorSamples[0].did + ": " + errorSamples[0].msg + ")";
+  dealBanner.textContent = banner;
+  console.log("[deal-walk] DONE. RP-tagged:", matched, "/ checked:", allDeals.length, "| errors:", walkErrors);
+  renderDealFunnel();
+  renderBridgeNote();
+  updateDealKpis();
+}
+
+function renderRpKanban() {
+  const byStage = {};
+  RPS.forEach(r => {
+    const sid = r.hs_pipeline_stage || "_none";
+    if (!byStage[sid]) byStage[sid] = [];
+    byStage[sid].push(r);
+  });
+  // Sort each column by SQL count descending so top performers float to the top
+  Object.values(byStage).forEach(arr => arr.sort((a, b) => (num(b.count_of_sql) - num(a.count_of_sql)) || (num(b.count_of_contacts) - num(a.count_of_contacts))));
+
+  const stageIds = RP_STAGE_ORDER.slice();
+  // Append any stage IDs from the data that aren't in our canonical order (e.g., new pipeline stages)
+  Object.keys(byStage).forEach(sid => { if (sid !== "_none" && !stageIds.includes(sid)) stageIds.push(sid); });
+  if (byStage["_none"]) stageIds.push("_none");
+
+  const html = stageIds.map(sid => {
+    const stageInfo = RP_STAGE_MAP[sid];
+    const label = stageInfo ? stageInfo.label : (sid === "_none" ? "Unset" : sid);
+    const rps = byStage[sid] || [];
+    const cards = rps.length === 0
+      ? '<div class="kanban-empty">No partners</div>'
+      : rps.map(r => {
+          const tier = r.rp_tier || "";
+          const tierPill = tier ? `<span class="pill ${TIER_PILL[tier] || "pill-none"}" style="margin-bottom: 6px;">${esc(tier.replace(/^TIER (\d): /, "T$1: "))}</span>` : "";
+          const agreement = r.rp_agreement_type ? `<div class="kanban-meta"><strong>Agreement:</strong> ${esc(r.rp_agreement_type)}</div>` : "";
+          const city = r.city_state ? `<div class="kanban-meta"><strong>Location:</strong> ${esc(r.city_state)}</div>` : "";
+          return `<div class="kanban-card" data-rp-id="${esc(r.id)}">
+            <div class="kanban-name">${esc(r.referral_partner || "(unnamed)")}</div>
+            ${tierPill}
+            <div class="kanban-meta"><strong>Contacts:</strong> ${r.count_of_contacts || 0}</div>
+            <div class="kanban-meta"><strong>SQLs:</strong> ${r.count_of_sql || 0}</div>
+            ${city}
+            ${agreement}
+          </div>`;
+        }).join("");
+    return `<div class="kanban-col">
+      <div class="kanban-header"><span class="kanban-stage" title="${esc(label)}">${esc(label)}</span><span class="kanban-count">${rps.length}</span></div>
+      <div class="kanban-cards">${cards}</div>
+    </div>`;
+  }).join("");
+  document.getElementById("rp-kanban").innerHTML = html;
+  // Open RP in HubSpot on card click
+  document.querySelectorAll(".kanban-card[data-rp-id]").forEach(el => {
+    el.addEventListener("click", () => { window.open(rpUrl(el.dataset.rpId), "_blank"); });
+  });
+}
+
+function renderBridgeNote() {
+  const note = document.getElementById("bridge-note");
+  if (!note) return;
+  const dealsWithLeadOrigin = Object.entries(RP_DEALS).filter(([did, _]) => {
+    return Object.entries(LEAD_DEALS).some(([leadId, dealIds]) => dealIds.includes(did) || dealIds.includes(String(did)));
+  }).length;
+  const total = Object.keys(RP_DEALS).length;
+  const gap = total - dealsWithLeadOrigin;
+  if (total === 0) { note.style.display = "none"; return; }
+  note.style.display = "block";
+  note.innerHTML = `<strong>Momentum bridge:</strong> ${dealsWithLeadOrigin} of ${total} RP-attributed deals also have a corresponding RP-origin lead. ${gap} came through legacy/renewal/win-back paths where the new lead-tagging process hadn't been adopted yet. Over time this ratio should climb as the new attribution process takes hold.`;
+}
+
+function updateDealKpis() {
+  const deals = Object.values(RP_DEALS).map(x => x.deal);
+  const openStages = new Set(["1341411420", "143018394", "1341581069", "972397873"]);
+  const wonId = "143017564";
+  const lostId = "143017565";
+  const openDeals = deals.filter(d => openStages.has(d.dealstage));
+  const wonDeals = deals.filter(d => d.dealstage === wonId);
+  const lostDeals = deals.filter(d => d.dealstage === lostId);
+  const openSum = openDeals.reduce((s, d) => s + (parseFloat(d.amount) || 0), 0);
+  const wonSum = wonDeals.reduce((s, d) => s + (parseFloat(d.amount) || 0), 0);
+  document.getElementById("kpi-deals").textContent = deals.length;
+  document.getElementById("kpi-rev-won").textContent = fmtMoney(wonSum);
+  document.getElementById("kpi-rev-open").textContent = fmtMoney(openSum);
+  const dealsHintEl = document.querySelector('[data-drill="leads-with-deals"] .kpi-hint');
+  if (dealsHintEl) dealsHintEl.textContent = "deal-level RP link · " + lostDeals.length + " lost excluded";
+  const wonHintEl = document.querySelector('[data-drill="leads-closed-won"] .kpi-hint');
+  if (wonHintEl) wonHintEl.textContent = wonDeals.length + " closed-won deal" + (wonDeals.length === 1 ? "" : "s");
+  const openHintEl = document.querySelector('[data-drill="leads-open-pipeline"] .kpi-hint');
+  if (openHintEl) openHintEl.textContent = openDeals.length + " open deal" + (openDeals.length === 1 ? "" : "s");
+}
+
+function renderDealFunnel() {
+  const stageCounts = {};   // stageId → count
+  const stageAmount = {};   // stageId → summed amount
+  Object.values(RP_DEALS).forEach(({ deal }) => {
+    const sid = deal.dealstage;
+    stageCounts[sid] = (stageCounts[sid] || 0) + 1;
+    stageAmount[sid] = (stageAmount[sid] || 0) + (parseFloat(deal.amount) || 0);
+  });
+  const cellHtml = (s, deadend) => `
+    <div class="funnel-cell ${deadend ? 's-dead' : s.cls}" data-deal-stage="${esc(s.id)}" data-deal-label="${esc(s.label)}">
+      <div class="funnel-num">${stageCounts[s.id] || 0}</div>
+      <div class="funnel-lab">${esc(s.label)}</div>
+      <div class="funnel-tap">${fmtMoney(stageAmount[s.id] || 0)}</div>
+    </div>`;
+  document.getElementById("deal-funnel").innerHTML = DEAL_FUNNEL.map(s => cellHtml(s, false)).join("");
+  document.querySelectorAll("[data-deal-stage]").forEach(el => el.addEventListener("click", () => drillDealStage(el.dataset.dealStage, el.dataset.dealLabel)));
+}
+
+function dealUrl(id) { return "https://app.hubspot.com/contacts/" + HUBSPOT_PORTAL + "/record/0-3/" + id; }
+
+function renderDealsTable(deals) {
+  if (!deals.length) return '<div class="empty">No deals in this stage.</div>';
+  const sorted = deals.slice().sort((a, b) => (parseFloat(b.deal.amount) || 0) - (parseFloat(a.deal.amount) || 0));
+  return `<table>
+    <thead><tr><th>Deal</th><th>Stage</th><th>Owner</th><th>RP source</th><th class="num">Amount</th><th></th></tr></thead>
+    <tbody>${sorted.map(d => {
+      const stageLabel = (DEAL_STAGE_BY_ID[d.deal.dealstage] && DEAL_STAGE_BY_ID[d.deal.dealstage].label) || d.deal.dealstage;
+      const rpSource = d.rpNames.length ? d.rpNames.join(", ") : "—";
+      return `<tr>
+        <td><strong>${esc(d.deal.dealname || "(no name)")}</strong></td>
+        <td>${esc(stageLabel)}</td>
+        <td>${esc(ownerName(d.deal.hubspot_owner_id))}</td>
+        <td>${esc(rpSource)}</td>
+        <td class="num">${fmtMoney(d.deal.amount)}</td>
+        <td><a class="btn-hs" href="${dealUrl(d.deal.id)}" target="_blank" rel="noopener">Open ↗</a></td>
+      </tr>`;
+    }).join("")}</tbody>
+  </table>`;
+}
+
+function drillDealStage(stageId, label) {
+  const deals = Object.values(RP_DEALS).filter(d => d.deal.dealstage === stageId);
+  const totalAmt = deals.reduce((s, d) => s + (parseFloat(d.deal.amount) || 0), 0);
+  openModal(label + " — Brand Direct", deals.length + " RP-attributed deal" + (deals.length === 1 ? "" : "s") + " · " + fmtMoney(totalAmt), renderDealsTable(deals));
+}
+
+async function loadDashboard() {
+  try {
+    const [rpsData, leadsData, ownersData] = await Promise.all([
+      callMcp("mcp__6b11666e-7029-4baf-a491-3791bd8d9175__hubspot_search_custom_objects", {
+        object_type: "2-37656252",
+        properties: "referral_partner,rp_email_primary,rp_status,rp_tier,rp_agreement_type,mlm,city_state,count_of_contacts,count_of_rpql2,count_of_sql,hs_pipeline_stage,next_step_date,hubspot_owner_id,hs_createdate",
+        limit: 100,
+        sorts: '[{"propertyName": "hs_lastmodifieddate", "direction": "DESCENDING"}]'
+      }),
+      callMcp("mcp__6b11666e-7029-4baf-a491-3791bd8d9175__hubspot_search_custom_objects", {
+        object_type: "0-136",
+        filters: '[{"property": "origin", "operator": "EQ", "value": "Referral Partner"}]',
+        properties: "hs_lead_name,referral_partner,origin,hs_lead_source,hs_pipeline_stage,hs_pipeline_stage_category_v2,hs_lead_associated_deals_count,hs_lead_pipeline_value,hs_lead_closed_won_deals_amount,hs_createdate,hubspot_owner_id",
+        limit: 100
+      }),
+      callMcp("mcp__6b11666e-7029-4baf-a491-3791bd8d9175__hubspot_list_owners", {})
     ]);
-    render({
-      rpRows:       csvParse(String(rpRaw || '')),
-      leadsRows:    leadsRaw    ? csvParse(String(leadsRaw))    : [],
-      contactsRows: contactsRaw ? csvParse(String(contactsRaw)) : []
+
+    RPS = (rpsData && rpsData.results) || [];
+    LEADS = (leadsData && leadsData.results) || [];
+    const owners = Array.isArray(ownersData) ? ownersData : ((ownersData && ownersData.results) || []);
+    OWNERS_BY_ID = {};
+    owners.forEach(o => { OWNERS_BY_ID[String(o.id)] = o; });
+    RP_BY_ID = {};
+    RP_BY_KEY = {};
+    RPS.forEach(r => { RP_BY_ID[String(r.id)] = r; if (r.referral_partner) RP_BY_KEY[nameKey(r.referral_partner)] = r; });
+    XREF = {};
+    LEADS.forEach(l => { XREF[l.id] = { status: "checking" }; });
+
+    // ---- KPIs ----
+    const activeRPs = RPS.filter(r => !RETIRED_STAGE_IDS.has(r.hs_pipeline_stage) && r.rp_tier !== "DNC");
+    document.getElementById("kpi-active-rps").textContent = activeRPs.length;
+    document.getElementById("kpi-rps-hint").textContent = "of " + RPS.length + " total";
+    document.getElementById("kpi-leads").textContent = LEADS.length;
+    document.getElementById("kpi-xref").textContent = "…";
+    document.getElementById("kpi-xref-hint").textContent = "verifying…";
+    // Deal-driven KPIs initialize to "computing" — they fill in when loadDealFunnel completes
+    document.getElementById("kpi-deals").textContent = "…";
+    document.getElementById("kpi-rev-won").textContent = "…";
+    document.getElementById("kpi-rev-open").textContent = "…";
+
+    // ---- Funnel (active 5 stages) ----
+    const stageCounts = {};
+    LEADS.forEach(l => { stageCounts[l.hs_pipeline_stage] = (stageCounts[l.hs_pipeline_stage] || 0) + 1; });
+    document.getElementById("funnel").innerHTML = LEAD_FUNNEL.map(s => `
+      <div class="funnel-cell ${s.cls}" data-stage-id="${esc(s.id)}" data-stage-label="${esc(s.label)}">
+        <div class="funnel-num">${stageCounts[s.id] || 0}</div>
+        <div class="funnel-lab">${esc(s.label)}</div>
+        <div class="funnel-tap">click to view</div>
+      </div>
+    `).join("");
+    document.querySelectorAll(".funnel-cell").forEach(el => {
+      el.addEventListener("click", () => drillStageId(el.dataset.stageId, el.dataset.stageLabel));
     });
+
+    // ---- RP lifecycle kanban board ----
+    renderRpKanban();
+
+    // ---- Top performers ----
+    const perRp = {};
+    LEADS.forEach(l => {
+      const key = nameKey(l.referral_partner);
+      if (!key) return;
+      if (!perRp[key]) perRp[key] = { name: l.referral_partner, leads: 0, qualified: 0, deals: 0, won: 0, open: 0 };
+      const p = perRp[key];
+      p.leads++;
+      if (l.hs_pipeline_stage_category_v2 === "QUALIFIED") p.qualified++;
+      p.deals += num(l.hs_lead_associated_deals_count);
+      p.won += num(l.hs_lead_closed_won_deals_amount);
+      p.open += num(l.hs_lead_pipeline_value);
+    });
+    const topPerformers = Object.entries(perRp)
+      .map(([key, v]) => ({ ...v, rp: RP_BY_KEY[key] }))
+      .sort((a, b) => (b.won + b.open) - (a.won + a.open) || b.leads - a.leads)
+      .slice(0, 15);
+    document.getElementById("top-rps").innerHTML = topPerformers.length === 0
+      ? '<div class="empty">No RP-attributed activity yet.</div>'
+      : `<table>
+          <thead><tr><th>Partner</th><th>Tier</th><th>Stage</th><th class="num">Leads</th><th class="num">Mid B+</th><th class="num">Deals</th><th class="num">Closed won</th><th class="num">Open pipeline</th></tr></thead>
+          <tbody>${topPerformers.map(p => {
+            const rp = p.rp;
+            const tier = rp && rp.rp_tier;
+            const tierHtml = tier ? `<span class="pill ${TIER_PILL[tier] || "pill-none"}">${esc(tier.replace(/^TIER (\d): /, "T$1: "))}</span>` : `<span class="pill pill-none">—</span>`;
+            const stageInfo = rp && rp.hs_pipeline_stage && RP_STAGE_MAP[rp.hs_pipeline_stage];
+            const stageHtml = stageInfo ? `<span class="pill ${stageInfo.cls}">${esc(stageInfo.label)}</span>` : `<span class="pill pill-none">—</span>`;
+            return `<tr class="clickable" data-rp="${esc(p.name)}">
+              <td>${esc(p.name)}</td>
+              <td>${tierHtml}</td>
+              <td>${stageHtml}</td>
+              <td class="num">${p.leads}</td>
+              <td class="num">${p.qualified}</td>
+              <td class="num">${p.deals}</td>
+              <td class="num">${fmtMoney(p.won)}</td>
+              <td class="num">${fmtMoney(p.open)}</td>
+            </tr>`;
+          }).join("")}</tbody>
+        </table>`;
+    document.querySelectorAll("tr.clickable[data-rp]").forEach(el => { el.addEventListener("click", () => drillRp(el.dataset.rp)); });
+
+    // ---- All RPs ----
+    const sortedRps = RPS.slice().sort((a, b) => {
+      const ta = a.rp_tier ? RP_TIERS.indexOf(a.rp_tier) : 99;
+      const tb = b.rp_tier ? RP_TIERS.indexOf(b.rp_tier) : 99;
+      if (ta !== tb) return ta - tb;
+      return num(b.count_of_sql) - num(a.count_of_sql);
+    });
+    document.getElementById("rp-table").innerHTML = `<table>
+      <thead><tr><th>Partner</th><th>Tier</th><th>Stage</th><th>Owner</th><th>City</th><th class="num">Contacts</th><th class="num">SQLs</th></tr></thead>
+      <tbody>${sortedRps.map(r => {
+        const tier = r.rp_tier;
+        const tierHtml = tier ? `<span class="pill ${TIER_PILL[tier] || "pill-none"}">${esc(tier.replace(/^TIER (\d): /, "T$1: "))}</span>` : `<span class="pill pill-none">—</span>`;
+        const stageInfo = r.hs_pipeline_stage && RP_STAGE_MAP[r.hs_pipeline_stage];
+        const stageHtml = stageInfo ? `<span class="pill ${stageInfo.cls}">${esc(stageInfo.label)}</span>` : `<span class="pill pill-none">—</span>`;
+        return `<tr class="clickable" data-rp="${esc(r.referral_partner || "")}">
+          <td><a href="${rpUrl(r.id)}" target="_blank" rel="noopener">${esc(r.referral_partner || "(unnamed)")}</a></td>
+          <td>${tierHtml}</td>
+          <td>${stageHtml}</td>
+          <td>${esc(ownerName(r.hubspot_owner_id))}</td>
+          <td>${esc(r.city_state || "")}</td>
+          <td class="num">${r.count_of_contacts || 0}</td>
+          <td class="num">${r.count_of_sql || 0}</td>
+        </tr>`;
+      }).join("")}</tbody>
+    </table>`;
+    document.querySelectorAll("#rp-table tr.clickable").forEach(el => { el.addEventListener("click", (e) => { if (e.target.closest("a")) return; drillRp(el.dataset.rp); }); });
+
+    // ---- Leads (sorted by stage funnel position + revenue) ----
+    const stageOrder = [...LEAD_FUNNEL, ...LEAD_DEADEND].map(s => s.id);
+    const sortedLeads = LEADS.slice().sort((a, b) => {
+      const pa = stageOrder.indexOf(a.hs_pipeline_stage); const pb = stageOrder.indexOf(b.hs_pipeline_stage);
+      if (pa !== pb) return (pa < 0 ? 99 : pa) - (pb < 0 ? 99 : pb);
+      return (num(b.hs_lead_closed_won_deals_amount) + num(b.hs_lead_pipeline_value)) - (num(a.hs_lead_closed_won_deals_amount) + num(a.hs_lead_pipeline_value));
+    });
+    document.getElementById("leads-table").innerHTML = sortedLeads.length === 0
+      ? '<div class="empty">No RP-sourced leads yet.</div>'
+      : `<table>
+          <thead><tr><th>Lead</th><th>Owner</th><th>Stage</th><th>Type</th><th>Referred by</th><th class="num">Closed won</th><th class="num">Pipeline</th></tr></thead>
+          <tbody>${sortedLeads.map(l => `
+            <tr>
+              <td><a href="${leadUrl(l.id)}" target="_blank" rel="noopener">${esc(l.hs_lead_name || "(no name)")}</a></td>
+              <td>${esc(ownerName(l.hubspot_owner_id))}</td>
+              <td>${esc(leadStageLabel(l))}</td>
+              <td>${esc(leadSourceLabel(l))}</td>
+              <td>${esc(l.referral_partner || "—")}</td>
+              <td class="num">${fmtMoney(l.hs_lead_closed_won_deals_amount)}</td>
+              <td class="num">${fmtMoney(l.hs_lead_pipeline_value)}</td>
+            </tr>`).join("")}</tbody>
+        </table>`;
+
+    // KPI handlers
+    document.querySelectorAll(".kpi[data-drill]").forEach(el => { el.addEventListener("click", () => drillKpi(el.dataset.drill)); });
+
+    // Run deal funnel FIRST so it gets the rate-limit budget (it's the primary value of this dashboard).
+    // Cross-reference runs after — it's a nice-to-have indicator and can hit limits without breaking core view.
+    loadDealFunnel()
+      .catch(e => { const b = document.getElementById("deal-banner"); if (b) { b.textContent = "Deal walk failed: " + ((e && e.message) || String(e)).slice(0, 200); b.classList.add("live"); } })
+      .finally(() => { crossReferenceLeads(); });
+
   } catch (err) {
-    fail("Couldn't reach the live data source.<br><small>" + (err && err.message ? err.message : err) + "</small>");
+    console.error("Dashboard load failed:", err);
+    showLoadError(err);
   }
 }
 
-function render({ rpRows, leadsRows, contactsRows }) {
-  // ---- Identify header rows on each sheet ----
-  const rpHeaderIdx     = findHeaderRow(rpRows);
-  const leadsHeaderIdx  = findHeaderRow(leadsRows);
-  const contactsHeaderIdx = findHeaderRow(contactsRows);
-  const rpHeaders     = rpRows[rpHeaderIdx]     || [];
-  const leadsHeaders  = leadsRows[leadsHeaderIdx]  || [];
-  const contactsHeaders = contactsRows[contactsHeaderIdx] || [];
-
-  // ---- Locate columns in each sheet ----
-  // RP sheet (per the screenshot, column N is RP name, but be defensive)
-  const rpNameCol     = findCol(rpHeaders, ['referral partner', 'rp name', 'partner name']) >= 0 ? findCol(rpHeaders, ['referral partner', 'rp name', 'partner name']) : 13;
-  const rpRecordIdCol = findCol(rpHeaders, ['record id', 'rp record id', 'rp id']);
-  const rpContactsCol = findCol(rpHeaders, ['count of contacts', 'contacts count', 'num contacts']);
-  const rpRpql2Col    = findCol(rpHeaders, ['count of rpql2', 'rpql2', 'rpql 2']);
-  const rpSqlCol      = findCol(rpHeaders, ['count of sql', 'sql', 'sqo']);
-  const rpStatusCol   = findCol(rpHeaders, ['rp status', 'status']);
-  const rpTierCol     = findCol(rpHeaders, ['rp tier', 'tier']);
-  const rpCityCol     = findCol(rpHeaders, ['city, state', 'city']);
-
-  // Leads sheet: look for an RP association column
-  const leadRpCol           = findCol(leadsHeaders, ['referral partner', 'associated referral partner', 'rp name', 'rp']);
-  const leadRpIdCol         = findCol(leadsHeaders, ['referral partner record id', 'rp record id', 'associated rp id']);
-  const leadStageCol        = findCol(leadsHeaders, ['lead status', 'stage', 'hs_lead_status', 'pipeline stage']);
-  const leadCreatedCol      = findCol(leadsHeaders, ['create date', 'created date', 'created']);
-  const leadSchedCol        = findCol(leadsHeaders, ['meeting scheduled', 'first meeting', 'meeting date']);
-  const leadOriginCol       = findCol(leadsHeaders, ['origin']);
-  const leadContactIdCol    = findCol(leadsHeaders, ['primary associated contact id', 'associated contact id', 'contact id']);
-
-  // Contacts sheet: RP per contact
-  const contactIdCol      = findCol(contactsHeaders, ['record id', 'contact id', 'hs_object_id']);
-  const contactRpCol      = findCol(contactsHeaders, ['referral partner', 'associated referral partner', 'rp']);
-
-  // ---- Build canonical RP roster from Referral Partners sheet ----
-  // Row after header is data. Skip rows that don't have a name in column N.
-  const rpRoster = [];
-  for (let i = rpHeaderIdx + 1; i < rpRows.length; i++) {
-    const row = rpRows[i] || [];
-    const name = String(row[rpNameCol] || '').trim();
-    if (!name) continue;
-    const recordId = rpRecordIdCol >= 0 ? String(row[rpRecordIdCol] || '').trim() : '';
-    rpRoster.push({
-      name,
-      recordId,
-      city:     rpCityCol     >= 0 ? String(row[rpCityCol]     || '').trim() : '',
-      contacts: rpContactsCol >= 0 ? Number(row[rpContactsCol] || 0) : 0,
-      rpql2:    rpRpql2Col    >= 0 ? Number(row[rpRpql2Col]    || 0) : 0,
-      sql:      rpSqlCol      >= 0 ? Number(row[rpSqlCol]      || 0) : 0,
-      status:   rpStatusCol   >= 0 ? String(row[rpStatusCol]   || '').trim() : '',
-      tier:     rpTierCol     >= 0 ? String(row[rpTierCol]     || '').trim() : '',
-      // Computed (filled in below if Leads/Contacts join succeeds)
-      leads: 0, meetingsBooked: 0, meetingsHeld: 0, opportunities: 0, leadsThisWk: 0, meetingsThisWk: 0
-    });
+function showLoadError(err) {
+  const raw = (err && err.message) || String(err);
+  const lower = raw.toLowerCase();
+  const isAuth = lower.includes("hubspot au") || lower.includes("authenti") || lower.includes("authoriz") || lower.includes("unauthor") || lower.includes("not authoriz");
+  const isPerm = lower.includes("permission") || lower.includes("forbidden") || lower.includes("403");
+  let kind = isAuth ? "HubSpot authorization required" : (isPerm ? "HubSpot permission denied" : "Connector error");
+  let hint = isAuth
+    ? "The HubSpot connector for this artifact isn't authorized. Open Cowork settings → Connectors, reconnect HubSpot (PrescriberPoint MCP), then reload this artifact."
+    : (isPerm ? "Your HubSpot user may not have read access to the Referral Partner custom object or Leads. Try reconnecting HubSpot and reload."
+      : "Reload the artifact. If it persists, check the HubSpot connector status in Cowork settings.");
+  const banner = document.getElementById("err-banner");
+  if (banner) {
+    banner.innerHTML = `<strong>${esc(kind)}</strong><div style="margin-top:4px">${esc(hint)}</div><details style="margin-top:6px"><summary style="cursor:pointer; font-size:11px; color:#791F1F">Show raw error</summary><pre style="white-space:pre-wrap; font-size:11px; margin:6px 0 0; color:#501313">${esc(raw)}</pre></details>`;
+    banner.style.display = "block";
   }
-
-  // ---- Build contact → RP map (if Contacts sheet has the join) ----
-  const contactToRp = {};
-  if (contactIdCol >= 0 && contactRpCol >= 0) {
-    for (let i = contactsHeaderIdx + 1; i < contactsRows.length; i++) {
-      const row = contactsRows[i] || [];
-      const cid = String(row[contactIdCol] || '').trim();
-      const rp  = String(row[contactRpCol] || '').trim();
-      if (cid && rp) contactToRp[cid] = rp;
-    }
-  }
-
-  // ---- Aggregate leads against the RP roster ----
-  // Strategy priority:
-  //  1) lead has an RP column directly → use it
-  //  2) lead has a contact ID that's in the contact→RP map → use that
-  //  3) lead has Origin = "Referral Partner" → count toward an aggregate "unassigned RP" bucket
-  const rosterByName = {};
-  rpRoster.forEach(r => { rosterByName[r.name.toLowerCase()] = r; });
-
-  const HELD_STAGE_HINTS  = ['mid a', 'first meeting complete', 'connected', 'qualified', 'hand-off', 'handoff', 'closed', 'sql'];
-  const OPP_STAGE_HINTS   = ['mid b', 'opportunity', 'qualified'];
-  const isHeldStage = (s) => { const v = String(s||'').toLowerCase(); return HELD_STAGE_HINTS.some(h => v.includes(h)); };
-  const isOppStage  = (s) => { const v = String(s||'').toLowerCase(); return OPP_STAGE_HINTS.some(h => v.includes(h));  };
-
-  // Week boundary (UTC, Monday-start)
-  const tm = (() => { const d=new Date(); const u=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate())); const day=(u.getUTCDay()+6)%7; u.setUTCDate(u.getUTCDate()-day); return u.toISOString().slice(0,10); })();
-
-  let totalRpLeads = 0, totalMeetingsBooked = 0, totalMeetingsHeld = 0, totalOpps = 0, totalLeadsTW = 0, totalMtgsTW = 0;
-  let leadsWithoutRp = 0;
-  if (leadsRows.length > 1) {
-    for (let i = leadsHeaderIdx + 1; i < leadsRows.length; i++) {
-      const row = leadsRows[i] || [];
-      if (!row.length) continue;
-
-      let rpName = '';
-      if (leadRpCol >= 0) rpName = String(row[leadRpCol] || '').trim();
-      if (!rpName && leadContactIdCol >= 0) {
-        const cid = String(row[leadContactIdCol] || '').trim();
-        if (cid && contactToRp[cid]) rpName = contactToRp[cid];
-      }
-      // If still no RP, skip this lead unless Origin says it's RP-sourced
-      if (!rpName) {
-        const origin = leadOriginCol >= 0 ? String(row[leadOriginCol] || '').trim() : '';
-        if (!/referral partner/i.test(origin)) continue;
-        leadsWithoutRp++;
-        continue;  // count as RP-sourced but can't attribute to a specific RP
-      }
-      const r = rosterByName[rpName.toLowerCase()];
-      if (!r) continue;  // RP exists in leads sheet but not in canonical roster
-
-      const stage = leadStageCol >= 0 ? String(row[leadStageCol] || '').trim() : '';
-      const created = leadCreatedCol >= 0 ? String(row[leadCreatedCol] || '').slice(0, 10) : '';
-      const sched   = leadSchedCol   >= 0 ? String(row[leadSchedCol]   || '').slice(0, 10) : '';
-
-      r.leads++;
-      totalRpLeads++;
-      if (created >= tm) { r.leadsThisWk++; totalLeadsTW++; }
-      if (sched) { r.meetingsBooked++; totalMeetingsBooked++; if (sched >= tm) { r.meetingsThisWk++; totalMtgsTW++; } }
-      if (isHeldStage(stage)) { r.meetingsHeld++; totalMeetingsHeld++; }
-      if (isOppStage(stage))  { r.opportunities++; totalOpps++; }
-    }
-  }
-
-  // ---- Render diagnostic if the join didn't catch enough ----
-  const haveLeadJoin = (leadRpCol >= 0) || (contactIdCol >= 0 && contactRpCol >= 0 && leadContactIdCol >= 0);
-  const fellBackToRpSheetOnly = !haveLeadJoin || totalRpLeads === 0;
-
-  let diagHtml = '';
-  if (fellBackToRpSheetOnly) {
-    diagHtml = '<div class="diag">' +
-      '<b>Data source note.</b> ' +
-      (haveLeadJoin
-        ? 'Found join columns but no leads matched a known RP. Funnel metrics (Meetings Booked / Held / Opportunities) will show 0 until leads are associated.'
-        : 'Couldn\'t auto-detect an RP-association column on the Leads sheet or a Contact→RP map on the Contacts sheet. Showing per-RP metrics from the <b>Referral Partners</b> sheet directly (Count of Contacts, RPQL2, SQL, Tier, Status).') +
-      '<details><summary>Show column headers we detected</summary>' +
-      '<div style="margin-top:6px"><b>Referral Partners</b> (row ' + (rpHeaderIdx+1) + ' is the header): ' +
-        rpHeaders.slice(0, 25).map((h,i)=>'<code>'+i+': '+esc(h)+'</code>').join(' ') + '</div>' +
-      (leadsHeaders.length ? '<div style="margin-top:6px"><b>Leads</b> (row ' + (leadsHeaderIdx+1) + ' is the header): ' +
-        leadsHeaders.slice(0, 30).map((h,i)=>'<code>'+i+': '+esc(h)+'</code>').join(' ') + '</div>' : '') +
-      (contactsHeaders.length ? '<div style="margin-top:6px"><b>Contacts</b> (row ' + (contactsHeaderIdx+1) + ' is the header): ' +
-        contactsHeaders.slice(0, 30).map((h,i)=>'<code>'+i+': '+esc(h)+'</code>').join(' ') + '</div>' : '') +
-      '<div style="margin-top:8px;color:#7c2d12;font-weight:600">→ Tell me which Leads-sheet column has the RP name (or contact-ID for join), and I\'ll lock it in.</div>' +
-      '</details></div>';
-  }
-
-  // ---- KPIs (prefer joined funnel data; fall back to RP-sheet aggregates) ----
-  const totalRoster = rpRoster.length;
-  const activeRp = rpRoster.filter(r => (r.leads > 0) || (r.contacts > 0)).length;
-  const sumContactsFromSheet = rpRoster.reduce((s,r) => s + (r.contacts || 0), 0);
-  const sumSqlFromSheet      = rpRoster.reduce((s,r) => s + (r.sql      || 0), 0);
-
-  document.getElementById('meta').innerHTML =
-    '<b>' + fmt(totalRoster) + '</b> RPs on record · <b>' + fmt(totalRpLeads || sumContactsFromSheet) + '</b> RP-sourced ' +
-    (totalRpLeads ? 'leads' : 'contacts (from RP sheet)') +
-    ' · refreshed ' + new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
-
-  let html = diagHtml;
-  html += '<div class="kpis">' +
-    '<div class="kpi"><div class="v accent">'+fmt(totalRoster)+'</div><div class="l">RPs on Roster</div><div class="d">canonical list</div></div>' +
-    '<div class="kpi"><div class="v accent">'+fmt(activeRp)+'</div><div class="l">Active RPs</div><div class="d">' + (haveLeadJoin ? '≥1 lead delivered' : '≥1 contact on RP sheet') + '</div></div>' +
-    '<div class="kpi"><div class="v">'+fmt(totalRpLeads || sumContactsFromSheet)+'</div><div class="l">' + (haveLeadJoin ? 'RP-Sourced Leads' : 'Total Contacts (RP sheet)') + '</div><div class="d">all-time</div></div>' +
-    '<div class="kpi"><div class="v">'+fmt(totalMeetingsBooked || sumSqlFromSheet)+'</div><div class="l">' + (haveLeadJoin ? 'Meetings Booked' : 'SQLs (RP sheet)') + '</div><div class="d">' + pct(totalMeetingsBooked || sumSqlFromSheet, totalRpLeads || sumContactsFromSheet) + ' of RP-sourced</div></div>' +
-    '<div class="kpi"><div class="v">'+fmt(totalOpps)+'</div><div class="l">Opportunities</div><div class="d">' + (haveLeadJoin ? 'Mid B+ stage' : 'requires Leads join') + '</div></div>' +
-  '</div>';
-
-  // ---- WoW row (only meaningful if leads join worked) ----
-  if (haveLeadJoin && totalRpLeads > 0) {
-    html += '<div class="section-h"><h2>This Week (RP-sourced)</h2></div>' +
-      '<div class="kpis" style="grid-template-columns:repeat(2,1fr)">' +
-        '<div class="kpi"><div class="v">'+fmt(totalLeadsTW)+'</div><div class="l">New Leads</div><div class="d">created since Monday</div></div>' +
-        '<div class="kpi"><div class="v">'+fmt(totalMtgsTW)+'</div><div class="l">Meetings Scheduled</div><div class="d">scheduled since Monday</div></div>' +
-      '</div>';
-  }
-
-  // ---- Top-RP chart + Tier rollup ----
-  const ranked = rpRoster.slice().sort((a,b) => (b.leads + b.contacts) - (a.leads + a.contacts));
-  const topRanked = ranked.filter(r => (r.leads + r.contacts) > 0).slice(0, 12);
-
-  const tierRoll = {};
-  rpRoster.forEach(r => { const k = r.tier || '(no tier)'; tierRoll[k] = (tierRoll[k] || 0) + 1; });
-
-  html += '<div class="grid g2">' +
-    '<div class="panel"><h2>Top RPs by ' + (haveLeadJoin ? 'Leads + Meetings' : 'Contacts') + '</h2><div class="ph">canonical roster · ranked</div>' +
-      '<div class="chartbox" style="height:' + (Math.max(220, topRanked.length * 26)) + 'px"><canvas id="rpChart"></canvas></div></div>' +
-    '<div class="panel"><h2>RPs by Tier</h2><div class="ph">from RP sheet · column R</div>' +
-      '<table class="mini"><tr><th>Tier</th><th class="num">RPs</th></tr>' +
-      Object.entries(tierRoll).sort((a,b)=>b[1]-a[1]).map(([t,n]) => '<tr><td><span class="tier-pill ' + tierClass(t) + '">' + esc(t) + '</span></td><td class="num">' + n + '</td></tr>').join('') +
-      '</table></div>' +
-  '</div>';
-
-  // ---- Full leaderboard table ----
-  html += '<div class="panel" style="margin-top:14px"><h2>Full RP Leaderboard</h2><div class="ph">every RP from the roster · search and sort · click any name to open lead view in HubSpot</div><div id="rpGrid"></div></div>';
-
-  html += '<div class="note"><b>How to read this.</b> The canonical RP roster (column N of the Referral Partners tab) drives the leaderboard — every RP appears even if zero leads. ' +
-    (haveLeadJoin
-      ? 'Funnel metrics (Leads, Meetings Booked, Meetings Held, Opportunities) come from joining the Leads tab to the roster.'
-      : 'Per-RP aggregates (Contacts, RPQL2, SQL) come straight from the RP sheet today; once we identify the lead-sheet RP column, the full funnel (Meetings, Opps, WoW) will populate too.') +
-    ' Tier badges come from column R · Status from column Q · everything recomputes on each open.</div>';
-
-  document.getElementById('content').innerHTML = html;
-
-  // ---- Render chart ----
-  if (topRanked.length) {
-    new Chart(document.getElementById('rpChart'), {
-      type: 'bar',
-      data: {
-        labels: topRanked.map(r => r.name),
-        datasets: haveLeadJoin && totalRpLeads > 0
-          ? [
-              { label: 'Leads',           data: topRanked.map(r => r.leads),           backgroundColor: '#7a6cc4' },
-              { label: 'Meetings booked', data: topRanked.map(r => r.meetingsBooked), backgroundColor: '#2bb3a3' },
-              { label: 'Meetings held',   data: topRanked.map(r => r.meetingsHeld),   backgroundColor: '#3a9d6e' }
-            ]
-          : [
-              { label: 'Contacts',        data: topRanked.map(r => r.contacts), backgroundColor: '#7a6cc4' },
-              { label: 'RPQL2',           data: topRanked.map(r => r.rpql2),    backgroundColor: '#2bb3a3' },
-              { label: 'SQL',             data: topRanked.map(r => r.sql),      backgroundColor: '#3a9d6e' }
-            ]
-      },
-      options: {
-        indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-        scales: { x: { grid: { color: '#eef2f6' }, ticks: { font: { size: 10 }, precision: 0 } }, y: { grid: { display: false }, ticks: { font: { size: 11 } } } },
-        plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } }
-      }
-    });
-  }
-
-  // ---- Render full grid ----
-  const gd = ranked.map(r => [
-    r.name,
-    r.tier ? '<span class="tier-pill ' + tierClass(r.tier) + '">' + esc(r.tier) + '</span>' : '',
-    r.status,
-    r.contacts,
-    r.rpql2,
-    r.sql,
-    r.leads,
-    r.meetingsBooked,
-    r.meetingsHeld,
-    r.opportunities,
-    r.leadsThisWk,
-    r.meetingsThisWk
-  ]);
-  new gridjs.Grid({
-    columns: [
-      { name: 'Referral Partner', formatter: (c) => gridjs.html('<a href="' + leadUrl(c) + '" target="_blank" rel="noopener" style="color:#2c5282;font-weight:600;text-decoration:none">' + esc(c) + ' ↗</a>') },
-      { name: 'Tier', formatter: (c) => gridjs.html(c) },
-      { name: 'Status' },
-      { name: 'Contacts (RP sheet)', attributes: { style: 'text-align:right' } },
-      { name: 'RPQL2', attributes: { style: 'text-align:right' } },
-      { name: 'SQL', attributes: { style: 'text-align:right' } },
-      { name: 'Leads (joined)', attributes: { style: 'text-align:right' } },
-      { name: 'Mtgs Booked', attributes: { style: 'text-align:right' } },
-      { name: 'Mtgs Held', attributes: { style: 'text-align:right' } },
-      { name: 'Opps', attributes: { style: 'text-align:right' } },
-      { name: 'New Leads this wk', attributes: { style: 'text-align:right' } },
-      { name: 'Mtgs Sched this wk', attributes: { style: 'text-align:right' } }
-    ],
-    data: gd, search: true, sort: true, pagination: { limit: 25, summary: true },
-    style: { table: { 'font-size': '12px' }, th: { 'font-size': '10.5px', 'text-transform': 'uppercase', 'letter-spacing': '.03em', 'background': '#fafbfd', 'color': '#647489' } }
-  }).render(document.getElementById('rpGrid'));
+  ["kpi-active-rps", "kpi-leads", "kpi-xref", "kpi-deals", "kpi-rev-won", "kpi-rev-open"].forEach(id => {
+    const e = document.getElementById(id); if (e && e.textContent === "—") e.textContent = "—";
+  });
+  document.querySelectorAll('.loading').forEach(el => { el.textContent = "Unavailable — see banner above."; el.style.color = "#A32D2D"; });
 }
 
-load();
+loadDashboard();
 }
 </script>
 </body>

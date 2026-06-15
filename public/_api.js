@@ -88,17 +88,86 @@
     return await response.text();
   }
 
+  // Normalize the NEW HubSpot MCP tool param shape to the shape my function expects.
+  // New shape (from rp-dashboard / meeting-factory): { object_type, filters: jsonString, properties: csv, limit, after }
+  // Old shape (what my function takes):              { objectType, filterGroups: [{filters: [...]}], properties: [], limit, after }
+  function normalizeSearchParams(params) {
+    if (!params) return params;
+    // If old-shape, pass through
+    if (params.objectType || params.filterGroups) return params;
+    const out = { ...params };
+    // object_type → objectType
+    if (params.object_type && !out.objectType) out.objectType = params.object_type;
+    delete out.object_type;
+    // filters (JSON string) → filterGroups
+    if (typeof params.filters === 'string') {
+      try {
+        const arr = JSON.parse(params.filters);
+        out.filterGroups = [{ filters: arr.map(f => ({
+          propertyName: f.property || f.propertyName,
+          operator: f.operator,
+          value: f.value,
+          values: f.values,
+          highValue: f.highValue
+        })) }];
+        delete out.filters;
+      } catch (e) {
+        delete out.filters;
+      }
+    } else if (Array.isArray(params.filters) && !out.filterGroups) {
+      out.filterGroups = [{ filters: params.filters }];
+      delete out.filters;
+    }
+    // properties CSV → array
+    if (typeof params.properties === 'string' && !Array.isArray(params.properties)) {
+      out.properties = params.properties.split(',').map(s => s.trim()).filter(Boolean);
+    }
+    return out;
+  }
+
+  // HubSpot associations (object-to-object walks)
+  async function hubspotAssociations(params) {
+    if (!window.netlifyIdentity) {
+      throw new Error('Netlify Identity widget not loaded.');
+    }
+    const user = window.netlifyIdentity.currentUser();
+    if (!user) throw new Error('Not authenticated. Please log in.');
+    const jwt = await user.jwt();
+    const response = await fetch('/api/hubspot-associations', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${jwt}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(params || {})
+    });
+    if (!response.ok) {
+      let errData = {};
+      try { errData = await response.json(); } catch (e) {}
+      throw new Error(`HubSpot associations failed (${response.status}): ${errData.error || response.statusText}`);
+    }
+    return response.json();
+  }
+
   // Compat shim: lets the Cowork artifact code work with minimal changes.
   window.cowork = {
     callMcpTool: function (toolName, params) {
       if (typeof toolName !== 'string') {
         return Promise.reject(new Error('Tool name must be a string'));
       }
+      // OLD HubSpot MCP tools (mcp__80845023-...)
       if (toolName.includes('search_crm_objects')) {
         return hubspotSearch(params);
       }
       if (toolName.includes('search_owners')) {
         return hubspotOwners(params);
+      }
+      // NEW HubSpot MCP tools (mcp__6b11666e-...)
+      if (toolName.includes('hubspot_search_custom_objects') || toolName.includes('hubspot_search_deals') || toolName.includes('hubspot_search_contacts')) {
+        return hubspotSearch(normalizeSearchParams(params));
+      }
+      if (toolName.includes('hubspot_list_owners')) {
+        return hubspotOwners(params);
+      }
+      if (toolName.includes('hubspot_get_custom_object_associations')) {
+        return hubspotAssociations(params);
       }
       if (toolName.includes('gdrive_export_file')) {
         return gdriveExport(params);
@@ -110,6 +179,7 @@
   // Also expose directly for any new code
   window.hubspotSearch = hubspotSearch;
   window.hubspotOwners = hubspotOwners;
+  window.hubspotAssociations = hubspotAssociations;
   window.gdriveExport = gdriveExport;
 
   // Auth helpers used by tab pages

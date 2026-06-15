@@ -20,6 +20,11 @@
   to = "/.netlify/functions/gdrive-export"
   status = 200
 
+[[redirects]]
+  from = "/api/hubspot-associations"
+  to = "/.netlify/functions/hubspot-associations"
+  status = 200
+
 [[headers]]
   for = "/*"
   [headers.values]
