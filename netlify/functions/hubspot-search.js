@@ -10,11 +10,12 @@ const ALLOWED_DOMAIN = '@prescriberpoint.com';
 function normalizeObjectType(t) {
   if (!t) return null;
   const s = String(t).toLowerCase();
-  if (s === 'contact' || s === 'contacts') return 'contacts';
-  if (s === 'deal' || s === 'deals') return 'deals';
-  if (s === 'company' || s === 'companies') return 'companies';
-  if (s === 'ticket' || s === 'tickets') return 'tickets';
-  return s; // pass through for custom objects
+  if (s === 'contact' || s === 'contacts' || s === '0-1') return 'contacts';
+  if (s === 'deal' || s === 'deals' || s === '0-3') return 'deals';
+  if (s === 'company' || s === 'companies' || s === '0-2') return 'companies';
+  if (s === 'ticket' || s === 'tickets' || s === '0-5') return 'tickets';
+  if (s === 'lead' || s === 'leads' || s === '0-136') return 'leads';
+  return s; // pass through for custom objects (e.g., "2-37656252")
 }
 
 exports.handler = async (event, context) => {

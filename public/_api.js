@@ -26,7 +26,13 @@
     if (!response.ok) {
       let errData = {};
       try { errData = await response.json(); } catch (e) {}
-      throw new Error(`HubSpot search failed (${response.status}): ${errData.error || response.statusText}`);
+      let detailMsg = '';
+      if (errData.detail) {
+        if (typeof errData.detail === 'string') detailMsg = errData.detail;
+        else if (errData.detail.message) detailMsg = errData.detail.message;
+        else detailMsg = JSON.stringify(errData.detail).slice(0, 200);
+      }
+      throw new Error(`HubSpot search failed (${response.status}): ${errData.error || response.statusText}${detailMsg ? ' — ' + detailMsg : ''}`);
     }
     return response.json();
   }
@@ -141,7 +147,13 @@
     if (!response.ok) {
       let errData = {};
       try { errData = await response.json(); } catch (e) {}
-      throw new Error(`HubSpot associations failed (${response.status}): ${errData.error || response.statusText}`);
+      let detailMsg = '';
+      if (errData.detail) {
+        if (typeof errData.detail === 'string') detailMsg = errData.detail;
+        else if (errData.detail.message) detailMsg = errData.detail.message;
+        else detailMsg = JSON.stringify(errData.detail).slice(0, 200);
+      }
+      throw new Error(`HubSpot associations failed (${response.status}): ${errData.error || response.statusText}${detailMsg ? ' — ' + detailMsg : ''}`);
     }
     return response.json();
   }
