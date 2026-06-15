@@ -104,9 +104,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sa
   <div class="tabs">
     <a class="tab" href="/unified-pipeline.html">Unified Pipeline</a>
     <a class="tab active" href="/pipeline.html">Pipeline Confidence</a>
+    <a class="tab" href="/brand-direct.html">Brand Direct</a>
     <a class="tab" href="/meeting-factory.html">Meeting Factory</a>
     <a class="tab" href="/referral-partners.html">Referral Partners</a>
-      <a class="tab" href="/brand-direct.html">Brand Direct</a>
   </div>
   <div class="userbox">
     <span id="user-email">—</span>
@@ -161,7 +161,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sa
   <!-- METHODOLOGY -->
   <div class="methodology">
     <h3>How this is scored</h3>
-    <p><strong>Per-rep target:</strong> $1.33M ARR ($4M gap ÷ 3 active reps) by Dec 31, 2026. Placeholder rep (specialty pharma hire) excluded until ramp date is set.</p>
+    <p><strong>Per-rep target:</strong> $1.33M ARR ($4M gap ÷ 3 active reps) by Dec 31, 2026.</p>
     <p><strong>Coverage ratio</strong> = sum of open deal amounts ÷ rep target. Industry standard: <code>&lt;4x = Red, 4x–6x = Yellow, &gt;6x = Green</code>.</p>
     <p><strong>Weighted forecast</strong> = sum of (deal amount × HubSpot <code>deal_close_probability</code>) ÷ rep target. Uses the rep-maintained close probability per deal, not the stage default. <code>&lt;100% = Red, 100%–150% = Yellow, &gt;150% = Green</code>.</p>
     <p><strong>Combined confidence:</strong> both dimensions must be Yellow or better to qualify as "On Track." A rep with high coverage but low weighted = lots of stuck or low-probability deals; a rep with low coverage but high weighted = thin pipe with no margin for slippage.</p>
@@ -189,7 +189,6 @@ const REPS = {
   '314753596': { name: 'Kyle McCaig',        shortName: 'Kyle',  target: 1333333 },
   '78606761':  { name: 'Anne Foelsch',       shortName: 'Anne',  target: 1333333 }
 };
-const PLACEHOLDER_NAME = 'New Hire (Specialty Pharma)';
 const TOTAL_TARGET = 4000000;
 const PIPELINE_ID = '74379150';
 const CLOSED_STAGES = ['143017564', '143017565'];
@@ -332,9 +331,6 @@ function render(deals) {
     teamDealCount += dealsForRep.length;
     teamStaleCount += stale;
   }
-  // Placeholder
-  repCards.push({ placeholder: true });
-
   // Non-rep owners
   const nonRepOwners = {};
   Object.entries(byOwner).forEach(([ownerId, ds]) => {
@@ -414,28 +410,6 @@ function renderReps(repCards) {
   const grid = document.getElementById('rep-grid');
   grid.innerHTML = '';
   repCards.forEach(card => {
-    if (card.placeholder) {
-      grid.insertAdjacentHTML('beforeend', `
-        <div class="rep-card gray">
-          <div class="rep-header">
-            <div>
-              <div class="rep-name">${PLACEHOLDER_NAME}</div>
-              <div class="rep-target">Target: TBD (specialty motion)</div>
-            </div>
-            <span class="rep-badge gray">Pre-Ramp</span>
-          </div>
-          <div style="font-size: 12px; color: #4A5568; line-height: 1.5;">
-            New hire not yet started — excluded from $4M gap math.
-            Different sales motion (specialty pharma). Will be tracked separately once ramp date is set.
-          </div>
-          <div class="action-box gray">
-            <strong>Action</strong>
-            Confirm start date and target with Dan. Decide whether to rebalance team targets when hire ramps or absorb into specialty bucket.
-          </div>
-        </div>
-      `);
-      return;
-    }
     const action = actionFor(card.covColor, card.fcstColor, card.info.shortName);
     const dealsHtml = card.deals
       .sort((a,b) => b.amount - a.amount)
