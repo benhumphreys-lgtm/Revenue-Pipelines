@@ -577,20 +577,31 @@ async function mapWithConcurrency(items, n, fn) {
 async function loadDealFunnel() {
   const dealBanner = document.getElementById("deal-banner");
 
-  // Step 1: pull all Brand Direct deals in the 6 funnel stages
-  const stageIds = DEAL_FUNNEL.map(s => s.id);
+  // Step 1: pull ALL Brand Direct deals (pipeline filter only — the wrapper rejects array values
+  // in IN filters). Paginate, then post-filter to the 6 funnel stages.
+  const stageIdSet = new Set(DEAL_FUNNEL.map(s => s.id));
   dealBanner.textContent = "Pulling Brand Direct deals…";
-  let dealsResp;
+  const allDealsRaw = [];
+  let after = "";
+  let pageNum = 0;
   try {
-    dealsResp = await callMcp("mcp__6b11666e-7029-4baf-a491-3791bd8d9175__hubspot_search_custom_objects", {
-      object_type: "deals",
-      filters: JSON.stringify([
-        { property: "pipeline", operator: "EQ", value: BRAND_DIRECT_PIPELINE_ID },
-        { property: "dealstage", operator: "IN", value: stageIds }
-      ]),
-      properties: "dealname,amount,dealstage,pipeline,hubspot_owner_id,createdate,closedate",
-      limit: 100
-    });
+    while (true) {
+      pageNum++;
+      const args = {
+        object_type: "deals",
+        filters: JSON.stringify([{ property: "pipeline", operator: "EQ", value: BRAND_DIRECT_PIPELINE_ID }]),
+        properties: "dealname,amount,dealstage,pipeline,hubspot_owner_id,createdate,closedate",
+        limit: 100
+      };
+      if (after) args.after = after;
+      const resp = await callMcp("mcp__6b11666e-7029-4baf-a491-3791bd8d9175__hubspot_search_custom_objects", args);
+      const page = (resp && resp.results) || [];
+      allDealsRaw.push(...page);
+      dealBanner.textContent = "Pulling Brand Direct deals… (" + allDealsRaw.length + " so far)";
+      const next = resp && resp.paging && resp.paging.next && resp.paging.next.after;
+      if (!next || page.length === 0 || pageNum >= 10) break;
+      after = String(next);
+    }
   } catch (e) {
     dealBanner.textContent = "Failed to pull Brand Direct deals: " + ((e && e.message) || String(e)).slice(0, 200);
     dealBanner.classList.add("live");
@@ -599,10 +610,12 @@ async function loadDealFunnel() {
     updateDealKpis();
     return;
   }
-  const allDeals = (dealsResp && dealsResp.results) || [];
-  console.log("[deal-walk] Pulled", allDeals.length, "Brand Direct deals");
+  console.log("[deal-walk] Pulled", allDealsRaw.length, "Brand Direct deals (all stages)");
+  const allDeals = allDealsRaw.filter(d => stageIdSet.has(d.dealstage));
+  const droppedStages = allDealsRaw.length - allDeals.length;
+  console.log("[deal-walk] Filtered to", allDeals.length, "in funnel stages (dropped", droppedStages, "in off-funnel stages)");
   if (allDeals.length === 0) {
-    dealBanner.textContent = "No Brand Direct deals returned.";
+    dealBanner.textContent = "No Brand Direct deals in funnel stages (pulled " + allDealsRaw.length + " total).";
     dealBanner.classList.add("live");
     RP_DEALS = {};
     renderDealFunnel();
