@@ -128,6 +128,15 @@
     if (typeof params.properties === 'string' && !Array.isArray(params.properties)) {
       out.properties = params.properties.split(',').map(s => s.trim()).filter(Boolean);
     }
+    // sorts JSON-string → array (the new artifacts send this as a JSON-stringified array)
+    if (typeof params.sorts === 'string') {
+      try {
+        out.sorts = JSON.parse(params.sorts);
+      } catch (e) {
+        // Drop malformed sorts rather than crash the request
+        delete out.sorts;
+      }
+    }
     return out;
   }
 
