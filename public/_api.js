@@ -34,7 +34,21 @@
       }
       throw new Error(`HubSpot search failed (${response.status}): ${errData.error || response.statusText}${detailMsg ? ' — ' + detailMsg : ''}`);
     }
-    return response.json();
+    const data = await response.json();
+    // Flatten properties to the top level of each result, in addition to keeping
+    // the standard nested .properties object. The Cowork MCP tools return results
+    // with properties at the top level (e.g. r.hs_lead_name), while HubSpot's
+    // v3 search API nests them (r.properties.hs_lead_name). This dual-shape
+    // satisfies BOTH calling conventions used by ported artifacts.
+    if (data && Array.isArray(data.results)) {
+      data.results = data.results.map(r => {
+        if (r && r.properties && typeof r.properties === 'object') {
+          return { ...r.properties, ...r };
+        }
+        return r;
+      });
+    }
+    return data;
   }
 
   // Owners lookup: fetches all HubSpot owners. Original artifacts called this with
