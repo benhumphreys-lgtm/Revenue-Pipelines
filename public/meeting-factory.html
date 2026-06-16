@@ -144,6 +144,7 @@ const TARGETS=[{m:"2026-04",label:"April",target:2},{m:"2026-05",label:"May",tar
 // leads adoption started June 2026 — Apr/May held entered manually from the agency targets sheet
 const MANUAL_AGENCY={"2026-04":{held:0},"2026-05":{held:12}};
 const GOAL_HELD=50,GOAL_LIVE_START="2026-06-01",GOAL_END="2026-09-30";
+const GOAL_SCHED_WK=9; // weekly first-meetings-scheduled goal
 
 const G={pending:["new-stage-id"],scheduled:["attempting-stage-id"],metMidA:["connected-stage-id"],oppMidB:["qualified-stage-id"],handoff:["1009181988"],lost:["unqualified-stage-id","968123417","259798673","972389929"]};
 const inG=(s,k)=>G[k].indexOf(s)>=0;
@@ -172,6 +173,7 @@ function deltaH(t,l){const d=t-l;if(d===0)return '<span class="delta flat">±0</
 const stackTotals={id:'stackTotals',afterDatasetsDraw(chart){const m0=chart.getDatasetMeta(0);if(!m0||!m0.data)return;const y=chart.scales.y,ctx=chart.ctx,n=chart.data.labels.length;
  for(let i=0;i<n;i++){let sum=0;chart.data.datasets.forEach((ds,di)=>{if(chart.isDatasetVisible(di))sum+=(+ds.data[i]||0);});if(sum<=0)continue;const bar=m0.data[i];ctx.save();ctx.fillStyle='#16263a';ctx.font='700 11px -apple-system,sans-serif';ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText(sum,bar.x,y.getPixelForValue(sum)-3);ctx.restore();}}};
 const barValues={id:'barValues',afterDatasetsDraw(chart){const ctx=chart.ctx;chart.data.datasets.forEach((ds,di)=>{if(!chart.isDatasetVisible(di))return;const meta=chart.getDatasetMeta(di);meta.data.forEach((bar,i)=>{const v=+ds.data[i]||0;if(v<=0)return;ctx.save();ctx.fillStyle='#647489';ctx.font='700 9.5px -apple-system,sans-serif';ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText(v,bar.x,bar.y-2);ctx.restore();});});}};
+const goalLine={id:'goalLine',afterDatasetsDraw(chart){const g=chart.$goal;if(!g)return;const y=chart.scales.y,ar=chart.chartArea,ctx=chart.ctx,yp=y.getPixelForValue(g);ctx.save();ctx.strokeStyle='#d2607a';ctx.lineWidth=1.5;ctx.setLineDash([6,4]);ctx.beginPath();ctx.moveTo(ar.left,yp);ctx.lineTo(ar.right,yp);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#d2607a';ctx.font='700 10px -apple-system,sans-serif';ctx.textAlign='right';ctx.textBaseline='bottom';ctx.fillText('Goal '+g+'/wk',ar.right-3,yp-2);ctx.restore();}};
 
 // ---------- modal ----------
 function closeModal(){document.getElementById('modalOv').classList.remove('show');}
@@ -228,13 +230,14 @@ function fmHTML(tm,lm){
  const heldTW=countWeek(LEADS,'midA',tm),heldLW=countWeek(LEADS,'midA',lm),schTW=countWeek(LEADS,'topB',tm),schLW=countWeek(LEADS,'topB',lm),ldTW=countWeek(LEADS,'created',tm),ldLW=countWeek(LEADS,'created',lm);
  const nextMon=iso(addDays(curMonday(),7)),nextSun=iso(addDays(curMonday(),13));
  const upc=LEADS.filter(l=>l.sched&&l.sched>=nextMon&&l.sched<=nextSun).length;
+ const GW=GOAL_SCHED_WK,gpct=Math.round(100*schTW/GW),schBadge='<span class="delta '+(schTW>=GW?'up':'down')+'">this wk '+schTW+'/'+GW+' · '+gpct+'% to goal</span>';
  let h='';
  h+='<div class="section-h"><h2>This Week at a Glance</h2><span class="rng">week of '+tm+' (Mon, to date) vs last week</span></div>';
  h+='<div class="kpis">'+kpi('First Meetings Held',heldTW,'vs '+heldLW+' last wk',deltaH(heldTW,heldLW),C.teal)+kpi('First Meetings Scheduled',schTW,'vs '+schLW+' last wk',deltaH(schTW,schLW),C.navy2)+kpi('Upcoming Next Week',upc,'on the calendar','',C.amber)+kpi('Leads Created',ldTW,'vs '+ldLW+' last wk',deltaH(ldTW,ldLW),C.slate)+'</div>';
  h+='<div class="section-h"><h2>First Meetings Pipeline Update</h2></div>'+updateCard(tm,lm);
  h+='<div class="grid g2">'+
   '<div class="panel"><h2><span>First Meetings Held — WoW by Rep</span><span class="hint">click a bar ↗</span></h2><div class="ph">by date entered Mid A · last 12 weeks</div><div class="chartbox" style="height:250px"><canvas id="c_heldRep"></canvas></div></div>'+
-  '<div class="panel"><h2><span>First Meetings Scheduled — WoW by Rep</span><span class="hint">click a bar ↗</span></h2><div class="ph">by date entered Top B · last 12 weeks</div><div class="chartbox" style="height:250px"><canvas id="c_schRep"></canvas></div></div>'+
+  '<div class="panel"><h2><span>First Meetings Scheduled — WoW by Rep</span>'+schBadge+'</h2><div class="ph">by date entered Top B · last 12 weeks · goal '+GW+'/wk (red line) · click a bar ↗</div><div class="chartbox" style="height:250px"><canvas id="c_schRep"></canvas></div></div>'+
  '</div>';
  h+='<div class="grid g2">'+
   '<div class="panel"><h2><span>First Meetings Scheduled — WoW by Origin</span><span class="hint">click a bar ↗</span></h2><div class="ph">where the meeting came from · last 12 weeks</div><div class="chartbox" style="height:240px"><canvas id="c_schOrigin"></canvas></div></div>'+
@@ -278,7 +281,7 @@ function updTextFrom(d){
 function drawFM(){
  const wk=genWeeks(12),lab=wk.map(wkL);
  weeklyStack('c_heldRep',LEADS,'midA','owner',['Anne Foelsch','Daniel Cornwell','Kyle McCaig','Other'],REP_COL,wk,lab,'Held','entered Mid A');
- weeklyStack('c_schRep',LEADS,'topB','owner',['Anne Foelsch','Daniel Cornwell','Kyle McCaig','Other'],REP_COL,wk,lab,'Scheduled','entered Top B');
+ weeklyStack('c_schRep',LEADS,'topB','owner',['Anne Foelsch','Daniel Cornwell','Kyle McCaig','Other'],REP_COL,wk,lab,'Scheduled','entered Top B',GOAL_SCHED_WK);
  weeklyStack('c_schOrigin',LEADS,'topB','origin',null,ORIGIN_COL,wk,lab,'Scheduled','entered Top B');
  weeklyStack('c_ldRep',LEADS,'created','owner',['Anne Foelsch','Daniel Cornwell','Kyle McCaig','Other'],REP_COL,wk,lab,'Leads Created','created');
  dailyChart('c_daily',LEADS,14);
@@ -286,17 +289,18 @@ function drawFM(){
  const cb=document.getElementById('copyFM');if(cb)cb.addEventListener('click',()=>copyModal('Copy — First Meetings Update',updTextFrom(window.__upd)));
 }
 
-function weeklyStack(id,leads,field,dim,order,colors,wk,lab,metric,dateLbl){
+function weeklyStack(id,leads,field,dim,order,colors,wk,lab,metric,dateLbl,goal){
  const win=new Set(wk);let cats,remap;
  if(order){const hasOther=order.indexOf('Other')>=0;cats=order.slice();const set=new Set(order);remap=v=>set.has(v)?v:(hasOther?'Other':v);}
  else{const tot={};leads.forEach(l=>{if(l[field]&&win.has(weekStart(l[field]))){const v=l[dim]||'(none)';tot[v]=(tot[v]||0)+1;}});cats=Object.keys(tot).sort((a,b)=>tot[b]-tot[a]);if(cats.length>6){const keep=cats.slice(0,5);const ks=new Set(keep);cats=keep.concat(['Other']);remap=v=>ks.has(v)?v:'Other';}else remap=v=>v;}
  const grid={};cats.forEach(c=>grid[c]={});
  leads.forEach(l=>{if(!l[field])return;const w=weekStart(l[field]);if(!win.has(w))return;let c=remap(l[dim]||'(none)');if(cats.indexOf(c)<0)return;grid[c][w]=(grid[c][w]||0)+1;});
  const ds=cats.map((c,i)=>({label:c,data:wk.map(w=>grid[c][w]||0),backgroundColor:colors[c]||CYCLE[i%CYCLE.length],stack:'s'}));
- const ch=new Chart(document.getElementById(id),{type:'bar',data:{labels:lab,datasets:ds},plugins:[stackTotals],
+ const ch=new Chart(document.getElementById(id),{type:'bar',data:{labels:lab,datasets:ds},plugins:[stackTotals,goalLine],
   options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},layout:{padding:{top:16}},
    onClick:(e,els)=>{if(!els.length)return;const i=els[0].index;const w=wk[i];const sub=leads.filter(l=>l[field]&&weekStart(l[field])===w);leadModal(metric+' · week of '+wkL(w)+' · all reps',sub,field,dateLbl);},
-   scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:9}}},y:{stacked:true,beginAtZero:true,grid:{color:'#eef2f6'},ticks:{font:{size:10},precision:0}}},plugins:{legend:{position:'bottom',labels:{boxWidth:11,font:{size:10.5}}}}}});
+   scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:9}}},y:{stacked:true,beginAtZero:true,suggestedMax:(goal?goal+1:undefined),grid:{color:'#eef2f6'},ticks:{font:{size:10},precision:0}}},plugins:{legend:{position:'bottom',labels:{boxWidth:11,font:{size:10.5}}}}}});
+ ch.$goal=goal||0; if(goal)ch.update();
  return ch;
 }
 function dailyChart(id,leads,n){
