@@ -325,6 +325,7 @@
 </div>
 
 </div>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   window.appAuth.init(user => {
@@ -1001,17 +1002,20 @@ function updateScorecardLive() {
   const sparkHintEl = document.getElementById("sc-spark-hint");
   if (sparkHintEl) sparkHintEl.textContent = "Avg " + avg + "/wk · last 8 weeks";
 
-  // --- First meeting → opportunity rate (trailing 90 days) ---
-  const day90 = now - 90 * 86400000;
-  const meetingsLast90 = LEADS.filter(l => { const t = meetingDateForLead(l); return t != null && t >= day90; });
-  // Qualified = reached Mid B stage (qualified-stage-id) OR currently in Hand-off
-  const qualifiedSet = new Set(["qualified-stage-id", "1009181988"]);
-  const oppsLast90 = meetingsLast90.filter(l => qualifiedSet.has(l.hs_pipeline_stage));
-  const convPct = meetingsLast90.length > 0 ? Math.round(100 * oppsLast90.length / meetingsLast90.length) : 0;
+  // --- First meeting → opportunity rate (LIFETIME) ---
+  // Of all RP-origin leads that ever had a first meeting, what % progressed to Mid B (Opportunity Identified) or beyond?
+  // Trailing-window cohort would always under-report because recent meetings haven't had time to convert yet.
+  const everHadMeeting = LEADS.filter(l => meetingDateForLead(l) != null);
+  const everReachedOpp = LEADS.filter(l => {
+    const midB = l.hs_v2_date_entered_qualified_stage_id_233247981;
+    const handoff = l.hs_v2_date_entered_1009181988;
+    return (midB != null && midB !== "") || (handoff != null && handoff !== "");
+  });
+  const convPct = everHadMeeting.length > 0 ? Math.round(100 * everReachedOpp.length / everHadMeeting.length) : 0;
   const convEl = document.getElementById("sc-conv");
   if (convEl) convEl.textContent = convPct + "%";
   const convTrendEl = document.getElementById("sc-conv-trend");
-  if (convTrendEl) convTrendEl.textContent = oppsLast90.length + " of " + meetingsLast90.length + " meetings";
+  if (convTrendEl) convTrendEl.textContent = everReachedOpp.length + " of " + everHadMeeting.length + " · lifetime";
 
   // --- Render the calc card as Top 5 RPs by meetings ---
   renderTopRpsCard();
