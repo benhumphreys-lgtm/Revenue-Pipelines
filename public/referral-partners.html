@@ -14,6 +14,58 @@
   .h2-hint { text-transform: none; color: #8a8a8a; font-weight: 400; font-size: 11px; letter-spacing: 0; }
   .sub { color: #6b6b6b; font-size: 13px; margin: 0 0 24px; }
   .section-label { font-size: 12px; font-weight: 600; color: #4a4a4a; text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 1px solid #e6e8eb; }
+  .scorecard { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .sc-lane { background: #ffffff; border: 1px solid #e6e8eb; border-radius: 12px; padding: 14px 16px; }
+  .sc-tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+  .sc-tag-inputs { background: #E6F1FB; color: #042C53; }
+  .sc-tag-output { background: #FAEEDA; color: #412402; }
+  .sc-tag-value { background: #E1F5EE; color: #04342C; }
+  .sc-lane-sub { font-size: 13px; color: #6b6b6b; margin: 4px 0 14px; }
+  .sc-metric { margin-bottom: 14px; }
+  .sc-metric:last-child { margin-bottom: 0; }
+  .sc-metric-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+  .sc-metric-label { font-size: 12px; color: #4a4a4a; }
+  .sc-metric-status { font-size: 11px; font-weight: 500; }
+  .sc-status-on { color: #04342C; }
+  .sc-status-risk { color: #854F0B; }
+  .sc-status-behind { color: #791F1F; }
+  .sc-status-tbd { color: #8a8a8a; }
+  .sc-metric-value { display: flex; align-items: baseline; gap: 6px; }
+  .sc-metric-num { font-size: 22px; font-weight: 600; color: #111; line-height: 1.1; }
+  .sc-metric-target { font-size: 12px; color: #8a8a8a; }
+  .sc-metric-hint { font-size: 11px; color: #8a8a8a; margin-top: 4px; }
+  .sc-bar { height: 6px; background: #f0f2f5; border-radius: 3px; margin-top: 6px; overflow: hidden; }
+  .sc-bar-fill { height: 100%; transition: width 0.3s ease; }
+  .sc-bar-on { background: #1D9E75; }
+  .sc-bar-risk { background: #BA7517; }
+  .sc-bar-behind { background: #A32D2D; }
+  .sc-spark { display: flex; align-items: flex-end; gap: 4px; height: 56px; margin-top: 8px; }
+  .sc-spark-bar { flex: 1; background: #B5D4F4; border-radius: 2px; min-height: 4px; }
+  .sc-spark-bar.current { background: #378ADD; }
+  .sc-placeholder-note { font-size: 10px; color: #B4B2A9; font-style: italic; margin-top: 6px; }
+
+  .calc-card { background: #ffffff; border: 1px solid #e6e8eb; border-radius: 12px; padding: 18px 20px; margin-bottom: 24px; }
+  .calc-title { font-size: 14px; font-weight: 600; margin: 0 0 4px; color: #1a1a1a; }
+  .calc-sub { font-size: 12px; color: #6b6b6b; margin: 0 0 18px; }
+  .calc-zones { display: flex; height: 24px; font-size: 10px; margin-bottom: 20px; border-radius: 4px; overflow: hidden; }
+  .calc-zone-dormant { flex: 66.67; padding: 4px 8px; background: #f6f7f9; color: #6b6b6b; border-right: 1px dashed #d3d1c7; line-height: 16px; }
+  .calc-zone-active { flex: 33.33; padding: 4px 8px; background: #E1F5EE; color: #04342C; line-height: 16px; font-weight: 500; }
+  .calc-row { display: grid; grid-template-columns: 180px 1fr 120px; gap: 14px; align-items: center; margin-bottom: 12px; }
+  .calc-row:last-of-type { margin-bottom: 0; }
+  .calc-rp-name { font-size: 13px; font-weight: 500; color: #1a1a1a; }
+  .calc-rp-sub { font-size: 11px; color: #8a8a8a; }
+  .calc-track { position: relative; height: 24px; background: linear-gradient(to right, #f6f7f9 0% 66.67%, #E1F5EE 66.67% 100%); border-radius: 4px; }
+  .calc-dot { position: absolute; top: 6px; width: 12px; height: 12px; background: #888780; border-radius: 50%; }
+  .calc-dot.recent { width: 14px; height: 14px; background: #1D9E75; border: 2px solid #04342C; top: 3px; }
+  .calc-pill { font-size: 11px; padding: 3px 10px; border-radius: 10px; text-align: center; display: inline-block; }
+  .calc-pill-counted { background: #E1F5EE; color: #04342C; font-weight: 500; }
+  .calc-pill-steady { background: #E6F1FB; color: #042C53; font-weight: 500; }
+  .calc-pill-dormant { background: #FCEBEB; color: #501313; }
+  .calc-section { margin-top: 18px; padding-top: 14px; border-top: 1px solid #f0f2f5; }
+  .calc-section-title { font-size: 12px; font-weight: 600; color: #4a4a4a; margin-bottom: 4px; }
+  .calc-section-sub { font-size: 11px; color: #8a8a8a; margin-bottom: 12px; }
+  .calc-legend { display: flex; gap: 18px; margin-top: 16px; padding-top: 14px; border-top: 1px solid #e6e8eb; font-size: 11px; color: #6b6b6b; align-items: center; }
+  .calc-legend-spacer { margin-left: auto; color: #8a8a8a; }
   .kanban { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; }
   .kanban-col { flex: 0 0 220px; background: #f6f7f9; border-radius: 10px; padding: 10px; display: flex; flex-direction: column; min-width: 0; }
   .kanban-header { font-size: 12px; font-weight: 600; padding: 4px 6px 10px; color: #2c2c2a; display: flex; justify-content: space-between; align-items: center; gap: 8px; border-bottom: 1px solid #e6e8eb; margin-bottom: 8px; }
@@ -151,6 +203,68 @@
 
 <div id="err-banner" style="display:none; background:#FCEBEB; border:1px solid #E24B4A; color:#501313; padding:12px 14px; border-radius:10px; margin: 0 0 16px; font-size:13px;"></div>
 
+<div class="section-label">Program scorecard — targets: 3 newly active/month · 75% network health · 2 first meetings/week</div>
+<div class="scorecard">
+  <div class="sc-lane">
+    <span class="sc-tag sc-tag-inputs">Inputs</span>
+    <div class="sc-lane-sub">Is the engine being fed?</div>
+    <div class="sc-metric">
+      <div class="sc-metric-head"><span class="sc-metric-label">Active RPs this month</span><span class="sc-metric-status sc-status-tbd" id="sc-newactive-status">loading…</span></div>
+      <div class="sc-metric-value"><span class="sc-metric-num" id="sc-newactive">—</span><span class="sc-metric-target">/ 3 target</span></div>
+      <div class="sc-metric-hint" id="sc-newactive-hint">unique RPs with a meeting in the last 30 days</div>
+      <div class="sc-bar"><div class="sc-bar-fill sc-bar-on" id="sc-newactive-bar" style="width: 5%;"></div></div>
+    </div>
+    <div class="sc-metric">
+      <div class="sc-metric-head"><span class="sc-metric-label">Active-network health (60-day)</span><span class="sc-metric-status sc-status-tbd" id="sc-health-status">loading…</span></div>
+      <div class="sc-metric-value"><span class="sc-metric-num" id="sc-health">—</span><span class="sc-metric-target">/ 75% target</span></div>
+      <div class="sc-metric-hint" id="sc-health-hint">computing from signed RP activity</div>
+      <div class="sc-bar"><div class="sc-bar-fill sc-bar-risk" id="sc-health-bar" style="width: 5%;"></div></div>
+    </div>
+  </div>
+
+  <div class="sc-lane">
+    <span class="sc-tag sc-tag-output">Output</span>
+    <div class="sc-lane-sub">Is it producing?</div>
+    <div class="sc-metric">
+      <div class="sc-metric-head"><span class="sc-metric-label">First meetings (this week)</span><span class="sc-metric-status sc-status-tbd" id="sc-fm-status">loading…</span></div>
+      <div class="sc-metric-value"><span class="sc-metric-num" id="sc-fm">—</span><span class="sc-metric-target">/ 2 target</span></div>
+      <div class="sc-bar"><div class="sc-bar-fill sc-bar-on" id="sc-fm-bar" style="width: 5%;"></div></div>
+    </div>
+    <div class="sc-metric">
+      <div class="sc-metric-head"><span class="sc-metric-label">First meetings (this month)</span><span class="sc-metric-status sc-status-tbd" id="sc-fm-month-status">loading…</span></div>
+      <div class="sc-metric-value"><span class="sc-metric-num" id="sc-fm-month">—</span><span class="sc-metric-target">/ 8 target</span></div>
+      <div class="sc-bar"><div class="sc-bar-fill sc-bar-on" id="sc-fm-month-bar" style="width: 5%;"></div></div>
+    </div>
+    <div class="sc-metric">
+      <div class="sc-metric-label" style="margin-bottom: 4px;">Trailing 8 weeks</div>
+      <div class="sc-spark" id="sc-spark"></div>
+      <div class="sc-metric-hint" id="sc-spark-hint">loading…</div>
+    </div>
+  </div>
+
+  <div class="sc-lane">
+    <span class="sc-tag sc-tag-value">Value</span>
+    <div class="sc-lane-sub">Is it worth it?</div>
+    <div class="sc-metric">
+      <div class="sc-metric-label" style="margin-bottom: 4px;">First meeting → opportunity</div>
+      <div class="sc-metric-value"><span class="sc-metric-num" id="sc-conv">—</span><span class="sc-metric-status sc-status-tbd" id="sc-conv-trend" style="font-weight: 400;">trailing 90 days</span></div>
+    </div>
+    <div class="sc-metric">
+      <div class="sc-metric-label" style="margin-bottom: 4px;">RP-influenced pipeline</div>
+      <div class="sc-metric-value"><span class="sc-metric-num" id="sc-pipeline">—</span><span class="sc-metric-target" id="sc-pipeline-hint">loading…</span></div>
+    </div>
+    <div class="sc-metric">
+      <div class="sc-metric-label" style="margin-bottom: 4px;">Closed-won attributable (YTD)</div>
+      <div class="sc-metric-value"><span class="sc-metric-num" id="sc-won">—</span><span class="sc-metric-target" id="sc-won-hint">loading…</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="calc-card">
+  <h3 class="calc-title">Top 5 RPs by meetings (trailing 90 days)</h3>
+  <p class="calc-sub">Loading from HubSpot…</p>
+</div>
+
 <div class="kpis">
   <div class="kpi" data-drill="active-rps"><div class="kpi-label">Active RPs</div><div class="kpi-value" id="kpi-active-rps">—</div><div class="kpi-hint" id="kpi-rps-hint">of total</div></div>
   <div class="kpi" data-drill="all-leads"><div class="kpi-label">RP-sourced leads</div><div class="kpi-value" id="kpi-leads">—</div><div class="kpi-hint">origin = Referral Partner</div></div>
@@ -211,7 +325,6 @@
 </div>
 
 </div>
-
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   window.appAuth.init(user => {
@@ -328,6 +441,26 @@ function xrefPill(status) {
 }
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// Watch scorecard ID text changes so we can see who's overwriting what
+function attachScorecardWatchers() {
+  const ids = ["sc-newactive", "sc-newactive-hint", "sc-health", "sc-health-hint", "sc-fm", "sc-fm-month", "sc-conv", "sc-pipeline", "sc-pipeline-hint", "sc-won", "sc-won-hint"];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const obs = new MutationObserver(muts => {
+      muts.forEach(m => {
+        const newText = el.textContent;
+        console.log("[scorecard-watch]", id, "→", JSON.stringify(newText), "at", new Date().toISOString());
+        console.trace();
+      });
+    });
+    obs.observe(el, { childList: true, characterData: true, subtree: true });
+  });
+  console.log("[scorecard-watch] Attached observers to", ids.length, "elements");
+}
+document.addEventListener("DOMContentLoaded", attachScorecardWatchers);
+if (document.readyState !== "loading") attachScorecardWatchers();
 
 async function callMcp(name, args, opts) {
   opts = opts || {};
@@ -577,13 +710,14 @@ async function mapWithConcurrency(items, n, fn) {
 async function loadDealFunnel() {
   const dealBanner = document.getElementById("deal-banner");
 
-  // Step 1: pull ALL Brand Direct deals (pipeline filter only — the wrapper rejects array values
-  // in IN filters). Paginate, then post-filter to the 6 funnel stages.
+  // Step 1: pull ALL Brand Direct deals (pipeline filter only). Paginate through all pages,
+  // then post-filter to the 6 funnel stages.
   const stageIdSet = new Set(DEAL_FUNNEL.map(s => s.id));
   dealBanner.textContent = "Pulling Brand Direct deals…";
   const allDealsRaw = [];
   let after = "";
   let pageNum = 0;
+  const MAX_PAGES = 30;
   try {
     while (true) {
       pageNum++;
@@ -597,9 +731,9 @@ async function loadDealFunnel() {
       const resp = await callMcp("mcp__6b11666e-7029-4baf-a491-3791bd8d9175__hubspot_search_custom_objects", args);
       const page = (resp && resp.results) || [];
       allDealsRaw.push(...page);
-      dealBanner.textContent = "Pulling Brand Direct deals… (" + allDealsRaw.length + " so far)";
+      dealBanner.textContent = "Pulling Brand Direct deals… (" + allDealsRaw.length + " so far, page " + pageNum + ")";
       const next = resp && resp.paging && resp.paging.next && resp.paging.next.after;
-      if (!next || page.length === 0 || pageNum >= 10) break;
+      if (!next || page.length === 0 || pageNum >= MAX_PAGES) break;
       after = String(next);
     }
   } catch (e) {
@@ -610,12 +744,21 @@ async function loadDealFunnel() {
     updateDealKpis();
     return;
   }
-  console.log("[deal-walk] Pulled", allDealsRaw.length, "Brand Direct deals (all stages)");
+  console.log("[deal-walk] Pulled", allDealsRaw.length, "Brand Direct deals (all stages, " + pageNum + " pages)");
+  // Stage breakdown for debugging
+  const stageBreakdown = {};
+  allDealsRaw.forEach(d => { stageBreakdown[d.dealstage] = (stageBreakdown[d.dealstage] || 0) + 1; });
+  console.log("[deal-walk] Stage breakdown:", stageBreakdown);
+  Object.entries(stageBreakdown).forEach(([sid, count]) => {
+    const stage = DEAL_STAGE_BY_ID[sid];
+    console.log("  ", sid, "→", stage ? stage.label : "(off-funnel/unknown)", ":", count, "deals");
+  });
+
   const allDeals = allDealsRaw.filter(d => stageIdSet.has(d.dealstage));
   const droppedStages = allDealsRaw.length - allDeals.length;
   console.log("[deal-walk] Filtered to", allDeals.length, "in funnel stages (dropped", droppedStages, "in off-funnel stages)");
   if (allDeals.length === 0) {
-    dealBanner.textContent = "No Brand Direct deals in funnel stages (pulled " + allDealsRaw.length + " total).";
+    dealBanner.textContent = "No Brand Direct deals in funnel stages (pulled " + allDealsRaw.length + " total, " + droppedStages + " off-funnel).";
     dealBanner.classList.add("live");
     RP_DEALS = {};
     renderDealFunnel();
@@ -650,6 +793,16 @@ async function loadDealFunnel() {
 
   const matched = Object.keys(RP_DEALS).length;
   dealBanner.classList.add("live");
+  // Per-stage RP-tagged count for diagnostics
+  const matchedByStage = {};
+  Object.values(RP_DEALS).forEach(({ deal }) => {
+    matchedByStage[deal.dealstage] = (matchedByStage[deal.dealstage] || 0) + 1;
+  });
+  console.log("[deal-walk] RP-tagged deals by stage:", matchedByStage);
+  DEAL_FUNNEL.forEach(s => {
+    console.log("  ", s.label, ":", matchedByStage[s.id] || 0, "of", stageBreakdown[s.id] || 0, "checked");
+  });
+
   let banner = matched + " RP-tagged deal" + (matched === 1 ? "" : "s") + " in Brand Direct · checked " + allDeals.length + " deals";
   if (walkErrors > 0) banner += " · ⚠ " + walkErrors + " walk error" + (walkErrors === 1 ? "" : "s");
   if (errorSamples.length) banner += " (e.g. deal " + errorSamples[0].did + ": " + errorSamples[0].msg + ")";
@@ -658,6 +811,287 @@ async function loadDealFunnel() {
   renderDealFunnel();
   renderBridgeNote();
   updateDealKpis();
+}
+
+// ---- Scorecard: live computation from lead meeting data ----
+// "First meeting" = earliest non-null stage-entry date among Top B / Mid A / Mid B / Hand-off.
+// Leads sometimes skip Top B in transitions (HubSpot doesn't always stamp a date for skipped stages),
+// so taking the min across the post-Top-A stages catches them correctly.
+const POST_TOP_A_STAGE_DATE_PROPS = [
+  "hs_v2_date_entered_attempting_stage_id_745667965",   // Top B — First Meeting Scheduled
+  "hs_v2_date_entered_connected_stage_id_2058487257",   // Mid A — First meeting complete
+  "hs_v2_date_entered_qualified_stage_id_233247981",    // Mid B — Opportunity Identified
+  "hs_v2_date_entered_1009181988"                       // Hand-off
+];
+function meetingDateForLead(lead) {
+  const times = POST_TOP_A_STAGE_DATE_PROPS
+    .map(prop => lead[prop])
+    .filter(s => s != null && s !== "")
+    .map(s => Date.parse(s))
+    .filter(t => !isNaN(t));
+  if (times.length === 0) return null;
+  return Math.min(...times);
+}
+
+function classifyRpActivity(meetingTimes) {
+  const now = Date.now();
+  const day = 86400000;
+  const day30 = now - 30 * day;
+  const day90 = now - 90 * day;
+  const recent = meetingTimes.filter(t => t >= day30);
+  const prior  = meetingTimes.filter(t => t < day30 && t >= day90);
+  const older  = meetingTimes.filter(t => t < day90);
+  if (recent.length === 0) {
+    const last = meetingTimes.length ? Math.max(...meetingTimes) : null;
+    return { status: "dormant", lastDays: last ? Math.floor((now - last) / day) : null };
+  }
+  if (prior.length > 0) return { status: "already_active" };
+  if (older.length === 0) return { status: "first_time" };
+  return { status: "reanimated", lastPriorDays: Math.floor((now - Math.max(...older)) / day) };
+}
+
+function updateScorecardLive() {
+  // Guard: if no data yet, leave the loading state alone — don't overwrite with zeros
+  if (!Array.isArray(LEADS) || !Array.isArray(RPS) || LEADS.length === 0 || RPS.length === 0) {
+    console.warn("[scorecard] Skipping update — LEADS or RPS not yet loaded", { leads: LEADS && LEADS.length, rps: RPS && RPS.length });
+    return;
+  }
+  console.log("[scorecard] updateScorecardLive running with", LEADS.length, "leads,", RPS.length, "RPs");
+  // Build meeting-times map keyed by RP name
+  const byKey = {};
+  LEADS.forEach(l => {
+    const key = nameKey(l.referral_partner);
+    if (!key) return;
+    const t = meetingDateForLead(l);
+    if (!byKey[key]) byKey[key] = [];
+    if (t != null) byKey[key].push(t);
+  });
+
+  // --- Active RPs this month: unique RPs with ≥1 meeting in the last 30 days ---
+  const now = Date.now();
+  const day = 86400000;
+  const day30 = now - 30 * day;
+  const activeKeys = Object.keys(byKey).filter(key => byKey[key].some(t => t >= day30));
+  const activeRpRecords = activeKeys.map(key => RP_BY_KEY[key]).filter(Boolean);
+  // Sort by recency of most recent meeting (most active first)
+  activeRpRecords.sort((a, b) => {
+    const aMax = Math.max(...(byKey[nameKey(a.referral_partner)] || [0]));
+    const bMax = Math.max(...(byKey[nameKey(b.referral_partner)] || [0]));
+    return bMax - aMax;
+  });
+
+  const naEl = document.getElementById("sc-newactive");
+  if (naEl) naEl.textContent = activeRpRecords.length;
+  const naHintEl = document.getElementById("sc-newactive-hint");
+  if (naHintEl) {
+    if (activeRpRecords.length === 0) {
+      naHintEl.textContent = "no RPs produced a meeting in the last 30 days";
+    } else {
+      const names = activeRpRecords.slice(0, 3).map(r => r.referral_partner).join(", ");
+      const more = activeRpRecords.length > 3 ? " · +" + (activeRpRecords.length - 3) + " more" : "";
+      naHintEl.textContent = names + more;
+    }
+  }
+  const naStatusEl = document.getElementById("sc-newactive-status");
+  const naBarEl = document.getElementById("sc-newactive-bar");
+  const naTarget = 3;
+  if (naStatusEl && naBarEl) {
+    if (activeRpRecords.length >= naTarget) {
+      naStatusEl.textContent = "on track"; naStatusEl.className = "sc-metric-status sc-status-on";
+      naBarEl.className = "sc-bar-fill sc-bar-on"; naBarEl.style.width = "100%";
+    } else if (activeRpRecords.length > 0) {
+      naStatusEl.textContent = "behind"; naStatusEl.className = "sc-metric-status sc-status-risk";
+      naBarEl.className = "sc-bar-fill sc-bar-risk"; naBarEl.style.width = Math.round(100 * activeRpRecords.length / naTarget) + "%";
+    } else {
+      naStatusEl.textContent = "behind"; naStatusEl.className = "sc-metric-status sc-status-behind";
+      naBarEl.className = "sc-bar-fill sc-bar-behind"; naBarEl.style.width = "5%";
+    }
+  }
+
+  // --- Active-network health (60-day) ---
+  const signedExcluded = new Set(["1018743895", "967596116", "1162158241"]); // exclude In Recruitment + both Retired buckets
+  const signed = RPS.filter(r => r.hs_pipeline_stage && !signedExcluded.has(r.hs_pipeline_stage));
+  const day60 = now - 60 * 86400000;
+  const signedActive = signed.filter(rp => {
+    const key = nameKey(rp.referral_partner);
+    const times = (key && byKey[key]) || [];
+    return times.some(t => t >= day60);
+  });
+  const healthPct = signed.length > 0 ? Math.round(100 * signedActive.length / signed.length) : 0;
+  const healthEl = document.getElementById("sc-health");
+  const healthHintEl = document.getElementById("sc-health-hint");
+  if (healthEl) healthEl.textContent = healthPct + "%";
+  if (healthHintEl) healthHintEl.textContent = signedActive.length + " of " + signed.length + " signed RPs produced a meeting";
+  const healthStatusEl = document.getElementById("sc-health-status");
+  const healthBarEl = document.getElementById("sc-health-bar");
+  if (healthStatusEl && healthBarEl) {
+    if (healthPct >= 75) {
+      healthStatusEl.textContent = "on track"; healthStatusEl.className = "sc-metric-status sc-status-on";
+      healthBarEl.className = "sc-bar-fill sc-bar-on";
+    } else if (healthPct >= 50) {
+      healthStatusEl.textContent = "at risk"; healthStatusEl.className = "sc-metric-status sc-status-risk";
+      healthBarEl.className = "sc-bar-fill sc-bar-risk";
+    } else {
+      healthStatusEl.textContent = "behind"; healthStatusEl.className = "sc-metric-status sc-status-behind";
+      healthBarEl.className = "sc-bar-fill sc-bar-behind";
+    }
+    healthBarEl.style.width = Math.max(5, Math.min(100, Math.round(healthPct / 75 * 100))) + "%";
+  }
+
+  // --- First meetings this week ---
+  const startOfWeek = (() => { const d = new Date(); d.setHours(0,0,0,0); const dow = d.getDay() || 7; d.setDate(d.getDate() - dow + 1); return d.getTime(); })();
+  const allMeetingTimes = LEADS.map(meetingDateForLead).filter(t => t != null);
+  const fmThisWeek = allMeetingTimes.filter(t => t >= startOfWeek).length;
+  const fmEl = document.getElementById("sc-fm");
+  if (fmEl) fmEl.textContent = fmThisWeek;
+  const fmTarget = 2;
+  const fmStatusEl = document.getElementById("sc-fm-status");
+  const fmBarEl = document.getElementById("sc-fm-bar");
+  if (fmStatusEl && fmBarEl) {
+    if (fmThisWeek >= fmTarget) {
+      fmStatusEl.textContent = "on track"; fmStatusEl.className = "sc-metric-status sc-status-on";
+      fmBarEl.className = "sc-bar-fill sc-bar-on"; fmBarEl.style.width = "100%";
+    } else if (fmThisWeek > 0) {
+      fmStatusEl.textContent = "behind"; fmStatusEl.className = "sc-metric-status sc-status-risk";
+      fmBarEl.className = "sc-bar-fill sc-bar-risk"; fmBarEl.style.width = Math.round(100 * fmThisWeek / fmTarget) + "%";
+    } else {
+      fmStatusEl.textContent = "behind"; fmStatusEl.className = "sc-metric-status sc-status-behind";
+      fmBarEl.className = "sc-bar-fill sc-bar-behind"; fmBarEl.style.width = "5%";
+    }
+  }
+
+  // --- First meetings this month ---
+  const startOfMonth = (() => { const d = new Date(); d.setHours(0,0,0,0); d.setDate(1); return d.getTime(); })();
+  const fmThisMonth = allMeetingTimes.filter(t => t >= startOfMonth).length;
+  const fmMonthEl = document.getElementById("sc-fm-month");
+  if (fmMonthEl) fmMonthEl.textContent = fmThisMonth;
+  const fmMonthTarget = 8;
+  const fmMonthStatusEl = document.getElementById("sc-fm-month-status");
+  const fmMonthBarEl = document.getElementById("sc-fm-month-bar");
+  if (fmMonthStatusEl && fmMonthBarEl) {
+    if (fmThisMonth >= fmMonthTarget) {
+      fmMonthStatusEl.textContent = "on track"; fmMonthStatusEl.className = "sc-metric-status sc-status-on";
+      fmMonthBarEl.className = "sc-bar-fill sc-bar-on"; fmMonthBarEl.style.width = "100%";
+    } else if (fmThisMonth > 0) {
+      fmMonthStatusEl.textContent = "behind"; fmMonthStatusEl.className = "sc-metric-status sc-status-risk";
+      fmMonthBarEl.className = "sc-bar-fill sc-bar-risk"; fmMonthBarEl.style.width = Math.round(100 * fmThisMonth / fmMonthTarget) + "%";
+    } else {
+      fmMonthStatusEl.textContent = "behind"; fmMonthStatusEl.className = "sc-metric-status sc-status-behind";
+      fmMonthBarEl.className = "sc-bar-fill sc-bar-behind"; fmMonthBarEl.style.width = "5%";
+    }
+  }
+
+  // --- Trailing 8-week sparkline ---
+  const weeks = [];
+  for (let i = 7; i >= 0; i--) {
+    const weekStart = startOfWeek - i * 7 * 86400000;
+    const weekEnd = weekStart + 7 * 86400000;
+    weeks.push(allMeetingTimes.filter(t => t >= weekStart && t < weekEnd).length);
+  }
+  const maxWk = Math.max(1, ...weeks);
+  const sparkEl = document.getElementById("sc-spark");
+  if (sparkEl) {
+    sparkEl.innerHTML = weeks.map((n, i) => {
+      const isCurrent = i === weeks.length - 1;
+      const h = Math.max(4, Math.round(100 * n / maxWk));
+      return `<div class="sc-spark-bar${isCurrent ? ' current' : ''}" style="height: ${h}%;" title="Week of ${new Date(startOfWeek - (7-i)*7*86400000).toLocaleDateString()}: ${n} meeting${n===1?'':'s'}"></div>`;
+    }).join("");
+  }
+  const avg = (weeks.reduce((s, n) => s + n, 0) / 8).toFixed(1);
+  const sparkHintEl = document.getElementById("sc-spark-hint");
+  if (sparkHintEl) sparkHintEl.textContent = "Avg " + avg + "/wk · last 8 weeks";
+
+  // --- First meeting → opportunity rate (trailing 90 days) ---
+  const day90 = now - 90 * 86400000;
+  const meetingsLast90 = LEADS.filter(l => { const t = meetingDateForLead(l); return t != null && t >= day90; });
+  // Qualified = reached Mid B stage (qualified-stage-id) OR currently in Hand-off
+  const qualifiedSet = new Set(["qualified-stage-id", "1009181988"]);
+  const oppsLast90 = meetingsLast90.filter(l => qualifiedSet.has(l.hs_pipeline_stage));
+  const convPct = meetingsLast90.length > 0 ? Math.round(100 * oppsLast90.length / meetingsLast90.length) : 0;
+  const convEl = document.getElementById("sc-conv");
+  if (convEl) convEl.textContent = convPct + "%";
+  const convTrendEl = document.getElementById("sc-conv-trend");
+  if (convTrendEl) convTrendEl.textContent = oppsLast90.length + " of " + meetingsLast90.length + " meetings";
+
+  // --- Render the calc card as Top 5 RPs by meetings ---
+  renderTopRpsCard();
+
+  // Mark scorecard placeholder notes as live
+  document.querySelectorAll(".sc-placeholder-note").forEach(el => {
+    el.textContent = "Live from HubSpot · Top B stage-entry dates";
+    el.style.color = "#1D9E75";
+  });
+}
+
+function renderTopRpsCard() {
+  const card = document.querySelector(".calc-card");
+  if (!card) return;
+  const now = Date.now();
+  const day = 86400000;
+
+  // Build per-RP meeting times from LEADS (origin = Referral Partner)
+  const byKey = {};
+  LEADS.forEach(l => {
+    const key = nameKey(l.referral_partner);
+    if (!key) return;
+    const t = meetingDateForLead(l);
+    if (t == null) return;
+    if (!byKey[key]) byKey[key] = [];
+    byKey[key].push(t);
+  });
+
+  const leaders = RPS.map(rp => {
+    const key = nameKey(rp.referral_partner);
+    const times = (key && byKey[key]) ? byKey[key].slice().sort((a, b) => a - b) : [];
+    const last30 = times.filter(t => t >= now - 30 * day).length;
+    const last60 = times.filter(t => t >= now - 60 * day).length;
+    const last90 = times.filter(t => t >= now - 90 * day).length;
+    return { rp, times, last30, last60, last90 };
+  })
+    .filter(x => x.last90 > 0)
+    .sort((a, b) => b.last90 - a.last90 || b.last60 - a.last60 || b.last30 - a.last30)
+    .slice(0, 5);
+
+  const rowsHtml = leaders.length === 0
+    ? '<div style="font-size: 13px; color: #8a8a8a; padding: 20px; text-align: center;">No RPs produced meetings in the last 90 days yet.</div>'
+    : leaders.map((r, i) => {
+        const dots = r.times.map(t => {
+          const daysAgo = (now - t) / day;
+          if (daysAgo > 90) return "";
+          const pct = Math.max(1, Math.min(99, 100 * (90 - daysAgo) / 90));
+          const recent = daysAgo <= 30;
+          return `<div class="calc-dot${recent ? ' recent' : ''}" style="left: ${pct.toFixed(1)}%;" title="${Math.round(daysAgo)} days ago"></div>`;
+        }).join("");
+        const sub = `${r.last30} in last 30d · ${r.last60} in last 60d · ${r.last90} in last 90d`;
+        return `<div class="calc-row" data-rp-id="${esc(r.rp.id)}" style="cursor: pointer;">
+          <div>
+            <div class="calc-rp-name">#${i + 1} · ${esc(r.rp.referral_partner || "(unnamed)")}</div>
+            <div class="calc-rp-sub">${esc(sub)}</div>
+          </div>
+          <div class="calc-track">${dots}</div>
+          <span class="calc-pill calc-pill-steady">${r.last90} mtgs</span>
+        </div>`;
+      }).join("");
+
+  const allProducing = Object.keys(byKey).filter(k => byKey[k].some(t => t >= now - 90 * day)).length;
+
+  card.innerHTML = `
+    <h3 class="calc-title">Top 5 RPs by meetings (trailing 90 days)</h3>
+    <p class="calc-sub">Which RPs are actually producing — meeting counts in the last 30, 60, and 90 days. Click any row to open the RP in HubSpot.</p>
+    <div class="calc-zones">
+      <div class="calc-zone-dormant">days 30–90 ago</div>
+      <div class="calc-zone-active">last 30 days</div>
+    </div>
+    ${rowsHtml}
+    <div class="calc-legend">
+      <span><span style="display: inline-block; width: 10px; height: 10px; background: #888780; border-radius: 50%; vertical-align: middle; margin-right: 6px;"></span>Meeting (30–90 days ago)</span>
+      <span><span style="display: inline-block; width: 12px; height: 12px; background: #1D9E75; border-radius: 50%; border: 2px solid #04342C; vertical-align: middle; margin-right: 6px;"></span>Meeting (last 30 days)</span>
+      <span class="calc-legend-spacer">${allProducing} total RPs produced ≥1 meeting in last 90 days</span>
+    </div>
+  `;
+  card.querySelectorAll(".calc-row[data-rp-id]").forEach(el => {
+    el.addEventListener("click", () => window.open(rpUrl(el.dataset.rpId), "_blank"));
+  });
 }
 
 function renderRpKanban() {
@@ -739,6 +1173,19 @@ function updateDealKpis() {
   if (wonHintEl) wonHintEl.textContent = wonDeals.length + " closed-won deal" + (wonDeals.length === 1 ? "" : "s");
   const openHintEl = document.querySelector('[data-drill="leads-open-pipeline"] .kpi-hint');
   if (openHintEl) openHintEl.textContent = openDeals.length + " open deal" + (openDeals.length === 1 ? "" : "s");
+
+  // Wire the live scorecard numbers (pipeline + closed-won)
+  const yearStart = new Date(new Date().getFullYear(), 0, 1).toISOString();
+  const wonYtd = wonDeals.filter(d => (d.closedate || "") >= yearStart);
+  const wonYtdSum = wonYtd.reduce((s, d) => s + (parseFloat(d.amount) || 0), 0);
+  const scPipeline = document.getElementById("sc-pipeline");
+  const scPipelineHint = document.getElementById("sc-pipeline-hint");
+  if (scPipeline) scPipeline.textContent = fmtMoney(openSum);
+  if (scPipelineHint) scPipelineHint.textContent = openDeals.length + " open deal" + (openDeals.length === 1 ? "" : "s");
+  const scWon = document.getElementById("sc-won");
+  const scWonHint = document.getElementById("sc-won-hint");
+  if (scWon) scWon.textContent = fmtMoney(wonYtdSum);
+  if (scWonHint) scWonHint.textContent = wonYtd.length + " deal" + (wonYtd.length === 1 ? "" : "s");
 }
 
 function renderDealFunnel() {
@@ -799,7 +1246,7 @@ async function loadDashboard() {
       callMcp("mcp__6b11666e-7029-4baf-a491-3791bd8d9175__hubspot_search_custom_objects", {
         object_type: "0-136",
         filters: '[{"property": "origin", "operator": "EQ", "value": "Referral Partner"}]',
-        properties: "hs_lead_name,referral_partner,origin,hs_lead_source,hs_pipeline_stage,hs_pipeline_stage_category_v2,hs_lead_associated_deals_count,hs_lead_pipeline_value,hs_lead_closed_won_deals_amount,hs_createdate,hubspot_owner_id",
+        properties: "hs_lead_name,referral_partner,origin,hs_lead_source,hs_pipeline_stage,hs_pipeline_stage_category_v2,hs_lead_associated_deals_count,hs_lead_pipeline_value,hs_lead_closed_won_deals_amount,hs_createdate,hubspot_owner_id,hs_v2_date_entered_attempting_stage_id_745667965,hs_v2_date_entered_connected_stage_id_2058487257,hs_v2_date_entered_qualified_stage_id_233247981,hs_v2_date_entered_1009181988",
         limit: 100
       }),
       callMcp("mcp__6b11666e-7029-4baf-a491-3791bd8d9175__hubspot_list_owners", {})
@@ -844,6 +1291,23 @@ async function loadDashboard() {
 
     // ---- RP lifecycle kanban board ----
     renderRpKanban();
+
+    // ---- Scorecard live wiring (uses LEADS + RPS already loaded) ----
+    try {
+      console.log("[scorecard] Computing from", LEADS.length, "leads,", RPS.length, "RPs");
+      const meetingSample = LEADS.slice(0, 3).map(l => ({
+        name: l.hs_lead_name,
+        rp: l.referral_partner,
+        stage: l.hs_pipeline_stage,
+        meetingDate: meetingDateForLead(l) ? new Date(meetingDateForLead(l)).toISOString() : null
+      }));
+      console.log("[scorecard] Sample lead meeting dates:", meetingSample);
+      updateScorecardLive();
+    } catch (e) {
+      console.error("updateScorecardLive failed:", e);
+      const card = document.querySelector(".calc-card");
+      if (card) card.innerHTML = '<div style="padding: 18px; color: #A32D2D; font-size: 13px;">Scorecard render failed: ' + esc((e && e.message) || String(e)) + '. Check console for details.</div>';
+    }
 
     // ---- Top performers ----
     const perRp = {};
@@ -943,7 +1407,11 @@ async function loadDashboard() {
     // Cross-reference runs after — it's a nice-to-have indicator and can hit limits without breaking core view.
     loadDealFunnel()
       .catch(e => { const b = document.getElementById("deal-banner"); if (b) { b.textContent = "Deal walk failed: " + ((e && e.message) || String(e)).slice(0, 200); b.classList.add("live"); } })
-      .finally(() => { crossReferenceLeads(); });
+      .finally(() => {
+        // Belt-and-suspenders: re-render scorecard after deal walk in case any state got reset
+        try { updateScorecardLive(); } catch (e) { console.warn("Re-render scorecard failed", e); }
+        crossReferenceLeads();
+      });
 
   } catch (err) {
     console.error("Dashboard load failed:", err);
@@ -954,13 +1422,23 @@ async function loadDashboard() {
 function showLoadError(err) {
   const raw = (err && err.message) || String(err);
   const lower = raw.toLowerCase();
+  const isInvalidated = lower.includes("invalidated") || lower.includes("needs to reconnect");
   const isAuth = lower.includes("hubspot au") || lower.includes("authenti") || lower.includes("authoriz") || lower.includes("unauthor") || lower.includes("not authoriz");
   const isPerm = lower.includes("permission") || lower.includes("forbidden") || lower.includes("403");
-  let kind = isAuth ? "HubSpot authorization required" : (isPerm ? "HubSpot permission denied" : "Connector error");
-  let hint = isAuth
-    ? "The HubSpot connector for this artifact isn't authorized. Open Cowork settings → Connectors, reconnect HubSpot (PrescriberPoint MCP), then reload this artifact."
-    : (isPerm ? "Your HubSpot user may not have read access to the Referral Partner custom object or Leads. Try reconnecting HubSpot and reload."
-      : "Reload the artifact. If it persists, check the HubSpot connector status in Cowork settings.");
+  let kind, hint;
+  if (isInvalidated) {
+    kind = "HubSpot connection invalidated — reconnect required";
+    hint = "Open Cowork settings → Connectors. Find the PrescriberPoint HubSpot connector (the one with custom-object access — not the official HubSpot connector). Click Reconnect, approve the OAuth scopes, then reload this artifact.";
+  } else if (isAuth) {
+    kind = "HubSpot authorization required";
+    hint = "The HubSpot connector for this artifact isn't authorized. Open Cowork settings → Connectors, reconnect the PrescriberPoint HubSpot connector, then reload this artifact.";
+  } else if (isPerm) {
+    kind = "HubSpot permission denied";
+    hint = "Your HubSpot user may not have read access to the Referral Partner custom object or Leads. Try reconnecting HubSpot and reload.";
+  } else {
+    kind = "Connector error";
+    hint = "Reload the artifact. If it persists, check the HubSpot connector status in Cowork settings.";
+  }
   const banner = document.getElementById("err-banner");
   if (banner) {
     banner.innerHTML = `<strong>${esc(kind)}</strong><div style="margin-top:4px">${esc(hint)}</div><details style="margin-top:6px"><summary style="cursor:pointer; font-size:11px; color:#791F1F">Show raw error</summary><pre style="white-space:pre-wrap; font-size:11px; margin:6px 0 0; color:#501313">${esc(raw)}</pre></details>`;
