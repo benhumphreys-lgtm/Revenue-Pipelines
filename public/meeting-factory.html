@@ -144,7 +144,9 @@ const TARGETS=[{m:"2026-04",label:"April",target:2},{m:"2026-05",label:"May",tar
 // leads adoption started June 2026 — Apr/May held entered manually from the agency targets sheet
 const MANUAL_AGENCY={"2026-04":{held:0},"2026-05":{held:12}};
 const GOAL_HELD=50,GOAL_LIVE_START="2026-06-01",GOAL_END="2026-09-30";
-const GOAL_SCHED_WK=9; // weekly first-meetings-scheduled goal
+const GOAL_SCHED_WK=6; // weekly first-meetings-scheduled goal
+const MONTHLY_GOAL=GOAL_SCHED_WK*4; // 24/mo = 6/wk × 4 weeks
+const MONTHLY_START="2026-04"; // MoM tracker start
 
 const G={pending:["new-stage-id"],scheduled:["attempting-stage-id"],metMidA:["connected-stage-id"],oppMidB:["qualified-stage-id"],handoff:["1009181988"],lost:["unqualified-stage-id","968123417","259798673","972389929"]};
 const inG=(s,k)=>G[k].indexOf(s)>=0;
@@ -167,7 +169,10 @@ function curMonday0(){const n=new Date();return new Date(Date.UTC(n.getUTCFullYe
 function genDays(n){const o=[],t=curMonday0();for(let i=n-1;i>=0;i--)o.push(iso(addDays(t,-i)));return o;}
 function wkL(k){const m=k.match(/-(\d{2})-(\d{2})/);return (+m[1])+'/'+(+m[2]);}
 function moKey(x){return String(x||'').slice(0,7);}
+function genMonths(start){const out=[];const p=start.split('-');let y=+p[0],m=+p[1];const n=new Date();const ey=n.getUTCFullYear(),em=n.getUTCMonth()+1;let g=0;while((y<ey||(y===ey&&m<=em))&&g<60){out.push(y+'-'+String(m).padStart(2,'0'));m++;if(m>12){m=1;y++;}g++;}return out;}
+function monthLabel(ym){const p=ym.split('-');return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][(+p[1])-1]+" '"+p[0].slice(2);}
 function deltaH(t,l){const d=t-l;if(d===0)return '<span class="delta flat">±0</span>';const p=l>0?Math.round(100*d/l)+'%':'new';return '<span class="delta '+(d>0?'up':'down')+'">'+(d>0?'▲ +':'▼ ')+d+' ('+p+')</span>';}
+function sd(t,l){const d=t-l;const dd=(d>=0?'+'+d:''+d);const p=l>0?((d>=0?'+':'')+Math.round(100*d/l)+'%'):'new';return dd+' ('+p+')';}
 
 // ---------- chart label plugins ----------
 const stackTotals={id:'stackTotals',afterDatasetsDraw(chart){const m0=chart.getDatasetMeta(0);if(!m0||!m0.data)return;const y=chart.scales.y,ctx=chart.ctx,n=chart.data.labels.length;
@@ -231,22 +236,24 @@ function fmHTML(tm,lm){
  const nextMon=iso(addDays(curMonday(),7)),nextSun=iso(addDays(curMonday(),13));
  const upc=LEADS.filter(l=>l.sched&&l.sched>=nextMon&&l.sched<=nextSun).length;
  const GW=GOAL_SCHED_WK,gpct=Math.round(100*schTW/GW),schBadge='<span class="delta '+(schTW>=GW?'up':'down')+'">this wk '+schTW+'/'+GW+' · '+gpct+'% to goal</span>';
+ const MG=MONTHLY_GOAL,curYM=new Date().toISOString().slice(0,7),moSched=LEADS.filter(l=>l.topB&&moKey(l.topB)===curYM).length,moPct=(100*moSched/MG).toFixed(1),moBadge='<span class="delta '+(moSched>=MG?'up':'down')+'">this mo '+moSched+'/'+MG+' · '+moPct+'% to goal</span>';
  let h='';
  h+='<div class="section-h"><h2>This Week at a Glance</h2><span class="rng">week of '+tm+' (Mon, to date) vs last week</span></div>';
  h+='<div class="kpis">'+kpi('First Meetings Held',heldTW,'vs '+heldLW+' last wk',deltaH(heldTW,heldLW),C.teal)+kpi('First Meetings Scheduled',schTW,'vs '+schLW+' last wk',deltaH(schTW,schLW),C.navy2)+kpi('Upcoming Next Week',upc,'on the calendar','',C.amber)+kpi('Leads Created',ldTW,'vs '+ldLW+' last wk',deltaH(ldTW,ldLW),C.slate)+'</div>';
  h+='<div class="section-h"><h2>First Meetings Pipeline Update</h2></div>'+updateCard(tm,lm);
  h+='<div class="grid g2">'+
-  '<div class="panel"><h2><span>First Meetings Held — WoW by Rep</span><span class="hint">click a bar ↗</span></h2><div class="ph">by date entered Mid A · last 12 weeks</div><div class="chartbox" style="height:250px"><canvas id="c_heldRep"></canvas></div></div>'+
   '<div class="panel"><h2><span>First Meetings Scheduled — WoW by Rep</span>'+schBadge+'</h2><div class="ph">by date entered Top B · last 12 weeks · goal '+GW+'/wk (red line) · click a bar ↗</div><div class="chartbox" style="height:250px"><canvas id="c_schRep"></canvas></div></div>'+
+  '<div class="panel"><h2><span>Monthly First Meetings — MoM</span>'+moBadge+'</h2><div class="ph">scheduled per month · goal '+MG+'/mo (6/wk × 4) · since April 2026 · red line = goal · click a bar ↗</div><div class="chartbox" style="height:250px"><canvas id="c_monthly"></canvas></div></div>'+
+ '</div>';
+ h+='<div class="grid g2">'+
+  '<div class="panel"><h2><span>First Meetings Held — WoW by Rep</span><span class="hint">click a bar ↗</span></h2><div class="ph">by date entered Mid A · last 12 weeks</div><div class="chartbox" style="height:240px"><canvas id="c_heldRep"></canvas></div></div>'+
+  '<div class="panel"><h2><span>Leads Created — WoW by Rep</span><span class="hint">click a bar ↗</span></h2><div class="ph">object create date · last 12 weeks</div><div class="chartbox" style="height:240px"><canvas id="c_ldRep"></canvas></div></div>'+
  '</div>';
  h+='<div class="grid g2">'+
   '<div class="panel"><h2><span>First Meetings Scheduled — WoW by Origin</span><span class="hint">click a bar ↗</span></h2><div class="ph">where the meeting came from · last 12 weeks</div><div class="chartbox" style="height:240px"><canvas id="c_schOrigin"></canvas></div></div>'+
-  '<div class="panel"><h2><span>Leads Created — WoW by Rep</span><span class="hint">click a bar ↗</span></h2><div class="ph">object create date · last 12 weeks</div><div class="chartbox" style="height:240px"><canvas id="c_ldRep"></canvas></div></div>'+
- '</div>';
- h+='<div class="grid g13">'+
   '<div class="panel"><h2><span>Day over Day — Last 14 Days</span><span class="hint">click a bar ↗</span></h2><div class="ph">scheduled (entered Top B) vs held (entered Mid A), per day</div><div class="chartbox" style="height:240px"><canvas id="c_daily"></canvas></div></div>'+
-  '<div class="panel"><h2>Meeting Funnel — Where Leads Stand Today</h2><div class="ph">current stage · all leads</div><div id="funnelAll"></div><div class="legend"><span><i class="dot" style="background:'+C.navy+'"></i>Pre-meeting</span><span><i class="dot" style="background:'+C.blue+'"></i>Scheduled</span><span><i class="dot" style="background:'+C.teal+'"></i>Met</span><span><i class="dot" style="background:'+C.green+'"></i>Opp/Hand-off</span><span><i class="dot" style="background:'+C.slate+'"></i>Stalled</span></div></div>'+
  '</div>';
+ h+='<div class="panel" style="margin-top:14px"><h2>Meeting Funnel — Where Leads Stand Today</h2><div class="ph">current stage · all leads</div><div id="funnelAll"></div><div class="legend"><span><i class="dot" style="background:'+C.navy+'"></i>Pre-meeting</span><span><i class="dot" style="background:'+C.blue+'"></i>Scheduled</span><span><i class="dot" style="background:'+C.teal+'"></i>Met</span><span><i class="dot" style="background:'+C.green+'"></i>Opp/Hand-off</span><span><i class="dot" style="background:'+C.slate+'"></i>Stalled</span></div></div>';
  h+='<div class="note"><b>How first meetings are tracked.</b> Every meeting is logged as a <b>Lead</b> in HubSpot and moves through the Lead pipeline. <b>Scheduled</b> = entered <i>Top B – First Meeting Scheduled</i>; <b>Held</b> = entered <i>Mid A – First Meeting Complete</i>; <b>Upcoming</b> = <i>Meeting Scheduled Date</i> next week. First meetings only — not follow-ups. Bars show the column total on top; click any bar to see the underlying leads with links to HubSpot. Weeks start Monday; current week is to-date. Live from HubSpot on every open/reload.</div>';
  return h;
 }
@@ -256,10 +263,11 @@ function updateCard(tm,lm){
  const held=LEADS.filter(l=>inWeek(l.midA,tm)),sch=LEADS.filter(l=>inWeek(l.topB,tm));
  const nextMon=iso(addDays(curMonday(),7)),nextSun=iso(addDays(curMonday(),13));
  const upc=LEADS.filter(l=>l.sched&&l.sched>=nextMon&&l.sched<=nextSun);
- const heldLW=countWeek(LEADS,'midA',lm);
+ const heldLW=countWeek(LEADS,'midA',lm),schLW=countWeek(LEADS,'topB',lm),ldTW=countWeek(LEADS,'created',tm),ldLW=countWeek(LEADS,'created',lm);
  const wowTxt=heldLW>0?('+'+Math.round(100*(held.length-heldLW)/heldLW)+'% meetings held WoW'):(held.length+' meetings held this week');
- window.__upd={held:held,sch:sch,upc:upc,wowTxt:wowTxt,title:'Friday First Meetings Pipeline Update',core:CORE_REPS};
- let h='<div class="update"><div class="uh">📣 Friday First Meetings Pipeline Update &nbsp;<span class="delta up">'+esc(wowTxt)+'</span><button class="copybtn" id="copyFM" style="margin-left:auto">Copy update</button></div>';
+ const summaryLines=['First Meetings Held: '+held.length+' vs '+heldLW+' last wk '+sd(held.length,heldLW),'First Meetings Scheduled: '+sch.length+' vs '+schLW+' last wk '+sd(sch.length,schLW),'Leads Created: '+ldTW+' vs '+ldLW+' last wk '+sd(ldTW,ldLW),'Upcoming Next Week: '+upc.length+' on the calendar'];
+ window.__upd={held:held,sch:sch,upc:upc,wowTxt:wowTxt,title:'Friday First Meetings Pipeline Update',core:CORE_REPS,summaryLines:summaryLines};
+ let h='<div class="update"><div class="uh">📣 Friday First Meetings Pipeline Update<button class="copybtn" id="copyFM" style="margin-left:auto">Copy update</button></div>';
  h+='<div class="howto">First meetings are tracked through <b>Leads</b> in HubSpot. <b>Held</b> = lead moved <i>Top B → Mid A</i> this week · <b>Scheduled</b> = lead moved <i>Top A → Top B</i> this week · <b>Upcoming</b> = <i>Meeting Scheduled Date</i> next week. First meetings only.</div>';
  h+=block('First Meetings Held this week:',held.length,'(Top B → Mid A)',repBlockHTML(held,false));
  h+=block('First Meetings Scheduled this week:',sch.length,'(Top A → Top B)',repBlockHTML(sch,false));
@@ -272,7 +280,9 @@ function repBlockHTML(leads,withDate,core){const g=repGroup(leads);const reps=(c
 function updTextFrom(d){
  function grp(leads,wd){const g=repGroup(leads);const reps=(d.core||CORE_REPS).slice();Object.keys(g).forEach(r=>{if(reps.indexOf(r)<0)reps.push(r);});
   return reps.map(r=>{const items=(g[r]||[]);let s='  '+r+': '+items.length+'\n';items.forEach(l=>{s+='    • '+nm(l)+(wd&&l.sched?' ('+l.sched.slice(5).replace('-','/')+')':'')+'\n';});return s;}).join('');}
- let t=d.title+': '+d.wowTxt+'\nFirst meetings are tracked through Leads in HubSpot. First meetings only — not follow-ups.\n\n';
+ let t=d.title+'\n';
+ if(d.summaryLines&&d.summaryLines.length){t+=d.summaryLines.map(l=>'   '+l).join('\n')+'\n\n';}
+ t+='First meetings are tracked through Leads in HubSpot. First meetings only — not follow-ups.\n\n';
  t+='First Meetings Held this week (Top B → Mid A)\nTotal: '+d.held.length+'\n'+grp(d.held,false)+'\n';
  t+='First Meetings Scheduled this week (Top A → Top B)\nTotal: '+d.sch.length+'\n'+grp(d.sch,false)+'\n';
  t+='First Meetings Upcoming next week (Meeting Scheduled Date = next week)\nTotal: '+d.upc.length+'\n'+grp(d.upc,true);
@@ -285,6 +295,7 @@ function drawFM(){
  weeklyStack('c_schOrigin',LEADS,'topB','origin',null,ORIGIN_COL,wk,lab,'Scheduled','entered Top B');
  weeklyStack('c_ldRep',LEADS,'created','owner',['Anne Foelsch','Daniel Cornwell','Kyle McCaig','Other'],REP_COL,wk,lab,'Leads Created','created');
  dailyChart('c_daily',LEADS,14);
+ monthlyChart('c_monthly',LEADS,MONTHLY_START,MONTHLY_GOAL);
  funnel('funnelAll',LEADS);
  const cb=document.getElementById('copyFM');if(cb)cb.addEventListener('click',()=>copyModal('Copy — First Meetings Update',updTextFrom(window.__upd)));
 }
@@ -311,6 +322,15 @@ function dailyChart(id,leads,n){
   options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:14}},
    onClick:(e,els)=>{if(!els.length)return;const i=els[0].index,di=els[0].datasetIndex;const field=di===0?'topB':'midA';const day=days[i];const sub=leads.filter(l=>l[field]===day);leadModal((di===0?'Scheduled':'Held')+' · '+day,sub,field,di===0?'entered Top B':'entered Mid A');},
    scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{beginAtZero:true,grid:{color:'#eef2f6'},ticks:{font:{size:10},precision:0}}},plugins:{legend:{position:'bottom',labels:{boxWidth:11,font:{size:10.5}}}}}});
+}
+function monthlyChart(id,leads,startYM,goal){
+ const months=genMonths(startYM),lab=months.map(monthLabel);
+ const data=months.map(mo=>leads.filter(l=>l.topB&&moKey(l.topB)===mo).length);
+ const ch=new Chart(document.getElementById(id),{type:'bar',data:{labels:lab,datasets:[{label:'Scheduled',data:data,backgroundColor:C.navy2,stack:'s'}]},plugins:[stackTotals,goalLine],
+  options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:16}},
+   onClick:(e,els)=>{if(!els.length)return;const i=els[0].index;const mo=months[i];const sub=leads.filter(l=>l.topB&&moKey(l.topB)===mo);leadModal('Scheduled · '+lab[i],sub,'topB','entered Top B');},
+   scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:10}}},y:{stacked:true,beginAtZero:true,suggestedMax:goal+2,grid:{color:'#eef2f6'},ticks:{font:{size:10},precision:0}}},plugins:{legend:{display:false}}}});
+ ch.$goal=goal;ch.update();return ch;
 }
 function funnel(id,leads){
  const sc=stageCounts(leads);
@@ -351,10 +371,11 @@ function agencyUpdateCard(ag,tm,lm){
  const held=ag.filter(l=>inWeek(l.midA,tm)),sch=ag.filter(l=>inWeek(l.topB,tm));
  const nextMon=iso(addDays(curMonday(),7)),nextSun=iso(addDays(curMonday(),13));
  const upc=ag.filter(l=>l.sched&&l.sched>=nextMon&&l.sched<=nextSun);
- const heldLW=countWeek(ag,'midA',lm);
+ const heldLW=countWeek(ag,'midA',lm),schLW=countWeek(ag,'topB',lm);
  const wowTxt=heldLW>0?('+'+Math.round(100*(held.length-heldLW)/heldLW)+'% agency meetings held WoW'):(held.length+' agency meetings held this week');
  const AG_CORE=['Anne Foelsch'];
- window.__updAg={held:held,sch:sch,upc:upc,wowTxt:wowTxt,title:'Agency First Meetings Update (Anne)',core:AG_CORE};
+ const summaryLines=['Agency Meetings Held: '+held.length+' vs '+heldLW+' last wk '+sd(held.length,heldLW),'Agency Meetings Scheduled: '+sch.length+' vs '+schLW+' last wk '+sd(sch.length,schLW),'Upcoming Next Week: '+upc.length+' on the calendar'];
+ window.__updAg={held:held,sch:sch,upc:upc,wowTxt:wowTxt,title:'Agency First Meetings Update (Anne)',core:AG_CORE,summaryLines:summaryLines};
  let h='<div class="update"><div class="uh">🏢 Agency First Meetings Update — Anne &nbsp;<span class="delta up">'+esc(wowTxt)+'</span><button class="copybtn" id="copyAg" style="margin-left:auto">Copy update</button></div>';
  h+='<div class="howto">Agency leads (Lead Type = Agency). <b>Held</b> = moved Top B → Mid A this week · <b>Scheduled</b> = moved Top A → Top B this week · <b>Upcoming</b> = Meeting Scheduled Date next week.</div>';
  h+=block('Agency Meetings Held this week:',held.length,'(Top B → Mid A)',repBlockHTML(held,false,AG_CORE));
