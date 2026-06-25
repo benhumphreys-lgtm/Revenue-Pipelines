@@ -80,18 +80,19 @@
   .exec-chart-card { padding: 14px 16px; flex: 1; }
   .exec-chart-title { font-size: 12px; font-weight: 500; color: #4a4a4a; margin-bottom: 4px; }
   .exec-chart-hint { font-size: 11px; color: #8a8a8a; margin-bottom: 12px; }
-  .exec-chart-area { position: relative; padding-top: 18px; }
-  .exec-chart-bars { display: flex; align-items: flex-end; gap: 4px; height: 80px; position: relative; }
-  .exec-chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; position: relative; cursor: pointer; }
+  .exec-chart-area { }
+  .exec-chart-frame { position: relative; height: 110px; }
+  .exec-chart-bars { display: flex; align-items: flex-end; gap: 4px; height: 100%; position: relative; }
+  .exec-chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; cursor: pointer; }
   .exec-chart-bar-wrap:hover .exec-chart-bar { background: #185FA5; }
   .exec-chart-bar-wrap:hover .exec-chart-bar.current { background: #042C53; }
   .exec-chart-bar { width: 100%; background: #B5D4F4; border-radius: 2px 2px 0 0; min-height: 2px; transition: height 0.3s ease, background 0.15s; position: relative; }
   .exec-chart-bar.current { background: #378ADD; }
-  .exec-chart-bar-val { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); font-size: 10px; color: #042C53; font-weight: 500; }
+  .exec-chart-bar-val { position: absolute; top: 3px; left: 50%; transform: translateX(-50%); font-size: 10px; color: #ffffff; font-weight: 600; pointer-events: none; }
   .exec-chart-bar-lbl { font-size: 9px; color: #8a8a8a; margin-top: 4px; white-space: nowrap; text-align: center; }
   .exec-chart-foot { display: flex; justify-content: space-between; font-size: 11px; color: #6b6b6b; margin-top: 8px; padding-top: 8px; border-top: 1px solid #f0f2f5; }
-  .exec-chart-goal { position: absolute; left: 0; right: 0; border-top: 1.5px dashed #1D9E75; pointer-events: none; z-index: 1; }
-  .exec-chart-goal-label { position: absolute; right: 0; top: -8px; background: #ffffff; padding: 0 4px; font-size: 9px; color: #04342C; font-weight: 600; }
+  .exec-chart-goal { position: absolute; left: 0; right: 0; height: 0; border-top: 1.5px dashed #1D9E75; pointer-events: none; z-index: 5; }
+  .exec-chart-goal-label { position: absolute; right: 0; top: -7px; background: #ffffff; padding: 0 5px; font-size: 9px; color: #04342C; font-weight: 600; }
   .exec-chart-progress { font-size: 11px; color: #4a4a4a; padding-top: 4px; }
   .exec-rep-breakdown { font-size: 11px; color: #6b6b6b; padding-top: 8px; line-height: 1.5; }
   .exec-rep-breakdown strong { color: #2c2c2a; font-weight: 500; }
@@ -229,12 +230,13 @@
 </div>
 
 <div id="main-content" style="display:none">
+
 <h1>Referral partner dashboard</h1>
 <p class="sub">Three views of RP-driven pipeline momentum: <strong>① where partners sit</strong> in their relationship arc, <strong>② new-business leads</strong> with origin = Referral Partner (going-forward attribution), and <strong>③ deals in Brand Direct</strong> where any associated contact has an RP link (retroactive North Star — captures legacy, renewal, and win-back deals the lead system can't see).</p>
 
 <div id="err-banner" style="display:none; background:#FCEBEB; border:1px solid #E24B4A; color:#501313; padding:12px 14px; border-radius:10px; margin: 0 0 16px; font-size:13px;"></div>
 
-<div class="section-label">CEO exec summary — weekly snapshot + momentum</div>
+<div class="section-label">Summary — weekly snapshot + momentum</div>
 <div class="exec-summary">
   <div class="exec-card">
     <div class="exec-update-header">
@@ -251,7 +253,9 @@
       <div class="exec-chart-title">First meetings · week over week</div>
       <div class="exec-chart-hint">last 12 weeks · click a bar to view the leads · goal line at 2/week</div>
       <div class="exec-chart-area">
-        <div class="exec-chart-bars" id="exec-wow-chart"></div>
+        <div class="exec-chart-frame">
+          <div class="exec-chart-bars" id="exec-wow-chart"></div>
+        </div>
       </div>
       <div class="exec-chart-progress" id="exec-wow-progress"></div>
       <div class="exec-chart-foot"><span>12w ago</span><span id="exec-wow-delta">—</span><span>this week</span></div>
@@ -261,7 +265,9 @@
       <div class="exec-chart-title">First meetings · month over month</div>
       <div class="exec-chart-hint">last 6 months · click a bar to view the leads · goal line at 8/month</div>
       <div class="exec-chart-area">
-        <div class="exec-chart-bars" id="exec-mom-chart"></div>
+        <div class="exec-chart-frame">
+          <div class="exec-chart-bars" id="exec-mom-chart"></div>
+        </div>
       </div>
       <div class="exec-chart-progress" id="exec-mom-progress"></div>
       <div class="exec-chart-foot"><span>6mo ago</span><span id="exec-mom-delta">—</span><span>this month</span></div>
@@ -404,7 +410,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initApp() {
-
 const HUBSPOT_PORTAL = 21389996;
 
 // Live RP pipeline stage labels (from hubspot_list_pipelines on 2-37656252)
@@ -528,8 +533,7 @@ function attachScorecardWatchers() {
   });
   console.log("[scorecard-watch] Attached observers to", ids.length, "elements");
 }
-document.addEventListener("DOMContentLoaded", attachScorecardWatchers);
-if (document.readyState !== "loading") attachScorecardWatchers();
+attachScorecardWatchers();
 
 async function callMcp(name, args, opts) {
   opts = opts || {};
@@ -1203,10 +1207,14 @@ function renderExecSummary(ctx) {
     const lbl = new Date(ws).toLocaleDateString("en-US", { month: "numeric", day: "numeric" });
     weekBars.push({ n: leadsInWk.length, lbl, ws, we, leads: leadsInWk, isCurrent: i === 0 });
   }
-  const maxWk = Math.max(WEEKLY_GOAL + 1, ...weekBars.map(b => b.n));
+  // Scale max = goal × 1.25 floor (always leaves headroom above goal) OR actual max if bars exceed
+  const maxWk = Math.max(Math.ceil(WEEKLY_GOAL * 1.25), ...weekBars.map(b => b.n));
   const wowEl = document.getElementById("exec-wow-chart");
   if (wowEl) {
-    const goalPct = Math.round(100 * WEEKLY_GOAL / maxWk);
+    const CHART_H = 110; // matches .exec-chart-frame height
+    const goalRatio = WEEKLY_GOAL / maxWk;
+    const goalPx = Math.round(CHART_H * (1 - goalRatio)); // distance from top
+    console.log("[chart-wow] maxWk:", maxWk, "WEEKLY_GOAL:", WEEKLY_GOAL, "goalRatio:", goalRatio.toFixed(3), "goalPx from top:", goalPx);
     wowEl.innerHTML = weekBars.map((b, idx) => {
       const h = Math.max(2, Math.round(100 * b.n / maxWk));
       return `<div class="exec-chart-bar-wrap" data-period="week" data-idx="${idx}" title="${b.lbl}: ${b.n} meeting${b.n === 1 ? "" : "s"} · click to view">
@@ -1216,12 +1224,15 @@ function renderExecSummary(ctx) {
         <div class="exec-chart-bar-lbl">${esc(b.lbl)}</div>
       </div>`;
     }).join("");
-    // Goal line overlay
+    // Goal line overlay — append to frame (sibling of bars), use pixel positioning
+    const wowFrame = wowEl.parentElement;
+    // Remove any existing goal line to avoid duplicates on re-render
+    wowFrame.querySelectorAll(".exec-chart-goal").forEach(n => n.remove());
     const goalLine = document.createElement("div");
     goalLine.className = "exec-chart-goal";
-    goalLine.style.bottom = goalPct + "%";
+    goalLine.style.top = goalPx + "px";
     goalLine.innerHTML = `<span class="exec-chart-goal-label">Goal: ${WEEKLY_GOAL}/wk</span>`;
-    wowEl.appendChild(goalLine);
+    wowFrame.appendChild(goalLine);
     // Wire clicks
     wowEl.querySelectorAll(".exec-chart-bar-wrap").forEach(el => {
       el.addEventListener("click", () => {
@@ -1269,10 +1280,13 @@ function renderExecSummary(ctx) {
     const lbl = d.toLocaleDateString("en-US", { month: "short" });
     monthBars.push({ n: leadsInMo.length, lbl, ms, me, leads: leadsInMo, monthLabel: d.toLocaleDateString("en-US", { month: "long", year: "numeric" }), isCurrent: i === 0 });
   }
-  const maxMo = Math.max(MONTHLY_GOAL + 1, ...monthBars.map(b => b.n));
+  const maxMo = Math.max(Math.ceil(MONTHLY_GOAL * 1.25), ...monthBars.map(b => b.n));
   const momEl = document.getElementById("exec-mom-chart");
   if (momEl) {
-    const goalPct = Math.round(100 * MONTHLY_GOAL / maxMo);
+    const CHART_H = 110;
+    const goalRatio = MONTHLY_GOAL / maxMo;
+    const goalPx = Math.round(CHART_H * (1 - goalRatio));
+    console.log("[chart-mom] maxMo:", maxMo, "MONTHLY_GOAL:", MONTHLY_GOAL, "goalRatio:", goalRatio.toFixed(3), "goalPx from top:", goalPx);
     momEl.innerHTML = monthBars.map((b, idx) => {
       const h = Math.max(2, Math.round(100 * b.n / maxMo));
       return `<div class="exec-chart-bar-wrap" data-period="month" data-idx="${idx}" title="${b.monthLabel}: ${b.n} meeting${b.n === 1 ? "" : "s"} · click to view">
@@ -1282,11 +1296,13 @@ function renderExecSummary(ctx) {
         <div class="exec-chart-bar-lbl">${esc(b.lbl)}</div>
       </div>`;
     }).join("");
+    const momFrame = momEl.parentElement;
+    momFrame.querySelectorAll(".exec-chart-goal").forEach(n => n.remove());
     const goalLine = document.createElement("div");
     goalLine.className = "exec-chart-goal";
-    goalLine.style.bottom = goalPct + "%";
+    goalLine.style.top = goalPx + "px";
     goalLine.innerHTML = `<span class="exec-chart-goal-label">Goal: ${MONTHLY_GOAL}/mo</span>`;
-    momEl.appendChild(goalLine);
+    momFrame.appendChild(goalLine);
     momEl.querySelectorAll(".exec-chart-bar-wrap").forEach(el => {
       el.addEventListener("click", () => {
         const b = monthBars[Number(el.dataset.idx)];
@@ -1796,7 +1812,6 @@ function showLoadError(err) {
 }
 
 loadDashboard();
-
 }
 </script>
 </body>
