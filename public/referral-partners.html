@@ -66,6 +66,38 @@
   .calc-section-sub { font-size: 11px; color: #8a8a8a; margin-bottom: 12px; }
   .calc-legend { display: flex; gap: 18px; margin-top: 16px; padding-top: 14px; border-top: 1px solid #e6e8eb; font-size: 11px; color: #6b6b6b; align-items: center; }
   .calc-legend-spacer { margin-left: auto; color: #8a8a8a; }
+
+  .exec-summary { display: grid; grid-template-columns: 1.1fr 1fr; gap: 12px; margin-bottom: 24px; }
+  .exec-card { background: #ffffff; border: 1px solid #e6e8eb; border-radius: 12px; padding: 16px 18px; }
+  .exec-update-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .exec-update-title { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+  .exec-update-sub { font-size: 11px; color: #8a8a8a; margin-top: 2px; }
+  .exec-copy-btn { background: #185FA5; color: white; border: none; padding: 6px 14px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 500; }
+  .exec-copy-btn:hover { background: #0C447C; }
+  .exec-copy-btn.copied { background: #1D9E75; }
+  .exec-update-text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; line-height: 1.6; color: #2c2c2a; white-space: pre-wrap; margin: 0; padding: 12px; background: #f6f7f9; border-radius: 8px; max-height: 380px; overflow-y: auto; }
+  .exec-charts-col { display: flex; flex-direction: column; gap: 12px; }
+  .exec-chart-card { padding: 14px 16px; flex: 1; }
+  .exec-chart-title { font-size: 12px; font-weight: 500; color: #4a4a4a; margin-bottom: 4px; }
+  .exec-chart-hint { font-size: 11px; color: #8a8a8a; margin-bottom: 12px; }
+  .exec-chart-area { position: relative; padding-top: 18px; }
+  .exec-chart-bars { display: flex; align-items: flex-end; gap: 4px; height: 80px; position: relative; }
+  .exec-chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; position: relative; cursor: pointer; }
+  .exec-chart-bar-wrap:hover .exec-chart-bar { background: #185FA5; }
+  .exec-chart-bar-wrap:hover .exec-chart-bar.current { background: #042C53; }
+  .exec-chart-bar { width: 100%; background: #B5D4F4; border-radius: 2px 2px 0 0; min-height: 2px; transition: height 0.3s ease, background 0.15s; position: relative; }
+  .exec-chart-bar.current { background: #378ADD; }
+  .exec-chart-bar-val { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); font-size: 10px; color: #042C53; font-weight: 500; }
+  .exec-chart-bar-lbl { font-size: 9px; color: #8a8a8a; margin-top: 4px; white-space: nowrap; text-align: center; }
+  .exec-chart-foot { display: flex; justify-content: space-between; font-size: 11px; color: #6b6b6b; margin-top: 8px; padding-top: 8px; border-top: 1px solid #f0f2f5; }
+  .exec-chart-goal { position: absolute; left: 0; right: 0; border-top: 1.5px dashed #1D9E75; pointer-events: none; z-index: 1; }
+  .exec-chart-goal-label { position: absolute; right: 0; top: -8px; background: #ffffff; padding: 0 4px; font-size: 9px; color: #04342C; font-weight: 600; }
+  .exec-chart-progress { font-size: 11px; color: #4a4a4a; padding-top: 4px; }
+  .exec-rep-breakdown { font-size: 11px; color: #6b6b6b; padding-top: 8px; line-height: 1.5; }
+  .exec-rep-breakdown strong { color: #2c2c2a; font-weight: 500; }
+  .delta-up { color: #04342C; }
+  .delta-down { color: #791F1F; }
+  .delta-flat { color: #6b6b6b; }
   .kanban { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; }
   .kanban-col { flex: 0 0 220px; background: #f6f7f9; border-radius: 10px; padding: 10px; display: flex; flex-direction: column; min-width: 0; }
   .kanban-header { font-size: 12px; font-weight: 600; padding: 4px 6px 10px; color: #2c2c2a; display: flex; justify-content: space-between; align-items: center; gap: 8px; border-bottom: 1px solid #e6e8eb; margin-bottom: 8px; }
@@ -197,11 +229,46 @@
 </div>
 
 <div id="main-content" style="display:none">
-
 <h1>Referral partner dashboard</h1>
 <p class="sub">Three views of RP-driven pipeline momentum: <strong>① where partners sit</strong> in their relationship arc, <strong>② new-business leads</strong> with origin = Referral Partner (going-forward attribution), and <strong>③ deals in Brand Direct</strong> where any associated contact has an RP link (retroactive North Star — captures legacy, renewal, and win-back deals the lead system can't see).</p>
 
 <div id="err-banner" style="display:none; background:#FCEBEB; border:1px solid #E24B4A; color:#501313; padding:12px 14px; border-radius:10px; margin: 0 0 16px; font-size:13px;"></div>
+
+<div class="section-label">CEO exec summary — weekly snapshot + momentum</div>
+<div class="exec-summary">
+  <div class="exec-card">
+    <div class="exec-update-header">
+      <div>
+        <div class="exec-update-title">Weekly RP update</div>
+        <div class="exec-update-sub" id="exec-update-sub">loading…</div>
+      </div>
+      <button class="exec-copy-btn" id="exec-copy">Copy update</button>
+    </div>
+    <pre class="exec-update-text" id="exec-update">Loading live data from HubSpot…</pre>
+  </div>
+  <div class="exec-charts-col">
+    <div class="exec-card exec-chart-card">
+      <div class="exec-chart-title">First meetings · week over week</div>
+      <div class="exec-chart-hint">last 12 weeks · click a bar to view the leads · goal line at 2/week</div>
+      <div class="exec-chart-area">
+        <div class="exec-chart-bars" id="exec-wow-chart"></div>
+      </div>
+      <div class="exec-chart-progress" id="exec-wow-progress"></div>
+      <div class="exec-chart-foot"><span>12w ago</span><span id="exec-wow-delta">—</span><span>this week</span></div>
+      <div class="exec-rep-breakdown" id="exec-wow-rep"></div>
+    </div>
+    <div class="exec-card exec-chart-card">
+      <div class="exec-chart-title">First meetings · month over month</div>
+      <div class="exec-chart-hint">last 6 months · click a bar to view the leads · goal line at 8/month</div>
+      <div class="exec-chart-area">
+        <div class="exec-chart-bars" id="exec-mom-chart"></div>
+      </div>
+      <div class="exec-chart-progress" id="exec-mom-progress"></div>
+      <div class="exec-chart-foot"><span>6mo ago</span><span id="exec-mom-delta">—</span><span>this month</span></div>
+      <div class="exec-rep-breakdown" id="exec-mom-rep"></div>
+    </div>
+  </div>
+</div>
 
 <div class="section-label">Program scorecard — targets: 3 newly active/month · 75% network health · 2 first meetings/week</div>
 <div class="scorecard">
@@ -337,6 +404,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initApp() {
+
 const HUBSPOT_PORTAL = 21389996;
 
 // Live RP pipeline stage labels (from hubspot_list_pipelines on 2-37656252)
@@ -532,6 +600,26 @@ function closeModal() { document.getElementById("modal-backdrop").classList.remo
 document.getElementById("modal-close").addEventListener("click", closeModal);
 document.getElementById("modal-backdrop").addEventListener("click", (e) => { if (e.target.id === "modal-backdrop") closeModal(); });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+
+function renderMeetingsTable(leads) {
+  if (!leads.length) return '<div class="empty">No first meetings in this period.</div>';
+  const sorted = leads.slice().sort((a, b) => (meetingDateForLead(b) || 0) - (meetingDateForLead(a) || 0));
+  return `<table>
+    <thead><tr><th>Lead</th><th>RP</th><th>Owner (rep)</th><th>Stage</th><th>Meeting date</th><th></th></tr></thead>
+    <tbody>${sorted.map(l => {
+      const t = meetingDateForLead(l);
+      const dateStr = t ? new Date(t).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—";
+      return `<tr>
+        <td><strong>${esc(l.hs_lead_name || "(no name)")}</strong></td>
+        <td>${esc(l.referral_partner || "—")}</td>
+        <td>${esc(ownerName(l.hubspot_owner_id))}</td>
+        <td>${esc(leadStageLabel(l))}</td>
+        <td>${esc(dateStr)}</td>
+        <td><a class="btn-hs" href="${leadUrl(l.id)}" target="_blank" rel="noopener">Open ↗</a></td>
+      </tr>`;
+    }).join("")}</tbody>
+  </table>`;
+}
 
 function renderLeadsTable(leads) {
   if (!leads.length) return '<div class="empty">No leads match this filter.</div>';
@@ -1020,11 +1108,264 @@ function updateScorecardLive() {
   // --- Render the calc card as Top 5 RPs by meetings ---
   renderTopRpsCard();
 
+  // --- Render the CEO exec summary ---
+  try {
+    // Compute additional context for the exec summary
+    const startOfMonthMs = (() => { const d = new Date(); d.setHours(0,0,0,0); d.setDate(1); return d.getTime(); })();
+    const lastMonthEnd = startOfMonthMs - 1;
+    const lastMonthStart = (() => { const d = new Date(); d.setHours(0,0,0,0); d.setDate(1); d.setMonth(d.getMonth() - 1); return d.getTime(); })();
+    const lastWeekStart = startOfWeek - 7 * 86400000;
+    const lastWeekEnd = startOfWeek;
+    const fmLastWeek = allMeetingTimes.filter(t => t >= lastWeekStart && t < lastWeekEnd).length;
+    const fmLastMonth = allMeetingTimes.filter(t => t >= lastMonthStart && t <= lastMonthEnd).length;
+
+    // Top producers (last 30 days)
+    const day30 = now - 30 * 86400000;
+    const producers = {};
+    LEADS.forEach(l => {
+      const t = meetingDateForLead(l);
+      if (t == null || t < day30) return;
+      const name = l.referral_partner || "(unattributed)";
+      producers[name] = (producers[name] || 0) + 1;
+    });
+    const topProducers = Object.entries(producers)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([n, c]) => `- ${n}: ${c} meeting${c === 1 ? "" : "s"}`)
+      .join("\n") || "- (none yet this month)";
+
+    // Value lane numbers (live from RP_DEALS if loaded)
+    const dealList = Object.values(RP_DEALS).map(x => x.deal);
+    const openSetIds = new Set(["1341411420", "143018394", "1341581069", "972397873"]);
+    const openD = dealList.filter(d => openSetIds.has(d.dealstage));
+    const yearStart = new Date(new Date().getFullYear(), 0, 1).toISOString();
+    const wonD = dealList.filter(d => d.dealstage === "143017564" && (d.closedate || "") >= yearStart);
+    const pipelineOpenSum = openD.reduce((s, d) => s + (parseFloat(d.amount) || 0), 0);
+    const wonYtdSum = wonD.reduce((s, d) => s + (parseFloat(d.amount) || 0), 0);
+
+    renderExecSummary({
+      activeRpRecords,
+      activeRpNames: activeRpRecords.map(r => r.referral_partner).join(", "),
+      healthPct,
+      healthCount: signedActive.length,
+      healthTotal: signed.length,
+      fmThisWeek,
+      fmLastWeek,
+      fmThisMonth,
+      fmLastMonth,
+      allMeetingTimes,
+      topProducers,
+      pipelineOpen: fmtMoney(pipelineOpenSum),
+      openCount: openD.length,
+      closedWonYtd: fmtMoney(wonYtdSum),
+      wonCount: wonD.length,
+      convPct,
+      convNum: everReachedOpp.length,
+      convDen: everHadMeeting.length
+    });
+  } catch (e) {
+    console.warn("renderExecSummary failed", e);
+  }
+
   // Mark scorecard placeholder notes as live
   document.querySelectorAll(".sc-placeholder-note").forEach(el => {
     el.textContent = "Live from HubSpot · Top B stage-entry dates";
     el.style.color = "#1D9E75";
   });
+}
+
+function renderExecSummary(ctx) {
+  const now = Date.now();
+  const day = 86400000;
+  const WEEKLY_GOAL = 2;
+  const MONTHLY_GOAL = 8;
+
+  // Build a per-lead index keyed by meeting time so we can drill into any period
+  const leadIndex = LEADS.map(l => ({ lead: l, time: meetingDateForLead(l) })).filter(x => x.time != null);
+
+  function repName(ownerId) { return ownerName(ownerId); }
+  function repBreakdownFor(leadsInPeriod) {
+    const counts = {};
+    leadsInPeriod.forEach(l => {
+      const name = repName(l.hubspot_owner_id);
+      counts[name] = (counts[name] || 0) + 1;
+    });
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  }
+
+  // --- Week bars (last 12 weeks) ---
+  const startOfWeek = (() => { const d = new Date(); d.setHours(0,0,0,0); const dow = d.getDay() || 7; d.setDate(d.getDate() - dow + 1); return d.getTime(); })();
+  const weekBars = [];
+  for (let i = 11; i >= 0; i--) {
+    const ws = startOfWeek - i * 7 * day;
+    const we = ws + 7 * day;
+    const leadsInWk = leadIndex.filter(x => x.time >= ws && x.time < we).map(x => x.lead);
+    const lbl = new Date(ws).toLocaleDateString("en-US", { month: "numeric", day: "numeric" });
+    weekBars.push({ n: leadsInWk.length, lbl, ws, we, leads: leadsInWk, isCurrent: i === 0 });
+  }
+  const maxWk = Math.max(WEEKLY_GOAL + 1, ...weekBars.map(b => b.n));
+  const wowEl = document.getElementById("exec-wow-chart");
+  if (wowEl) {
+    const goalPct = Math.round(100 * WEEKLY_GOAL / maxWk);
+    wowEl.innerHTML = weekBars.map((b, idx) => {
+      const h = Math.max(2, Math.round(100 * b.n / maxWk));
+      return `<div class="exec-chart-bar-wrap" data-period="week" data-idx="${idx}" title="${b.lbl}: ${b.n} meeting${b.n === 1 ? "" : "s"} · click to view">
+        <div class="exec-chart-bar${b.isCurrent ? ' current' : ''}" style="height: ${h}%;">
+          ${b.n > 0 ? `<div class="exec-chart-bar-val">${b.n}</div>` : ""}
+        </div>
+        <div class="exec-chart-bar-lbl">${esc(b.lbl)}</div>
+      </div>`;
+    }).join("");
+    // Goal line overlay
+    const goalLine = document.createElement("div");
+    goalLine.className = "exec-chart-goal";
+    goalLine.style.bottom = goalPct + "%";
+    goalLine.innerHTML = `<span class="exec-chart-goal-label">Goal: ${WEEKLY_GOAL}/wk</span>`;
+    wowEl.appendChild(goalLine);
+    // Wire clicks
+    wowEl.querySelectorAll(".exec-chart-bar-wrap").forEach(el => {
+      el.addEventListener("click", () => {
+        const b = weekBars[Number(el.dataset.idx)];
+        const title = "First meetings · Week of " + new Date(b.ws).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+        const pct = Math.round(100 * b.n / WEEKLY_GOAL);
+        const sub = b.n + " meeting" + (b.n === 1 ? "" : "s") + " · " + pct + "% of " + WEEKLY_GOAL + "/wk goal";
+        openModal(title, sub, renderMeetingsTable(b.leads));
+      });
+    });
+  }
+  const wowAvg = (weekBars.reduce((s, b) => s + b.n, 0) / 12).toFixed(1);
+  const wowDelta = ctx.fmThisWeek - ctx.fmLastWeek;
+  const wowDeltaEl = document.getElementById("exec-wow-delta");
+  if (wowDeltaEl) {
+    const cls = wowDelta > 0 ? "delta-up" : wowDelta < 0 ? "delta-down" : "delta-flat";
+    const sign = wowDelta > 0 ? "+" : "";
+    wowDeltaEl.innerHTML = `<span class="${cls}">${sign}${wowDelta} vs last week</span> · avg ${wowAvg}/wk`;
+  }
+  // Weekly progress
+  const wowProgressEl = document.getElementById("exec-wow-progress");
+  if (wowProgressEl) {
+    const pct = Math.round(100 * ctx.fmThisWeek / WEEKLY_GOAL);
+    wowProgressEl.innerHTML = `<strong>This week: ${ctx.fmThisWeek} / ${WEEKLY_GOAL} = ${pct}%</strong>`;
+  }
+  // Weekly rep breakdown (this week)
+  const thisWeekLeads = weekBars[weekBars.length - 1].leads;
+  const wowRepEl = document.getElementById("exec-wow-rep");
+  if (wowRepEl) {
+    const reps = repBreakdownFor(thisWeekLeads);
+    wowRepEl.innerHTML = reps.length === 0
+      ? "<strong>By rep (this week):</strong> none yet"
+      : "<strong>By rep (this week):</strong> " + reps.map(([n, c]) => `${esc(n)} ${c}`).join(" · ");
+  }
+
+  // --- Month bars (last 6 months) ---
+  const startOfMonth = (y, m) => new Date(y, m, 1).getTime();
+  const today = new Date();
+  const monthBars = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+    const ms = startOfMonth(d.getFullYear(), d.getMonth());
+    const me = startOfMonth(d.getFullYear(), d.getMonth() + 1);
+    const leadsInMo = leadIndex.filter(x => x.time >= ms && x.time < me).map(x => x.lead);
+    const lbl = d.toLocaleDateString("en-US", { month: "short" });
+    monthBars.push({ n: leadsInMo.length, lbl, ms, me, leads: leadsInMo, monthLabel: d.toLocaleDateString("en-US", { month: "long", year: "numeric" }), isCurrent: i === 0 });
+  }
+  const maxMo = Math.max(MONTHLY_GOAL + 1, ...monthBars.map(b => b.n));
+  const momEl = document.getElementById("exec-mom-chart");
+  if (momEl) {
+    const goalPct = Math.round(100 * MONTHLY_GOAL / maxMo);
+    momEl.innerHTML = monthBars.map((b, idx) => {
+      const h = Math.max(2, Math.round(100 * b.n / maxMo));
+      return `<div class="exec-chart-bar-wrap" data-period="month" data-idx="${idx}" title="${b.monthLabel}: ${b.n} meeting${b.n === 1 ? "" : "s"} · click to view">
+        <div class="exec-chart-bar${b.isCurrent ? ' current' : ''}" style="height: ${h}%;">
+          ${b.n > 0 ? `<div class="exec-chart-bar-val">${b.n}</div>` : ""}
+        </div>
+        <div class="exec-chart-bar-lbl">${esc(b.lbl)}</div>
+      </div>`;
+    }).join("");
+    const goalLine = document.createElement("div");
+    goalLine.className = "exec-chart-goal";
+    goalLine.style.bottom = goalPct + "%";
+    goalLine.innerHTML = `<span class="exec-chart-goal-label">Goal: ${MONTHLY_GOAL}/mo</span>`;
+    momEl.appendChild(goalLine);
+    momEl.querySelectorAll(".exec-chart-bar-wrap").forEach(el => {
+      el.addEventListener("click", () => {
+        const b = monthBars[Number(el.dataset.idx)];
+        const title = "First meetings · " + b.monthLabel;
+        const pct = Math.round(100 * b.n / MONTHLY_GOAL);
+        const sub = b.n + " meeting" + (b.n === 1 ? "" : "s") + " · " + pct + "% of " + MONTHLY_GOAL + "/mo goal";
+        openModal(title, sub, renderMeetingsTable(b.leads));
+      });
+    });
+  }
+  const momAvg = (monthBars.reduce((s, b) => s + b.n, 0) / 6).toFixed(1);
+  const momDelta = ctx.fmThisMonth - ctx.fmLastMonth;
+  const momDeltaEl = document.getElementById("exec-mom-delta");
+  if (momDeltaEl) {
+    const cls = momDelta > 0 ? "delta-up" : momDelta < 0 ? "delta-down" : "delta-flat";
+    const sign = momDelta > 0 ? "+" : "";
+    momDeltaEl.innerHTML = `<span class="${cls}">${sign}${momDelta} vs last month</span> · avg ${momAvg}/mo`;
+  }
+  const momProgressEl = document.getElementById("exec-mom-progress");
+  if (momProgressEl) {
+    const pct = Math.round(100 * ctx.fmThisMonth / MONTHLY_GOAL);
+    momProgressEl.innerHTML = `<strong>This month: ${ctx.fmThisMonth} / ${MONTHLY_GOAL} = ${pct}%</strong>`;
+  }
+  const thisMonthLeads = monthBars[monthBars.length - 1].leads;
+  const momRepEl = document.getElementById("exec-mom-rep");
+  if (momRepEl) {
+    const reps = repBreakdownFor(thisMonthLeads);
+    momRepEl.innerHTML = reps.length === 0
+      ? "<strong>By rep (this month):</strong> none yet"
+      : "<strong>By rep (this month):</strong> " + reps.map(([n, c]) => `${esc(n)} ${c}`).join(" · ");
+  }
+
+  // --- Copyable weekly update ---
+  const monthName = today.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  const weekOf = new Date(startOfWeek).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  const fmtDelta = (n, label) => n === 0 ? `(flat vs last ${label})` : n > 0 ? `(up ${n} vs last ${label})` : `(down ${Math.abs(n)} vs last ${label})`;
+
+  const update = `RP Network — Week of ${weekOf}
+
+Goals & progress
+- First meetings this week: ${ctx.fmThisWeek} / 2 target ${fmtDelta(wowDelta, "week")}
+- First meetings this month (${monthName}): ${ctx.fmThisMonth} / 8 target ${fmtDelta(momDelta, "month")}
+- Active RPs this month: ${ctx.activeRpRecords.length} / 3 target${ctx.activeRpRecords.length ? ` — ${ctx.activeRpNames}` : ""}
+- Active-network health (60-day): ${ctx.healthPct}% / 75% target (${ctx.healthCount} of ${ctx.healthTotal} signed RPs producing)
+
+Value
+- RP-influenced pipeline: ${ctx.pipelineOpen} (${ctx.openCount} open deals)
+- Closed-won attributable YTD: ${ctx.closedWonYtd} (${ctx.wonCount} deals)
+- Lifetime first meeting → opportunity: ${ctx.convPct}% (${ctx.convNum} of ${ctx.convDen})
+
+Top producers (last 30 days)
+${ctx.topProducers}`;
+
+  const updateEl = document.getElementById("exec-update");
+  if (updateEl) updateEl.textContent = update;
+  const subEl = document.getElementById("exec-update-sub");
+  if (subEl) subEl.textContent = "live from HubSpot · click Copy to share";
+
+  const btn = document.getElementById("exec-copy");
+  if (btn && !btn.dataset.wired) {
+    btn.dataset.wired = "1";
+    btn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(updateEl.textContent);
+        btn.textContent = "Copied ✓";
+        btn.classList.add("copied");
+        setTimeout(() => { btn.textContent = "Copy update"; btn.classList.remove("copied"); }, 2000);
+      } catch (e) {
+        // Fallback: select the text
+        const range = document.createRange();
+        range.selectNodeContents(updateEl);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        btn.textContent = "Select then ⌘C";
+        setTimeout(() => { btn.textContent = "Copy update"; }, 3000);
+      }
+    });
+  }
 }
 
 function renderTopRpsCard() {
@@ -1455,6 +1796,7 @@ function showLoadError(err) {
 }
 
 loadDashboard();
+
 }
 </script>
 </body>
