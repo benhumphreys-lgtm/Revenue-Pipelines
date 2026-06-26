@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="/_shared.css">
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 <script src="/_api.js" defer></script>
-<title>Referral Partners — Revenue Pipeline</title>
+<title>Referral Partner Dashboard — Revenue Pipeline</title>
 <style>
   :root { color-scheme: light; }
   body { margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #ffffff; color: #1a1a1a; font-size: 14px; line-height: 1.5; }
@@ -206,6 +206,47 @@
   .modal-body table th { position: sticky; top: 0; background: #ffffff; z-index: 1; }
   .btn-hs { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: #185FA5; color: #ffffff; border-radius: 6px; font-size: 11px; text-decoration: none; font-weight: 500; }
   .btn-hs:hover { background: #0C447C; text-decoration: none; }
+  /* ---- tab nav (shared) ---- */
+  .rp-tabs { display:flex; gap:8px; margin:4px 0 18px; border-bottom:2px solid #e3e8ee; }
+  .rp-tabs button { border:none; background:none; padding:9px 16px; font-size:14px; font-weight:600; color:#5b6b7f; cursor:pointer; border-bottom:3px solid transparent; margin-bottom:-2px; }
+  .rp-tabs button.active { color:#0d6e6e; border-bottom-color:#0d6e6e; }
+  .tabpane { display:none; } .tabpane.active { display:block; }
+  /* ---- Opportunity Map tab (scoped to #tab-omap) ---- */
+  #tab-omap h2 { font-size:17px; margin:28px 0 10px; padding-bottom:6px; border-bottom:2px solid #e3e8ee; color:#0d6e6e; }
+  #tab-omap h3 { font-size:14px; margin:0 0 6px; }
+  #tab-omap .sub { color:#5b6b7f; font-size:12.5px; margin:0 0 14px; }
+  #tab-omap .note { background:#fff7e6; border:1px solid #ffe2a8; border-radius:8px; padding:10px 13px; font-size:12.5px; color:#6b5618; margin:12px 0; }
+  #tab-omap table { border-collapse:collapse; width:100%; background:#fff; border:1px solid #e3e8ee; border-radius:10px; overflow:hidden; margin:6px 0; }
+  #tab-omap th,#tab-omap td { text-align:left; padding:8px 11px; border-bottom:1px solid #eef2f6; font-size:13px; vertical-align:top; }
+  #tab-omap th { background:#0d6e6e; color:#fff; font-size:11.5px; text-transform:uppercase; letter-spacing:.4px; white-space:nowrap; }
+  #tab-omap tr:last-child td { border-bottom:none; }
+  #tab-omap .pill { display:inline-block; padding:1px 8px; border-radius:20px; font-size:11px; font-weight:600; white-space:nowrap; }
+  #tab-omap .t1{background:#dcf5ec;color:#0a6b4d;} #tab-omap .t2{background:#e4eefc;color:#1f5bb5;} #tab-omap .t3{background:#f0f0f3;color:#6b6b78;}
+  #tab-omap .nudge{background:#dcf5ec;color:#0a6b4d;} #tab-omap .hold{background:#fde7e7;color:#b23838;} #tab-omap .cool{background:#fff0d9;color:#9a6800;}
+  #tab-omap .cards { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media(max-width:820px){ #tab-omap .cards{ grid-template-columns:1fr; } }
+  #tab-omap .card { background:#fff; border:1px solid #e3e8ee; border-radius:12px; padding:14px 16px; }
+  #tab-omap .card.lead { border:2px solid #0d6e6e; }
+  #tab-omap .card h3 { display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:15px; }
+  #tab-omap .acct { border-left:3px solid #cfe6e6; padding:6px 0 6px 10px; margin:8px 0; }
+  #tab-omap .acct .co { font-weight:600; } #tab-omap .acct .meta { font-size:12px; color:#5b6b7f; margin:2px 0; }
+  #tab-omap .acct .do { font-size:12.5px; margin-top:3px; } #tab-omap .acct .do b { color:#0d6e6e; }
+  #tab-omap .tag { display:inline-block; font-size:10.5px; padding:1px 6px; border-radius:5px; margin-left:4px; font-weight:600; }
+  #tab-omap .tag.list{background:#e4eefc;color:#1f5bb5;} #tab-omap .tag.new{background:#efe3fb;color:#7b3fb5;} #tab-omap .tag.loe{background:#fde7e7;color:#b23838;} #tab-omap .tag.launch{background:#dcf5ec;color:#0a6b4d;}
+  #tab-omap .tag.val{background:#eef0f3;color:#55606e;} #tab-omap .tag.ws{background:#fbe9df;color:#a4502a;} #tab-omap .tag.warm{background:#fff0d9;color:#9a6800;}
+  #tab-omap .tag.short{background:#fff3cf;color:#8a6d00;border:1px solid #ecd285;}
+  #tab-omap .ask { margin-top:8px; padding:8px 10px; background:#f3fafa; border-radius:6px; font-size:12.5px; }
+  #tab-omap .prio { background:#fffdf5; border:2px solid #ecd285; border-radius:12px; padding:14px 16px; margin:6px 0 4px; }
+  #tab-omap .prio-h { font-size:12px; font-weight:700; color:#8a6d00; text-transform:uppercase; letter-spacing:.4px; margin-bottom:6px; }
+  #tab-omap .prio th { background:#caa53b; }
+  #tab-omap .bk { font-size:10.5px; padding:1px 7px; border-radius:5px; font-weight:700; margin-left:6px; white-space:nowrap; }
+  #tab-omap .bk.booked{background:#0d6e6e;color:#fff;} #tab-omap .bk.pending{background:#fff0d9;color:#9a6800;border:1px solid #f0d59a;}
+  #tab-omap .calbar { display:flex; flex-wrap:wrap; gap:8px; margin:6px 0 14px; }
+  #tab-omap .calbar .ev { background:#fff; border:1px solid #e3e8ee; border-left:4px solid #0d6e6e; border-radius:8px; padding:7px 11px; font-size:12.5px; }
+  #tab-omap .calbar .ev.pend { border-left-color:#e0a93b; }
+  #tab-omap .calbar .ev b { display:block; font-size:12px; } #tab-omap .calbar .ev span { color:#5b6b7f; font-size:11.5px; }
+  #tab-omap .foot { font-size:11.5px; color:#7a8699; margin-top:10px; }
+  #tab-omap code { background:#eef2f6; padding:1px 5px; border-radius:4px; font-size:12px; }
 </style>
 </head>
 <body>
@@ -236,6 +277,12 @@
 <p class="sub">Three views of RP-driven pipeline momentum: <strong>① where partners sit</strong> in their relationship arc, <strong>② new-business leads</strong> with origin = Referral Partner (going-forward attribution), and <strong>③ deals in Brand Direct</strong> where any associated contact has an RP link (retroactive North Star — captures legacy, renewal, and win-back deals the lead system can't see).</p>
 
 <div id="err-banner" style="display:none; background:#FCEBEB; border:1px solid #E24B4A; color:#501313; padding:12px 14px; border-radius:10px; margin: 0 0 16px; font-size:13px;"></div>
+
+<nav class="rp-tabs">
+  <button data-tab="tab-dashboard" class="active">📊 Dashboard</button>
+  <button data-tab="tab-omap">🎯 Opportunity Map</button>
+</nav>
+<div id="tab-dashboard" class="tabpane active">
 
 <div class="section-label">Summary — weekly snapshot + momentum</div>
 <div class="exec-summary">
@@ -385,6 +432,64 @@
   Data sources — RPs: <code>2-37656252</code> (61 records). Leads: <code>0-136</code> filtered to <code>origin = "Referral Partner"</code>. Deals: pipeline <code>74379150</code> "Brand (Direct)" including Closed Won and Closed Lost. Lead funnel = origin-tag attribution (going-forward, new business only). Deal funnel = direct Deal → Referral Partner association walked from the RP side (matches the "Deal → Referral Partners" segment column in HubSpot). Momentum bridge tracks adoption of the new lead-tagging process by comparing the two paths.
 </div>
 
+</div><!-- /#tab-dashboard -->
+
+<div id="tab-omap" class="tabpane">
+  <p class="sub">Just-in-time RP playbook — where each partner can help, prioritized by Kyle's samples shortlist + live triggers, to book the most first meetings. Analysis snapshot (Gmail + CRM + the two target lists), Jun 26 2026.</p>
+
+  <h2>The motion — start with the opportunity, hand the RP the named ask</h2>
+  <p class="sub">Stop asking RPs "who do you know?" (that gave us 109 first meetings → 1 deal). Lead with a named brand/contact + a "why now" trigger. Two trigger types drive timing:</p>
+  <div class="cards">
+    <div class="card"><h3>🔻 LOE trigger <span class="tag loe">samples gap</span></h3><p style="margin:4px 0;font-size:13px;">Brand within ~5 yrs of loss of exclusivity → field teams thinning → no way to keep samples flowing. Kyle's original samples logic. Strongest fit: <b>Amgen (Otezla, Enbrel, Repatha), Eliquis, Stelara, Humira.</b></p></div>
+    <div class="card"><h3>🚀 Launch / growth trigger <span class="tag launch">awareness + access</span></h3><p style="margin:4px 0;font-size:13px;">New or fast-growing brand → needs HCP awareness and access acceleration. Fit: <b>Skyrizi, Rinvoq, Auvelity, Sotyktu, Vtama, Zoryve, Bimzelx, Neffy, Vyvgart.</b></p></div>
+  </div>
+
+  <h2>⭐ Samples-shortlist first-meeting pushes — do these first</h2>
+  <p class="sub">RP relationships mapped directly onto Kyle's 81-contact samples shortlist. <b>Tier A</b> = an RP is <i>already linked to the exact shortlist contact</i> — no new path needed, just ask for the intro (your highest-conversion first meetings). <b>Tier B</b> = shortlist multi-brand nodes worth assigning an RP to.</p>
+  <div class="prio">
+    <div class="prio-h">★ Tier A — instant just-in-time asks (RP already tagged to the exact shortlist contact)</div>
+    <table><thead><tr><th>Nudge this RP</th><th>Shortlist contact</th><th>Brand</th><th>Trigger</th></tr></thead><tbody>
+      <tr><td><b>Jake Knorr</b></td><td>Sidney Bennett · Assoc VP, Marketing</td><td>Auvelity <span class="tag short">★ shortlist</span></td><td><span class="tag launch">launch</span></td></tr>
+      <tr><td><b>Jake Knorr</b></td><td>Jeffrey Akin · Exec Dir, Marketing</td><td>Ingrezza <span class="tag short">★ shortlist</span></td><td>—</td></tr>
+      <tr><td><b>Kallie Carter</b></td><td>Barbara Martin · Marketing Director</td><td>Sotyktu <span class="tag short">★ shortlist</span></td><td><span class="tag launch">launch</span></td></tr>
+      <tr><td><b>Suzanne Blaug</b></td><td>Megan Fisher · Commercial Dir, Rare Disease</td><td>Enbrel <span class="tag short">★ shortlist</span></td><td><span class="tag loe">LOE ~2029</span></td></tr>
+      <tr><td><b>Suzanne Blaug</b></td><td>Mark Neumann · Chief Commercial Officer</td><td>Caplyta <span class="tag short">★ shortlist</span></td><td>⚠ prior deal closed-lost — re-enter via samples</td></tr>
+    </tbody></table>
+    <div class="prio-h" style="margin-top:12px;">Tier B — shortlist multi-brand nodes (one intro = many brands → assign an RP)</div>
+    <table><thead><tr><th>Node contact</th><th>Shortlist brands unlocked</th><th>Path / trigger</th></tr></thead><tbody>
+      <tr><td><b>Chad Lindemann</b> · VP Marketing, AbbVie</td><td>Skyrizi · Rinvoq · Qulipta · Vraylar · Humira <b>(5)</b></td><td>Kathy's AbbVie thread — call booked Jul 14</td></tr>
+      <tr><td><b>Taylor Hanan</b> · Sr Dir Marketing, Amgen</td><td>Otezla · Repatha · Enbrel · Evenity · Prolia <b>(5)</b></td><td>No RP yet · Amgen = whitespace + LOE triggers → assign/recruit</td></tr>
+    </tbody></table>
+  </div>
+
+  <h2>⭐ Where each active RP can help — incl. movement outside the samples list</h2>
+  <p class="sub"><span class="tag list">on a target list</span> = accelerate. <span class="tag new">net-new</span> = outside both lists, qualify &amp; add to universe.</p>
+  <div class="calbar">
+    <div class="ev"><b>📅 GSK — Jun 30, 2pm</b><span>Demo · Holmes, Kaczor, Hadley (GSK) · Jeff</span></div>
+    <div class="ev"><b>📅 AbbVie — Jul 14, 2:30pm</b><span>Discussion · Kathy</span></div>
+    <div class="ev"><b>📅 Argenx — Jul 16, 9am</b><span>Follow-up (slipped from wk of Jul 8) · Nick</span></div>
+    <div class="ev pend"><b>⏳ ARS / Neffy — not booked</b><span>Hot demo 6/25, no date yet · Jeff</span></div>
+    <div class="ev pend"><b>⏳ Springworks · Sanofi · Ardelyx</b><span>In motion, nothing on calendar</span></div>
+  </div>
+  <p class="foot" style="margin:-6px 0 12px;">Calendar status as of Jun 26, 2026 (Ben's primary calendar). The hot gap: <b>ARS/Neffy has momentum but no booked next step.</b></p>
+  <div class="cards" id="omap-oppcards"></div>
+
+  <h2>🔄 Reactivation direction — what to ask each dormant-list RP for</h2>
+  <p class="sub">Who to ask each RP for, prioritized by <b>shortlist brand → live trigger → high-value whitespace</b>. Sampled from each RP's tagged list (not fully enumerated). Honest read: these lists skew oncology / market-access / omnichannel, so they're strongest for the <b>platform / access / PA</b> pitch — the brand-marketing + shortlist names are tagged for the samples motion.</p>
+  <div class="cards" id="omap-reactcards"></div>
+
+  <h2>Trigger reference — LOE &amp; launch (web-verified where noted)</h2>
+  <table id="omap-trig"><thead><tr><th>Brand</th><th>Maker</th><th>Trigger</th><th>Window</th><th>On lists?</th><th>Conf.</th></tr></thead><tbody id="omap-trigbody"></tbody></table>
+
+  <h2>Methodology &amp; confidence</h2>
+  <p class="sub" style="line-height:1.6;">
+    <b>Shortlist mapping:</b> RP↔contact links and the exact shortlist contacts are from the uploaded shortlist CSV cross-referenced with HubSpot Referral Partner associations.<br>
+    <b>Movement &amp; calendar:</b> Gmail + Google Calendar (May–Jun 2026) for Ben-owned RPs; booking status is a Jun 26 snapshot.<br>
+    <b>Triggers:</b> LOEs for Humira, Stelara, Eliquis (Apr 2028), Otezla (2028), Repatha/Enbrel (~2028–29), Keytruda (2028), Skyrizi/Rinvoq (2033/2037) web-verified Jun 2026. Vraylar, Caplyta, Ingrezza, Ajovy, Linzess, Nurtec precise dates not confirmed — "verify." Not investment advice.
+  </p>
+  <p class="foot">Generated for Ben Humphreys · sources: HubSpot, Gmail, uploaded target CSVs, public LOE references.</p>
+</div><!-- /#tab-omap -->
+
 <div class="modal-backdrop" id="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-title">
   <div class="modal">
     <div class="modal-header">
@@ -411,6 +516,104 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initApp() {
+/* ===== Opportunity Map tab — self-contained IIFE, no global leakage ===== */
+(function(){
+  document.querySelectorAll('.rp-tabs button').forEach(function(b){
+    b.addEventListener('click', function(){
+      document.querySelectorAll('.rp-tabs button').forEach(function(x){ x.classList.remove('active'); });
+      document.querySelectorAll('.tabpane').forEach(function(x){ x.classList.remove('active'); });
+      b.classList.add('active');
+      var pane = document.getElementById(b.getAttribute('data-tab'));
+      if (pane) pane.classList.add('active');
+    });
+  });
+  const OPPS = [
+   {rp:"Kathy Relias", call:"NUDGE", callc:"nudge", lead:true, accts:[
+     {co:"AbbVie", bk:["booked","Jul 14 · 2:30pm"], tags:[["list","master 200 + shortlist"],["launch","Skyrizi/Rinvoq"],["loe","Humira live"]], meta:"AbbVie Discussion on the calendar Jul 14 — not yet converted to named brand-team intros.", do:"Use the Jul 14 call to land <b>Chad Lindemann (VP Mktg)</b> — node across Skyrizi/Rinvoq/Qulipta/Vraylar/Humira. 1 intro = 5 brands."},
+     {co:"Boehringer Ingelheim", tags:[["list","master 45"]], meta:"Intros across 2 brands, invoiced 5/21 — no upcoming call.", do:"Confirm which 2 brands; map to BI master rows."},
+     {co:"Ardelyx", bk:["pending",""], tags:[["new","net-new"],["launch","Xphozah/Ibsrela"]], meta:"Intro to SVP Commercial 5/21 — no booked next step.", do:"Qualify; add to universe if ICP fit; get a date."}
+   ]},
+   {rp:"Jeff Mastrangelo", call:"NUDGE — feed the machine", callc:"nudge", lead:false, accts:[
+     {co:"ARS Pharma (Neffy)", bk:["pending",""], tags:[["new","net-new"],["launch","launched 2024"]], meta:"HOT — demo shared 6/25, comparing notes — but NO next step booked.", do:"⚠️ Lock the ARS next step now — it's the warmest deal without a date."},
+     {co:"GSK", bk:["booked","Jun 30 · 2pm"], tags:[["list","master 111"]], meta:"Demo booked Jun 30 w/ Holmes, Kaczor, Hadley (GSK).", do:"Prep the demo — big otherwise-uncovered account."},
+     {co:"Just-in-time shortlist names", tags:[["short","★ shortlist"],["launch","launch"]], meta:"He asked for more (6/26). Hand the UNassigned shortlist contacts (Auvelity's Sidney Bennett & Ingrezza's Jeffrey Akin are already Jake's).", do:"Ask for <b>Nadia Sutton (Ajovy), Bipan Singh (Bimzelx), Napoleon Clark (Austedo XR), Allison Doyle (Breztri)</b> — all on Kyle's shortlist, no RP yet."}
+   ]},
+   {rp:"Nick Reinhart", call:"HOLD — protect in-flight", callc:"hold", lead:false, accts:[
+     {co:"Argenx (Vyvgart)", bk:["booked","Jul 16 · 9am"], tags:[["new","net-new"],["launch","Vyvgart"]], meta:"Follow-up on calendar Jul 16 (slipped later than the wk-of-Jul-8 plan).", do:"Confirm Brian O'Donnell + Anne Foelsch are on it; don't let it slip again."},
+     {co:"Springworks + Sanofi Rare Blood", bk:["pending",""], tags:[["new","net-new"]], meta:"Both in motion, nothing on the calendar.", do:"Get both a date; no samples asks on Nick."}
+   ]},
+   {rp:"Jake Knorr + dormant-list owners", call:"REACTIVATE", callc:"cool", lead:true, accts:[
+     {co:"195 tagged contacts, 1 SQL", tags:[["short","Auvelity/Ingrezza shortlist"],["list","Bayer/BMS/J&J"]], meta:"Pre-tagged warm paths, never worked.", do:"Lead with the 2 exact shortlist contacts (Sidney Bennett/Auvelity, Jeffrey Akin/Ingrezza). Then Kallie/Hank/Kirsten/Brian."}
+   ]},
+   {rp:"Mix Talent (13 SQL) · Suzanne (12)", call:"MAP WITH OWNER", callc:"cool", lead:false, accts:[
+     {co:"High producers, threads owned by Stu/Kyle", tags:[["new","unmapped"]], meta:"Not in Ben's mailbox.", do:"15-min sync w/ Stu to map their live accounts in."}
+   ]}
+  ];
+  const REACT = [
+   {rp:"Jake Knorr", tier:"t2", cc:195, sql:1, head:"Biggest prize — 195 tagged, only 1 worked — and 2 are exact shortlist contacts",
+    tg:[
+     {co:"Axsome — Auvelity", who:"Sidney Bennett · Assoc VP, Marketing", why:[["short","★ shortlist + RP-linked"],["launch","launch"]], note:"EXACT samples-shortlist contact, already tagged to Jake — just ask for the intro."},
+     {co:"Neurocrine — Ingrezza", who:"Jeffrey Akin · Exec Dir, Marketing", why:[["short","★ shortlist + RP-linked"]], note:"Second exact shortlist contact tagged to Jake."},
+     {co:"Johnson & Johnson", who:"Karen Giotis · VP Integration", why:[["ws","whitespace · 167"]], note:"J&J huge & otherwise uncovered."},
+     {co:"Bayer", who:"Amy Hessels · VP Women's Healthcare Marketing", why:[["val","high-value"]], note:"Senior brand-marketing leader."}
+    ], ask:"“Hey Jake — we've got ~195 of your contacts tagged on our side but have only ever run one through together. Two are right at the top of Kyle's priority list: Sidney Bennett at Axsome (Auvelity) and Jeffrey Akin at Neurocrine (Ingrezza). Both are exactly who we want to be in front of — could you reintroduce me to them this week? Happy to send a forwardable blurb.”"},
+   {rp:"Brian Keehbler", tier:"t1", cc:86, sql:2, head:"Tier 1 but barely worked — prioritize",
+    tg:[
+     {co:"GSK", who:"Geoffrey Nocar · Dir HCP Engagement (already SQL)", why:[["warm","live now"]], note:"Reinforces Jeff's GSK demo Jun 30 — double-thread it."},
+     {co:"Genentech", who:"Vanessa Braganza · Sr Med Dir, Omnichannel", why:[["ws","whitespace · 140"]], note:"Genentech = 140 targets, zero other RP path."},
+     {co:"Vertex — Pain BU", who:"Chris Leggett · Head of Market Transformation", why:[["launch","launch"]], note:"Vertex pain launch = live trigger."}
+    ], ask:"“Hey Brian — you're one of our active partners but I don't think we've tapped your network nearly enough. Two that are live right now: you know Geoffrey Nocar at GSK — we've actually got a GSK demo on the 30th, so a quick nudge from you would carry weight. And Genentech is wide open for us — could you intro Vanessa Braganza? Those two alone would be a big lift.”"},
+   {rp:"Hank Kessler", tier:"t3", cc:107, sql:5, head:"Omnichannel / commercial — route via Suzanne (his MLM)",
+    tg:[
+     {co:"MannKind", who:"Joel Batten · VP Sales & Marketing", why:[["val","samples fit"]], note:"MannKind is a proven PP samples win — strong fit."},
+     {co:"Incyte — Jakafi", who:"Thomas Keyack · HCP Lead (already SQL)", why:[["warm","warm"]], note:"Already an SQL — push to a meeting."},
+     {co:"AstraZeneca — Breztri", who:"Mayank Agrawal · Head Commercial Excellence, US Onc", why:[["list","shortlist"]], note:"AZ on shortlist (oncology persona — caveat)."},
+     {co:"BMS", who:"Denise Dalton · VP Omnichannel Strategy", why:[["val","2nd BMS path"]], note:"Second BMS thread."}
+    ], ask:"“Hi Hank — given our track record getting samples moving (the MannKind work especially), Joel Batten at MannKind feels like a natural reintro — can you tee that up? And let's not let the Incyte / Jakafi thread you already opened go cold; I'd love to get that to a working session.” — coordinate through Suzanne (his MLM)."},
+   {rp:"Kirsten Carlson", tier:"t2", cc:89, sql:7, head:"Brand-marketing ICP + a 2nd Argenx thread",
+    tg:[
+     {co:"Novartis", who:"Kishan Kumar · Head of Marketing, Hematology", why:[["val","clean ICP"]], note:"Exactly the brand-marketing persona; big target."},
+     {co:"Argenx — CIDP", who:"Jenny Reid · CIDP Indication Lead, US Marketing", why:[["val","widens Nick"]], note:"2nd Argenx thread alongside Nick's Vyvgart deal."},
+     {co:"Tolmar", who:"Michele Mazzaccaro · SVP North America (already SQL)", why:[["warm","warm"]], note:"Already SQL — push."}
+    ], ask:"“Hi Kirsten — a couple from your network I'd love your help on: Kishan Kumar at Novartis (Head of Hematology Marketing) is right in our wheelhouse, and you know Jenny Reid at Argenx — we're already moving with Argenx, so a CIDP-marketing intro would widen it. And let's close the loop on Michele Mazzaccaro at Tolmar while it's warm.”"},
+   {rp:"Kallie Carter", tier:"t3", cc:124, sql:8, head:"Holds an exact shortlist contact (Sotyktu) + oncology/access bench",
+    tg:[
+     {co:"BMS — Sotyktu", who:"Barbara Martin · Marketing Director", why:[["short","★ shortlist + RP-linked"],["launch","launch"]], note:"EXACT shortlist contact tagged to Kallie — lead here. First-meeting priority."},
+     {co:"AbbVie", who:"Matt Haywood · VP Oncology, Int'l Market Access & Pricing", why:[["val","2nd AbbVie path"]], note:"Access angle — complements Kathy's brand-team AbbVie thread."},
+     {co:"Bayer", who:"Arpan Shah · Head Global Market Access (Xofigo/TRT)", why:[["val","high-value"]], note:"Senior access leader."}
+    ], ask:"“Hi Kallie — top of my list is Barbara Martin at BMS (Sotyktu) — she's exactly who we're targeting on the samples side, and you're already connected. Could you reintroduce me this week? Separately, Matt Haywood at AbbVie gives us a second way in on the access side.”"}
+  ];
+  const TRIG = [
+   ["Humira","AbbVie","LOE — biosimilars live","Now","Master+Shortlist","High"],
+   ["Stelara","J&J","LOE — biosimilars 2025","Now","Master","High"],
+   ["Eliquis","BMS/Pfizer","LOE","Generic Apr 2028","—","High"],
+   ["Otezla","Amgen","LOE","Generic 2028","—","High"],
+   ["Repatha","Amgen","LOE","~2028–29","Shortlist","Med"],
+   ["Enbrel","Amgen","LOE","~2029","Shortlist","Med"],
+   ["Keytruda","Merck","LOE","2028","—","High"],
+   ["Skyrizi","AbbVie","Launch/growth","LOE 2033","Master+Shortlist","High"],
+   ["Rinvoq","AbbVie","Launch/growth","LOE 2037","Master+Shortlist","High"],
+   ["Auvelity","Axsome","Launch","Launched 2022","Shortlist","High"],
+   ["Sotyktu","BMS","Launch","Recent","Shortlist","High"],
+   ["Vtama","Organon","Launch","Recent","Shortlist","High"],
+   ["Zoryve","Arcutis","Launch","Recent","Shortlist","High"],
+   ["Bimzelx","UCB","Launch","Recent","Shortlist","High"],
+   ["Neffy","ARS","Launch","Launched 2024","RP (Jeff)","High"],
+   ["Vyvgart","argenx","Launch","Recent","RP (Nick)","High"],
+   ["Vraylar","AbbVie","LOE — verify","~2029 (verify)","Shortlist","Low"],
+   ["Caplyta","J&J/Intra-Cellular","LOE — verify","verify","Shortlist","Low"],
+   ["Ingrezza","Neurocrine","LOE — verify","verify","Shortlist","Low"],
+   ["Ajovy / Austedo","Teva","LOE — verify","Austedo ~2031","Shortlist","Low"],
+   ["Linzess","AbbVie/Ironwood","LOE — verify","verify","Shortlist","Low"],
+   ["Nurtec ODT","Pfizer","LOE — verify","verify","Shortlist","Low"]
+  ];
+  function bkBadge(a){ if(!a.bk) return ""; return a.bk[0]==="booked" ? '<span class="bk booked">📅 '+a.bk[1]+'</span>' : '<span class="bk pending">⏳ PENDING</span>'; }
+  function renderOpps(){ var el=document.getElementById('omap-oppcards'); if(!el) return; el.innerHTML=OPPS.map(function(o){ return '<div class="card'+(o.lead?' lead':'')+'"><h3>'+o.rp+' <span class="pill '+o.callc+'">'+o.call+'</span></h3>'+o.accts.map(function(a){ return '<div class="acct"><div class="co">'+a.co+bkBadge(a)+a.tags.map(function(t){return '<span class="tag '+t[0]+'">'+t[1]+'</span>';}).join("")+'</div><div class="meta">'+a.meta+'</div><div class="do">→ '+a.do+'</div></div>'; }).join("")+'</div>'; }).join(""); }
+  function renderReact(){ var el=document.getElementById('omap-reactcards'); if(!el) return; el.innerHTML=REACT.map(function(r){ return '<div class="card"><h3>'+r.rp+' <span class="pill '+r.tier+'">'+r.cc+' tagged · '+r.sql+' SQL</span></h3><div style="font-size:12px;color:#5b6b7f;margin:-2px 0 4px;">'+r.head+'</div>'+r.tg.map(function(t){ return '<div class="acct"><div class="co">'+t.co+t.why.map(function(w){return '<span class="tag '+w[0]+'">'+w[1]+'</span>';}).join("")+'</div><div class="meta">'+t.who+'</div><div class="do">'+t.note+'</div></div>'; }).join("")+'<div class="ask">📨 <b>Nudge to send '+r.rp.split(" ")[0]+':</b> '+r.ask+'</div></div>'; }).join(""); }
+  function renderTrig(){ var el=document.getElementById('omap-trigbody'); if(!el) return; el.innerHTML=TRIG.map(function(t){ var tc=t[2].indexOf("Launch")>-1?'launch':(t[2].indexOf("verify")>-1?'':'loe'); var cc=t[5]==="High"?'#0a6b4d':t[5]==="Med"?'#9a6800':'#b23838'; return '<tr><td><b>'+t[0]+'</b></td><td>'+t[1]+'</td><td>'+(tc?'<span class="tag '+tc+'">'+t[2]+'</span>':t[2])+'</td><td>'+t[3]+'</td><td style="font-size:12px;">'+t[4]+'</td><td style="color:'+cc+';font-weight:600;">'+t[5]+'</td></tr>'; }).join(""); }
+  renderOpps(); renderReact(); renderTrig();
+})();
+
 const HUBSPOT_PORTAL = 21389996;
 
 // Live RP pipeline stage labels (from hubspot_list_pipelines on 2-37656252)
@@ -534,7 +737,8 @@ function attachScorecardWatchers() {
   });
   console.log("[scorecard-watch] Attached observers to", ids.length, "elements");
 }
-attachScorecardWatchers();
+document.addEventListener("DOMContentLoaded", attachScorecardWatchers);
+if (document.readyState !== "loading") attachScorecardWatchers();
 
 async function callMcp(name, args, opts) {
   opts = opts || {};
