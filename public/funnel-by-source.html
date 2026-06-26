@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="/_shared.css">
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script src="/_api.js" defer></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Funnel by Source — Revenue Pipeline</title>
+<style>
+:root{ color-scheme: light; }
+*{ box-sizing:border-box; }
+body{ margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:#f4f6f8; color:#1d2b36; line-height:1.45; }
+.wrap{ max-width:1080px; margin:0 auto; padding:20px 18px 60px; }
+h1{ font-size:25px; margin:0 0 4px; color:#16303f; }
+.sub{ color:#5a6b78; font-size:13px; margin:0 0 18px; }
+.band{ background:linear-gradient(120deg,#16303f,#26586b); color:#eaf3f2; border-radius:14px; padding:22px 24px; margin-bottom:20px; }
+.band .k{ text-transform:uppercase; letter-spacing:.07em; font-size:11px; color:#9fc6c2; margin-bottom:8px; }
+.band h2{ font-size:21px; line-height:1.3; margin:0; font-weight:650; }
+.band .g{ color:#5fe0a8; }
+.band .note{ margin-top:10px; font-size:12.5px; color:#bcd6d3; }
+.card{ background:#fff; border:1px solid #e3e9ee; border-radius:14px; padding:20px 22px; margin-bottom:18px; box-shadow:0 1px 2px rgba(20,40,55,.04); }
+.card h3{ margin:0 0 4px; font-size:17px; color:#16303f; }
+.card .desc{ color:#5a6b78; font-size:12.5px; margin:0 0 16px; }
+.grid4{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+@media(max-width:820px){ .grid4{ grid-template-columns:repeat(2,1fr); } }
+.bucket{ border:1px solid #e3e9ee; border-radius:12px; padding:14px; background:#fbfdfd; }
+.bucket.best{ border-color:#5fe0a8; box-shadow:0 0 0 2px rgba(95,224,168,.25); background:#f3fcf8; }
+.bucket .bname{ font-weight:700; font-size:14px; color:#16303f; display:flex; align-items:center; gap:6px; }
+.bucket .badge{ font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#0c7a4f; background:#d6f5e7; padding:2px 6px; border-radius:6px; }
+.bucket .created{ font-size:27px; font-weight:750; color:#16303f; margin:6px 0 2px; }
+.bucket .createdlbl{ font-size:11px; color:#778893; margin-bottom:12px; }
+.step{ margin-bottom:9px; }
+.step .row{ display:flex; justify-content:space-between; font-size:12px; margin-bottom:3px; }
+.step .row .lbl{ color:#52636e; }
+.step .row .val{ font-weight:700; color:#1d2b36; }
+.bar{ height:8px; border-radius:5px; background:#e7edf1; overflow:hidden; }
+.bar > span{ display:block; height:100%; border-radius:5px; background:#3a93b0; }
+.bar.opp > span{ background:#2f7d57; }
+.conv{ font-size:11px; color:#0c7a4f; font-weight:700; margin-top:2px; }
+.conv.dim{ color:#9aa7b0; font-weight:600; }
+.sublist{ margin-top:12px; border-top:1px dashed #dde5ea; padding-top:9px; }
+.sublist .sl{ display:flex; justify-content:space-between; font-size:11px; color:#62727c; margin-bottom:2px; }
+table{ width:100%; border-collapse:collapse; font-size:13px; }
+th,td{ text-align:right; padding:9px 10px; border-bottom:1px solid #eceff2; }
+th:first-child,td:first-child{ text-align:left; }
+th{ font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:#7a8a94; font-weight:650; }
+tr.tot td{ font-weight:750; border-top:2px solid #d4dde3; background:#f8fafb; }
+.hl{ color:#0c7a4f; font-weight:700; }
+.warn{ background:#fff6e9; border:1px solid #f3d9a6; border-radius:12px; padding:14px 16px; font-size:13px; color:#6b4e16; margin-bottom:18px; }
+.warn b{ color:#7a4a00; }
+details{ font-size:13px; color:#3a4a55; }
+details summary{ cursor:pointer; font-weight:650; color:#16303f; padding:4px 0; }
+details .body{ padding:8px 2px 2px; color:#465661; }
+details code{ background:#eef2f5; padding:1px 5px; border-radius:4px; font-size:12px; }
+.loading{ text-align:center; color:#5a6b78; padding:50px 0; font-size:14px; }
+.err{ background:#fde9e9; border:1px solid #f3b5b5; color:#8a2020; border-radius:12px; padding:14px 16px; font-size:13px; }
+.pills{ display:flex; gap:18px; flex-wrap:wrap; margin-top:4px; }
+.pill{ font-size:12px; color:#52636e; } .pill b{ color:#16303f; }
+.foot{ font-size:11px; color:#94a3ac; margin-top:6px; }
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <div class="brand">Revenue Pipeline</div>
+  <div class="tabs">
+    <a class="tab" href="/unified-pipeline.html">Unified Pipeline</a>
+    <a class="tab" href="/pipeline.html">Pipeline Confidence</a>
+    <a class="tab" href="/brand-direct.html">Brand Direct</a>
+    <a class="tab" href="/meeting-factory.html">Meeting Factory</a>
+    <a class="tab" href="/referral-partners.html">Referral Partners</a>
+    <a class="tab" href="/marketing-attribution.html">Marketing Revenue Accountability</a>
+    <a class="tab active" href="/funnel-by-source.html">Funnel by Source</a>
+  </div>
+  <div class="userbox">
+    <span id="user-email">—</span>
+    <button onclick="window.appAuth.logout()">Log out</button>
+  </div>
+</nav>
+
+<div id="auth-loading" class="auth-gate">
+  <h1>Loading…</h1>
+  <p>Checking authentication.</p>
+</div>
+
+<div id="main-content" style="display:none">
+
+<div class="wrap">
+  <h1>Funnel by Lead Source — Where to Add Fuel</h1>
+  <p class="sub">Splits the lead funnel into four origin buckets so we can see which source converts best at each step — and add fuel where it pays. Pulled live from HubSpot (Leads object, all-time). Blank-origin leads fall back to Lead Source / Lead Type.</p>
+  <div id="app"><div class="loading">Loading leads from HubSpot…</div></div>
+  <p class="foot" id="stamp"></p>
+</div>
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  window.appAuth.init(user => {
+    document.getElementById('auth-loading').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+    document.getElementById('user-email').textContent = user.email;
+    initApp();
+  });
+});
+
+function initApp() {
+const TOOL='mcp__6b11666e-7029-4baf-a491-3791bd8d9175__hubspot_search_custom_objects';
+const PROPS='origin,hs_lead_source,hs_lead_type,hs_pipeline_stage,first_meeting_complete,hs_lead_associated_deal_pipeline_stage';
+const SORTS='[{"propertyName":"hs_createdate","direction":"DESCENDING"}]';
+
+// funnel stage sets
+const FIRST_STAGES=['attempting-stage-id','connected-stage-id','qualified-stage-id','1009181988'];
+const OPP_STAGES=['qualified-stage-id','1009181988']; // Mid B + Hand-off
+const WON_DEAL_STAGE='143017564'; // Brand (Direct) Closed Won
+// modeling
+const BLENDED_WIN=0.16, ASP=150000;
+
+const BUCKET_ORDER=['Marketing','Referral Partners','Direct','Agency','Unclassified'];
+const MKT_SRC=['PAID_SEARCH','ORGANIC_SEARCH','EMAIL_MARKETING','PAID_SOCIAL','SOCIAL_MEDIA','OTHER_CAMPAIGNS'];
+const MKT_ORIGIN=['Marketing','Event','Events','Conference','Webinar','Inbound'];
+
+function bucketOf(l){
+  const t=l.hs_lead_type, s=l.hs_lead_source, o=l.origin;
+  if(t==='Agency'||t==='Agency RFP') return 'Agency';
+  if(o==='Referral Partner'||s==='REFERRALS'||s==='AI_REFERRALS') return 'Referral Partners';
+  if(MKT_SRC.includes(s)||MKT_ORIGIN.includes(o)) return 'Marketing';
+  if(o==='Direct'||s==='DIRECT_TRAFFIC'||s==='OFFLINE') return 'Direct';
+  return 'Unclassified';
+}
+function originLabel(l){ return (l.origin&&l.origin.trim())? l.origin : '(blank origin)'; }
+
+async function fetchPage(after){
+  const args={object_type:'Leads', properties:PROPS, limit:100, sorts:SORTS};
+  if(after) args.after=after;
+  const r=await window.cowork.callMcpTool(TOOL,args);
+  if(r&&r.isError) throw new Error('Tool error: '+JSON.stringify(r.content||r));
+  let p = r.structuredContent ?? JSON.parse(r.content[0].text);
+  if(p&&typeof p.result==='string') p=JSON.parse(p.result);
+  else if(typeof p==='string') p=JSON.parse(p);
+  return p;
+}
+async function fetchAll(){
+  let after=null, all=[], guard=0;
+  do{
+    const p=await fetchPage(after);
+    (p.results||[]).forEach(x=>all.push(x));
+    after = p.paging && p.paging.next ? p.paging.next.after : null;
+    guard++;
+  }while(after && guard<15);
+  return all;
+}
+
+function pct(n,d){ return d? Math.round(100*n/d):0; }
+function money(n){ return '$'+Math.round(n).toLocaleString(); }
+
+function compute(leads){
+  const B={}; BUCKET_ORDER.forEach(b=>B[b]={name:b,created:0,first:0,opp:0,won:0,origins:{}});
+  let originBlank=0, srcOffline=0, dealLinked=0;
+  leads.forEach(l=>{
+    const b=bucketOf(l), o=B[b];
+    o.created++;
+    const reachedFirst = l.first_meeting_complete==='Yes' || FIRST_STAGES.includes(l.hs_pipeline_stage);
+    const reachedOpp = OPP_STAGES.includes(l.hs_pipeline_stage);
+    if(reachedFirst) o.first++;
+    if(reachedOpp) o.opp++;
+    if(l.hs_lead_associated_deal_pipeline_stage===WON_DEAL_STAGE) o.won++;
+    const ol=originLabel(l); o.origins[ol]=(o.origins[ol]||0)+1;
+    if(!(l.origin&&l.origin.trim())) originBlank++;
+    if(l.hs_lead_source==='OFFLINE') srcOffline++;
+    if(l.hs_lead_associated_deal_pipeline_stage) dealLinked++;
+  });
+  const buckets=BUCKET_ORDER.map(b=>B[b]).filter(x=>x.created>0);
+  const tot={created:0,first:0,opp:0,won:0}; buckets.forEach(b=>{tot.created+=b.created;tot.first+=b.first;tot.opp+=b.opp;tot.won+=b.won;});
+  // best lead->opp among buckets with >=5 created
+  let best=null; buckets.forEach(b=>{ if(b.created>=5){ const r=b.opp/b.created; if(!best||r>best.r) best={name:b.name,r:r,b:b}; }});
+  return {buckets,tot,best,originBlank,srcOffline,dealLinked,n:leads.length};
+}
+
+function bucketCard(b,tot,best){
+  const isBest = best && best.name===b.name;
+  const lf=pct(b.first,b.created), fo=pct(b.opp,b.first), lo=pct(b.opp,b.created);
+  const subs=Object.entries(b.origins).sort((a,c)=>c[1]-a[1])
+    .map(([k,v])=>`<div class="sl"><span>${k}</span><span>${v}</span></div>`).join('');
+  return `<div class="bucket ${isBest?'best':''}">
+    <div class="bname">${b.name} ${isBest?'<span class="badge">best converter</span>':''}</div>
+    <div class="created">${b.created}</div>
+    <div class="createdlbl">leads created</div>
+    <div class="step">
+      <div class="row"><span class="lbl">First meeting</span><span class="val">${b.first}</span></div>
+      <div class="bar"><span style="width:${pct(b.first,b.created)}%"></span></div>
+      <div class="conv ${lf?'':'dim'}">${lf}% of leads</div>
+    </div>
+    <div class="step">
+      <div class="row"><span class="lbl">Opportunity (Mid B)</span><span class="val">${b.opp}</span></div>
+      <div class="bar opp"><span style="width:${pct(b.opp,b.created)}%"></span></div>
+      <div class="conv ${lo?'':'dim'}">${lo}% lead→opp · ${fo}% mtg→opp</div>
+    </div>
+    <div class="sublist"><div class="sl" style="font-weight:700;color:#52636e"><span>Origin detail</span><span></span></div>${subs}</div>
+  </div>`;
+}
+
+function render(d){
+  const {buckets,tot,best,originBlank,srcOffline,dealLinked,n}=d;
+  const directRate = (()=>{const x=buckets.find(b=>b.name==='Direct');return x?x.opp/x.created:0;})();
+  let headline='';
+  if(best){
+    const mult = directRate>0 ? (best.r/directRate).toFixed(1) : null;
+    headline = `<span class="g">${best.name}</span> leads reach opportunity at <span class="g">${Math.round(best.r*100)}%</span>`
+      + (mult&&best.name!=='Direct'?` — ${mult}× the Direct rate (${Math.round(directRate*100)}%)`:'')
+      + `. That's where the next dollar of effort pays back hardest.`;
+  } else headline='Not enough data to rank buckets yet.';
+
+  const rows=buckets.map(b=>`<tr>
+    <td>${b.name}</td><td>${b.created}</td><td>${b.first}</td><td>${pct(b.first,b.created)}%</td>
+    <td>${b.opp}</td><td class="hl">${pct(b.opp,b.created)}%</td>
+    <td>${money(b.opp*BLENDED_WIN*ASP)}</td></tr>`).join('');
+  const totRow=`<tr class="tot"><td>Total</td><td>${tot.created}</td><td>${tot.first}</td><td>${pct(tot.first,tot.created)}%</td>
+    <td>${tot.opp}</td><td>${pct(tot.opp,tot.created)}%</td><td>${money(tot.opp*BLENDED_WIN*ASP)}</td></tr>`;
+
+  document.getElementById('app').innerHTML=`
+  <div class="band">
+    <div class="k">Where to add fuel</div>
+    <h2>${headline}</h2>
+    <div class="note">${n} leads · ${tot.opp} reached opportunity (${pct(tot.opp,tot.created)}% blended). Funnel runs lead → first meeting → opportunity (Mid B). Win step is modeled — see data note.</div>
+  </div>
+
+  <div class="warn">
+    <b>Read this before you trust the splits.</b> <code>origin</code> is blank on <b>${originBlank} of ${n}</b> leads (${pct(originBlank,n)}%) and <code>Lead Source</code> is "Offline" on <b>${pct(srcOffline,n)}%</b>, so the <b>Direct</b> bucket is really "direct outreach + untagged." Closed-won is reliably linked to only <b>${dealLinked}</b> leads, so per-bucket win rate can't be measured yet — the revenue column below is <b>modeled</b> at the blended 16% win rate × $150k ASP. Populating <code>origin</code> at lead creation is the single fix that makes these splits CEO-grade.
+  </div>
+
+  <div class="card">
+    <h3>The four-bucket funnel</h3>
+    <p class="desc">Each bucket: leads created → first meeting → opportunity, with step conversion. Green-bordered bucket is the best lead→opportunity converter (min 5 leads). Origin detail shows what's inside each bucket.</p>
+    <div class="grid4">${buckets.map(b=>bucketCard(b,tot,best)).join('')}</div>
+  </div>
+
+  <div class="card">
+    <h3>Conversion matrix</h3>
+    <p class="desc">Side-by-side rates. "Lead→Opp %" is the headline efficiency number — higher means each lead is worth more. Modeled revenue applies the company blended win rate to opportunities (placeholder until per-bucket win attribution exists).</p>
+    <table>
+      <thead><tr><th>Bucket</th><th>Leads</th><th>First mtg</th><th>Lead→Mtg</th><th>Opp (Mid B)</th><th>Lead→Opp</th><th>Modeled rev</th></tr></thead>
+      <tbody>${rows}${totRow}</tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <details>
+      <summary>Methodology &amp; how the buckets are built</summary>
+      <div class="body">
+        <p><b>Bucket waterfall (first match wins):</b></p>
+        <p>1. <b>Agency</b> — Lead Type = Agency or Agency RFP.<br>
+        2. <b>Referral Partners</b> — origin = "Referral Partner" OR Lead Source = Referrals / AI Referrals.<br>
+        3. <b>Marketing</b> — Lead Source in {Paid/Organic Search, Email, Paid/Organic Social, Other Campaigns} OR origin in {Marketing, Event, Conference, Webinar, Inbound}.<br>
+        4. <b>Direct</b> — origin = "Direct" OR Lead Source = Direct Traffic / Offline.</p>
+        <p><b>Funnel stages</b> (Lead pipeline): first meeting = stage Top B / Mid A / Mid B / Hand-off, or first_meeting_complete = Yes. Opportunity = Mid B or Hand-off (where deals are created). Win = associated deal in Brand (Direct) "Closed Won".</p>
+        <p><b>Not yet wired (next step):</b> cross-referencing the lead's associated contact for MQL status (Marketing) and for an associated Referral Partner record (Referral). Both need per-contact association lookups — a heavier pass we can layer on to catch leads that origin/source mis-tag.</p>
+      </div>
+    </details>
+  </div>`;
+  document.getElementById('stamp').textContent='Live from HubSpot · snapshot rendered '+new Date().toLocaleString();
+}
+
+(async()=>{
+  try{ const leads=await fetchAll(); render(compute(leads)); }
+  catch(e){ document.getElementById('app').innerHTML='<div class="err">Couldn’t load from HubSpot: '+(e&&e.message?e.message:e)+'</div>'; }
+})();
+}
+</script>
+</body>
+</html>
