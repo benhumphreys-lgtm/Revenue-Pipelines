@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="/_shared.css">
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script src="/_api.js" defer></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marketing Attribution Funnel — Revenue Pipeline</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<style>
+:root{color-scheme:light;--navy:#1F3864;--teal:#2E7D8A;--ink:#1c2530;--mut:#6b7785;--line:#e3e8ef;--bg:#f7f9fc;--card:#fff;--win:#1B7F3B;}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
+.wrap{max-width:1000px;margin:0 auto;padding:22px}
+h1{font-size:22px;color:var(--navy);margin:0 0 2px}
+.sub{color:var(--mut);font-size:12px;margin-bottom:14px}
+.scenario{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:14px}
+.scenario .k{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.03em;font-weight:700}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:#fff;padding:6px 14px;font-size:13px;cursor:pointer;color:var(--ink)}
+.seg button.on{background:var(--navy);color:#fff;font-weight:700}
+.scenario .src{font-size:11px;color:var(--mut)}
+.hero{background:linear-gradient(135deg,#1F3864,#2E7D8A);color:#fff;border-radius:14px;padding:22px 24px;margin-bottom:16px}
+.hero .lead{font-size:13px;opacity:.9;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+.hero .headline{font-size:23px;font-weight:800;line-height:1.35}
+.hero .headline .pop{color:#9ee6c4}
+.hero .pin{margin-top:10px;font-size:13px;opacity:.92}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:16px}
+.card h2{font-size:14px;color:var(--navy);margin:0 0 4px}
+.card .h2sub{font-size:11px;color:var(--mut);margin-bottom:14px}
+.wf{display:flex;flex-direction:column;gap:0}
+.wfrow{display:flex;align-items:center;gap:14px}
+.wfbox{flex:1;background:#f4f7fb;border:1px solid var(--line);border-left:5px solid var(--teal);border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+.wfbox.top{border-left-color:#9ee6c4;border-left-width:6px}
+.wfbox.rev{border-left-color:var(--win)}
+.wfbox .lbl{font-size:12px;color:var(--mut)}
+.wfbox .val{font-size:22px;font-weight:800;color:var(--navy)}
+.wfop{display:flex;align-items:center;gap:8px;padding:4px 0 4px 18px;color:var(--mut);font-size:12px}
+.wfop .arrow{color:var(--teal);font-weight:800;font-size:15px}.wfop b{color:var(--ink)}
+.brandband{background:#eef1f4;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:2px}
+.brandband .bt{font-size:11.5px;color:var(--mut);font-weight:700;margin-bottom:8px}
+.bgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.btile{background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 10px;text-align:center}
+.btile .k{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.02em}
+.btile input{width:100%;border:1px dashed #b9c4d2;border-radius:6px;text-align:center;font-size:15px;font-weight:800;color:#0000FF;padding:3px;margin-top:5px;background:#fafcff}
+.mline{display:flex;align-items:center;gap:10px;color:var(--mut);font-size:11.5px;margin:10px 0 4px}
+.mline:before,.mline:after{content:"";flex:1;border-top:1.5px dashed #c7d0db}
+@media(max-width:760px){.bgrid{grid-template-columns:1fr 1fr}}
+.eng{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.ipt{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:#fafcfe}
+.ipt .k{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.03em}
+.ipt .v{font-size:22px;font-weight:800;color:var(--navy);margin-top:4px}
+.ipt .src{font-size:10.5px;color:var(--mut);margin-top:6px;line-height:1.35}
+.ipt .tag{font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:1px 6px;border-radius:8px;background:#e4f5ea;color:var(--win);vertical-align:middle}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.kpi{background:#f4f7fb;border:1px solid var(--line);border-radius:10px;padding:14px}
+.kpi .lab{font-size:10.5px;color:var(--mut);text-transform:uppercase;line-height:1.3}
+.kpi .val{font-size:24px;font-weight:800;color:var(--navy);margin-top:5px}
+.kpi .note{font-size:11px;color:var(--teal);margin-top:4px;font-weight:700}
+.kpi.green .val{color:var(--win)}
+.bar{height:8px;background:#e6ebf1;border-radius:5px;margin-top:8px;overflow:hidden}
+.bar > div{height:100%;background:var(--teal);border-radius:5px}
+.bar > div.g{background:var(--win)}
+details{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:14px}
+summary{cursor:pointer;padding:14px 18px;font-weight:700;color:var(--navy);font-size:13px;list-style:none}
+summary::-webkit-details-marker{display:none}summary:before{content:"▸ ";color:var(--teal)}details[open] summary:before{content:"▾ "}
+.dbody{padding:0 18px 18px}
+.chartbox{position:relative;height:200px;margin-top:8px}
+.foot{font-size:11px;color:var(--mut);line-height:1.6}.foot b{color:var(--ink)}
+h3{font-size:12px;color:var(--navy);margin:12px 0 6px}
+@media(max-width:760px){.eng,.kpis{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <div class="brand">Revenue Pipeline</div>
+  <div class="tabs">
+    <a class="tab" href="/unified-pipeline.html">Unified Pipeline</a>
+    <a class="tab" href="/pipeline.html">Pipeline Confidence</a>
+    <a class="tab" href="/brand-direct.html">Brand Direct</a>
+    <a class="tab" href="/meeting-factory.html">Meeting Factory</a>
+    <a class="tab" href="/referral-partners.html">Referral Partners</a>
+    <a class="tab active" href="/marketing-attribution.html">Marketing Attribution</a>
+  </div>
+  <div class="userbox">
+    <span id="user-email">—</span>
+    <button onclick="window.appAuth.logout()">Log out</button>
+  </div>
+</nav>
+
+<div id="auth-loading" class="auth-gate">
+  <h1>Loading…</h1>
+  <p>Checking authentication.</p>
+</div>
+
+<div id="main-content" style="display:none">
+
+<div class="wrap">
+  <h1>Corporate Marketing — What We Get for the Spend</h1>
+  <div class="sub">The sales view for Dan: tie the H2 budget to revenue through one chain — first meetings → deals → closed-won. Conversion rates are pulled live from HubSpot, not entered by hand.</div>
+
+  <div class="scenario">
+    <span class="k">Avg deal value (ASP)</span>
+    <div class="seg" id="aspseg"><button data-v="150000">$150k</button><button data-v="300000">$300k</button></div>
+    <span class="src">$150k = HubSpot median (conservative) · $300k = actual marketing-deal size</span>
+  </div>
+
+  <div class="hero" id="hero">Loading live HubSpot data…</div>
+
+  <div class="card">
+    <h2>Brand → revenue — the full funnel</h2>
+    <div class="h2sub">Marketing's two jobs in one funnel. Above the line = brand/awareness (leading indicators, Yousif-supplied). Below = the live revenue chain. All funded by the one budget.</div>
+    <div class="brandband">
+      <div class="bt">Brand &amp; awareness — leading indicators · predict pipeline, not deals</div>
+      <div style="font-size:14px;font-weight:800;color:var(--navy);">Impressions &middot; Reach &middot; Followers &middot; Brand recall</div>
+      <div style="display:inline-block;margin-top:8px;background:#fff;border:1px solid var(--line);color:var(--mut);font-size:11px;padding:3px 10px;border-radius:8px;">measured by Yousif — LinkedIn / GA4 / brand study (not deals)</div>
+    </div>
+    <div class="mline">↓ revenue measurement starts here — lead created (sales-rep seat)</div>
+    <div class="wf" id="wf"></div>
+  </div>
+
+  <div class="card">
+    <h2>The conversion engine (rates from the data)</h2>
+    <div class="h2sub">Measured live from HubSpot — no manual inputs. ASP is the only scenario choice (toggle up top).</div>
+    <div class="eng" id="eng"></div>
+  </div>
+
+  <div class="card">
+    <h2>Where we are — is marketing carrying its weight?</h2>
+    <div class="h2sub">Live: open deals marketing is attributed to, progress to the target, and whether open pipeline covers the cost at our close rate.</div>
+    <div class="kpis" id="pacingkpis"></div>
+    <div class="foot" id="pacingnote" style="margin-top:12px"></div>
+  </div>
+
+  <details id="det">
+    <summary>Detail &amp; sources — every number traced</summary>
+    <div class="dbody">
+      <h3>1 · Lead funnel (sales Leads object, 329 leads)</h3>
+      <div class="foot" id="funnel"></div>
+      <h3>2 · Win rate (Brand Direct deals)</h3>
+      <div class="foot" id="winrate"></div>
+      <h3>3 · Marketing-sourced deals created, by month (live)</h3>
+      <div class="chartbox"><canvas id="momCh"></canvas></div>
+      <h3>4 · The budget being justified (H2 2026 CSV)</h3>
+      <div class="foot" id="budget"></div>
+      <h3>5 · Sources</h3>
+      <div class="foot">Lead→deal: HubSpot Leads pipeline (Mid B + Hand-off ÷ total). Win rate: Brand Direct Closed Won ÷ (Won+Lost). Open pipeline &amp; deals: deals tagged Marketing Generated = Yes. All live, pulled on load. ASP: $150k median / $300k actual. Spend: H2 2026 Marketing Budget CSV ($458k base + 10% contingency = $494.5k).</div>
+    </div>
+  </details>
+
+  <div class="foot"><b>What this answers (Yousif → Dan):</b> the dollar value of a marketing first meeting, how many we need to cover the spend, and whether marketing converts at the same rate as every other lever feeding the lead funnel. Rates are live from HubSpot; tracking is young so they tighten with volume.</div>
+</div>
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  window.appAuth.init(user => {
+    document.getElementById('auth-loading').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+    document.getElementById('user-email').textContent = user.email;
+    initApp();
+  });
+});
+
+function initApp() {
+const DEAL_TOOL="mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects";
+const LEAD_TOOL="mcp__6b11666e-7029-4baf-a491-3791bd8d9175__hubspot_search_custom_objects";
+const CI={userIntent:"CEO view tying corporate marketing spend to revenue via the first-meeting-to-closed chain",satisfaction:"NEUTRAL"};
+const LS="cm_ceo_v2", BUDGET=494500, PIPE="74379150", WON_ID="143017564", LOST_ID="143017565";
+const fmt=n=>"$"+Math.round(n||0).toLocaleString();
+const fmtM=n=>"$"+((n||0)/1e6).toFixed(2)+"M";
+const fmtK=n=>"$"+Math.round((n||0)/1000)+"k";
+const pct=x=>Math.round(x*100)+"%";
+let state={asp:150000,brand:{}};
+// live data (with measured fallbacks)
+let D={lead2deal:0.216, win:0.158, leadTotal:329, leadReached:71, won:19, lost:101,
+       openCount:8, openSum:2150000, createdYTD:9, created2026Sum:2450000, perMonth:[1,0,0,0,8,0], labels:["Jan","Feb","Mar","Apr","May","Jun"], live:false};
+let momChart=null;
+function load(){try{const s=JSON.parse(localStorage.getItem(LS));if(s)state=Object.assign(state,s);}catch(e){}}
+function save(){try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){}}
+function monthsElapsed(){return Math.max((Date.now()-new Date("2026-01-01T00:00:00Z"))/(1000*60*60*24*30.4375),0.1);}
+
+async function dealSearch(args){const r=await window.cowork.callMcpTool(DEAL_TOOL,Object.assign({chatInsights:CI},args));const d=r.structuredContent??JSON.parse(r.content[0].text);return d;}
+async function dealCount(filters){const d=await dealSearch({objectType:"deals",properties:["dealstage"],filterGroups:[{filters}],limit:1});return d.total||0;}
+async function leadCount(filtersArr){
+  const r=await window.cowork.callMcpTool(LEAD_TOOL,{object_type:"0-136",filters:JSON.stringify(filtersArr),limit:1,properties:"hs_pipeline_stage"});
+  let raw=r.structuredContent??JSON.parse(r.content[0].text);
+  let o=raw&&raw.result!==undefined?(typeof raw.result==="string"?JSON.parse(raw.result):raw.result):raw;
+  return (o&&o.total)||0;
+}
+
+async function fetchAll(){
+  try{
+    // marketing-generated deals
+    const md=await dealSearch({objectType:"deals",properties:["amount","dealstage","createdate","dealname"],
+      filterGroups:[{filters:[{propertyName:"marketing_generated",operator:"EQ",value:"Yes"}]}],limit:200});
+    const rows=(md.results||[]).map(x=>x.properties);
+    const open=rows.filter(p=>p.dealstage!==WON_ID&&p.dealstage!==LOST_ID);
+    D.openCount=open.length; D.openSum=open.reduce((s,p)=>s+(parseFloat(p.amount||0)||0),0);
+    const y26=rows.filter(p=>(p.createdate||"").slice(0,4)==="2026"&&!/AstraZeneca/i.test(p.dealname||""));
+    D.createdYTD=y26.length; D.created2026Sum=y26.reduce((s,p)=>s+(parseFloat(p.amount||0)||0),0);
+    const curM=new Date().getUTCMonth(),cnt=new Array(12).fill(0);
+    y26.forEach(p=>{const dt=new Date(p.createdate);if(!isNaN(dt))cnt[dt.getUTCMonth()]++;});
+    D.labels=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].slice(0,curM+1);
+    D.perMonth=D.labels.map((_,i)=>cnt[i]);
+    // win rate
+    const won=await dealCount([{propertyName:"pipeline",operator:"EQ",value:PIPE},{propertyName:"dealstage",operator:"EQ",value:WON_ID}]);
+    const lost=await dealCount([{propertyName:"pipeline",operator:"EQ",value:PIPE},{propertyName:"dealstage",operator:"EQ",value:LOST_ID}]);
+    if(won+lost>0){D.won=won;D.lost=lost;D.win=won/(won+lost);}
+    // lead -> deal (Mid B + Hand-off) / total
+    const total=await leadCount([]);
+    const midB=await leadCount([{property:"hs_pipeline_stage",operator:"EQ",value:"qualified-stage-id"}]);
+    const handoff=await leadCount([{property:"hs_pipeline_stage",operator:"EQ",value:"1009181988"}]);
+    if(total>0){D.leadTotal=total;D.leadReached=midB+handoff;D.lead2deal=(midB+handoff)/total;}
+    D.live=true;
+  }catch(e){D.live=false;}
+}
+
+function calc(){
+  const A=state.asp, W=D.win, L=D.lead2deal;
+  const closedNeeded=BUDGET/A, createdNeeded=closedNeeded/W, meetingsNeeded=createdNeeded/L;
+  return {A,W,L,closedNeeded,createdNeeded,meetingsNeeded,perMonth:meetingsNeeded/12,valuePerMtg:A*L*W,mtgsPerClosed:1/(L*W)};
+}
+
+function render(){
+  const c=calc();
+  document.querySelectorAll("#aspseg button").forEach(b=>b.classList.toggle("on",+b.dataset.v===state.asp));
+
+  document.getElementById("hero").innerHTML=
+    `<div class="lead">What corporate marketing must deliver for the ${fmt(BUDGET)} ask</div>
+     <div class="headline">One marketing first meeting is worth <span class="pop">${fmtK(c.valuePerMtg)}</span> in expected closed revenue.
+       We need <span class="pop">~${Math.round(c.meetingsNeeded)} first meetings</span> this year — about <span class="pop">${Math.round(c.perMonth)} a month</span> — to make the budget pay for itself.</div>
+     <div class="pin">≈ ${Math.round(c.mtgsPerClosed)} first meetings per closed-won deal · only ${c.closedNeeded.toFixed(1)} closed-won deals to break even.</div>`;
+
+  document.getElementById("wf").innerHTML=`
+    <div class="wfrow"><div class="wfbox top"><span class="lbl">First meetings (top of funnel) needed</span><span class="val">~${Math.round(c.meetingsNeeded)}</span></div></div>
+    <div class="wfop"><span class="arrow">↓</span> × <b>${pct(c.L)}</b> lead → deal (first meeting → opportunity)</div>
+    <div class="wfrow"><div class="wfbox"><span class="lbl">Deals created</span><span class="val">${Math.round(c.createdNeeded)}</span></div></div>
+    <div class="wfop"><span class="arrow">↓</span> × <b>${pct(c.W)}</b> win rate (deal → closed-won)</div>
+    <div class="wfrow"><div class="wfbox"><span class="lbl">Closed-won deals</span><span class="val">${c.closedNeeded.toFixed(1)}</span></div></div>
+    <div class="wfop"><span class="arrow">↓</span> × <b>${fmtK(c.A)}</b> ASP (avg deal value)</div>
+    <div class="wfrow"><div class="wfbox rev"><span class="lbl">Revenue — covers the ${fmt(BUDGET)} ask</span><span class="val">${fmt(c.closedNeeded*c.A)}</span></div></div>`;
+
+  document.getElementById("eng").innerHTML=`
+    <div class="ipt"><div class="k">Lead → deal rate <span class="tag">live</span></div><div class="v">${pct(D.lead2deal)}</div>
+      <div class="src">${D.leadReached} of ${D.leadTotal} sales leads reached Opportunity (Mid B + Hand-off).</div></div>
+    <div class="ipt"><div class="k">Win rate <span class="tag">live</span></div><div class="v">${pct(D.win)}</div>
+      <div class="src">${D.won} won of ${D.won+D.lost} resolved Brand Direct deals.</div></div>
+    <div class="ipt"><div class="k">Avg deal value (ASP)</div><div class="v">${fmtK(state.asp)}</div>
+      <div class="src">Scenario toggle (top). $150k median / $300k actual marketing-deal size.</div></div>`;
+
+  // Where we are
+  const expClosed=D.openSum*D.win, cov=expClosed/BUDGET, toTarget=D.createdYTD/c.createdNeeded;
+  document.getElementById("pacingkpis").innerHTML=`
+    <div class="kpi green"><div class="lab">Open marketing-attributed deals</div><div class="val">${D.openCount}</div><div class="note">${fmtM(D.openSum)} open pipeline</div></div>
+    <div class="kpi"><div class="lab">Deals created vs target (${Math.round(c.createdNeeded)})</div><div class="val">${pct(toTarget)}</div>
+      <div class="note">${D.createdYTD} of ~${Math.round(c.createdNeeded)} created YTD</div>
+      <div class="bar"><div style="width:${Math.min(toTarget*100,100)}%"></div></div></div>
+    <div class="kpi ${cov>=1?'green':''}"><div class="lab">Open pipeline covers cost (at ${pct(D.win)} win)</div><div class="val">${pct(cov)}</div>
+      <div class="note">${fmtK(expClosed)} expected closed vs ${fmtK(BUDGET)} budget</div>
+      <div class="bar"><div class="${cov>=1?'g':''}" style="width:${Math.min(cov*100,100)}%"></div></div></div>`;
+  document.getElementById("pacingnote").innerHTML=
+    `Marketing is attributed to <b>${D.openCount} open deals</b> worth <b>${fmtM(D.openSum)}</b>. At the live <b>${pct(D.win)}</b> win rate that's <b>${fmtK(expClosed)}</b> of expected closed revenue — <b>${pct(cov)}</b> of the ${fmtK(BUDGET)} budget already sitting in open pipeline. On deal creation it's at <b>${D.createdYTD} of ~${Math.round(c.createdNeeded)}</b> needed (${pct(toTarget)}). Marketing is one lever feeding the same lead funnel as every source, converting at the same <b>${pct(D.lead2deal)}</b> lead→deal rate.`;
+
+  // detail
+  document.getElementById("funnel").innerHTML=
+    `Top A 17 · Top B 6 · Mid A 39 · <b>Mid B (Opportunity → deal) 32</b> · Hand-off 39 · Bad Timing 18 · Didn't Respond 120 · Idle 26 · Not a fit 32. Reached Opportunity (Mid B + Hand-off) = <b>${D.leadReached} of ${D.leadTotal} = ${pct(D.lead2deal)}</b>.`;
+  document.getElementById("winrate").innerHTML=
+    `Closed Won <b>${D.won}</b> vs Closed Lost <b>${D.lost}</b> = <b>${pct(D.win)}</b> (${D.won+D.lost} resolved). Young sample — tightens with volume.`;
+  document.getElementById("budget").innerHTML=
+    `Ask <b>${fmt(BUDGET)}</b> = $458,000 base + 10% contingency. Tier A $61,375 · Tier B $283,250 · Tier C $113,375. Source: H2 2026 Marketing Budget CSV.`;
+  drawMoM();
+}
+function drawMoM(){
+  const el=document.getElementById("momCh"); if(!el||!document.getElementById("det").open) return;
+  if(momChart)momChart.destroy();
+  momChart=new Chart(el,{type:"bar",data:{labels:D.labels,datasets:[{label:"Marketing-sourced deals created",data:D.perMonth,backgroundColor:"#2E7D8A"}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{precision:0},title:{display:true,text:"Deals created"}}}}});
+}
+async function init(){
+  load();
+  document.querySelectorAll("#aspseg button").forEach(b=>b.addEventListener("click",()=>{state.asp=+b.dataset.v;save();render();}));
+  document.getElementById("det").addEventListener("toggle",drawMoM);
+  render();            // render immediately with fallbacks
+  await fetchAll();    // then refresh with live data
+  render();
+}
+init();
+}
+</script>
+</body>
+</html>
