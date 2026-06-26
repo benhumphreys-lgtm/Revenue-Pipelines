@@ -48,6 +48,13 @@
         return r;
       });
     }
+    // Also expose the MCP envelope shape that newer artifacts expect.
+    // Pattern they use: `r.structuredContent ?? JSON.parse(r.content[0].text)`.
+    // Build the stringified fallback BEFORE adding the self-reference, otherwise
+    // JSON.stringify will hit a circular structure.
+    const envelopeText = JSON.stringify(data);
+    data.structuredContent = data;
+    data.content = [{ type: 'text', text: envelopeText }];
     return data;
   }
 
