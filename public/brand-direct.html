@@ -11,7 +11,7 @@
 <style>
   :root { color-scheme: light; }
   html, body { background:#f6f7f9; color:#0f172a; }
-  body { font-size:14px; }
+  body { margin:0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size:14px; }
   .page { max-width: 1280px; margin: 0 auto; padding: 24px; }
   h1 { font-size: 22px; margin: 0 0 4px; letter-spacing:-0.01em; }
   .sub { color:#64748b; margin-bottom: 18px; font-size: 13px; }
@@ -57,10 +57,12 @@
   .source { font-size: 11px; color:#94a3b8; margin-top: 8px; }
   .loading { padding: 24px; text-align: center; color:#64748b; }
   .error { padding: 16px; background:#fef2f2; color:#991b1b; border-radius: 8px; font-size: 13px; }
-  .gridjs-wrapper { box-shadow: none !important; }
+  .gridjs-wrapper { box-shadow: none !important; overflow-x: auto; }
   .gridjs-table { font-size: 12px; }
-  .gridjs-th, .gridjs-td { padding: 8px 10px; }
-  .gridjs-th { background:#f8fafc; color:#475569; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .gridjs-th, .gridjs-td { padding: 8px 10px; min-width: 84px; }
+  .gridjs-th { background:#f8fafc; color:#475569; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; vertical-align: bottom; white-space: normal; }
+  /* Let header labels wrap onto multiple lines instead of truncating with an ellipsis */
+  .gridjs-th .gridjs-th-content { white-space: normal; overflow: visible; text-overflow: clip; word-break: normal; overflow-wrap: break-word; }
 
   /* Data hygiene: red flag for missing fields */
   .missing-cell { display: inline-block; background: #fef2f2; color: #991b1b; font-weight: 700; font-size: 10px; padding: 2px 6px; border-radius: 3px; border: 1px solid #fecaca; letter-spacing: 0.5px; }
@@ -70,6 +72,13 @@
   .health-banner.bad strong { color: #7f1d1d; }
   .health-banner .health-icon { font-size: 18px; }
   .health-banner .health-detail { color: inherit; font-weight: 400; font-size: 12px; margin-left: auto; }
+
+  /* CSV export */
+  .grid-toolbar { display:flex; justify-content:flex-end; align-items:center; gap:10px; margin-bottom:8px; }
+  .grid-toolbar .count-hint { font-size:12px; color:#94a3b8; margin-right:auto; }
+  .export-btn { background:#2563eb; color:#fff; border:none; border-radius:6px; padding:7px 14px; font-size:12px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+  .export-btn:hover { background:#1d4ed8; }
+  .export-btn:disabled { background:#cbd5e1; cursor:not-allowed; }
 </style>
 </head>
 <body>
@@ -181,6 +190,7 @@
       </div>
     </div>
     <div class="health-banner" id="p-health" style="display:none"></div>
+    <div class="grid-toolbar"><button class="export-btn" id="export-pipeline">⬇ Export CSV</button></div>
     <div class="grid-wrap" id="grid-pipeline"></div>
   </div>
 
@@ -197,6 +207,7 @@
       </div>
     </div>
     <div class="health-banner" id="r-health" style="display:none"></div>
+    <div class="grid-toolbar"><button class="export-btn" id="export-rollover">⬇ Export CSV</button></div>
     <div class="grid-wrap" id="grid-rollover"></div>
   </div>
 
@@ -213,6 +224,7 @@
       </div>
     </div>
     <div class="health-banner" id="a-health" style="display:none"></div>
+    <div class="grid-toolbar"><button class="export-btn" id="export-agencyrfp">⬇ Export CSV</button></div>
     <div class="grid-wrap" id="grid-agencyrfp"></div>
   </div>
 </div>
@@ -291,6 +303,73 @@ function initApp() {
     if (!d) return "—";
     try { return new Date(d).toISOString().slice(0,10); } catch(e) { return "—"; }
   };
+
+  // ============ CSV EXPORT ============
+  // Exports raw, unformatted values (numbers stay numbers, dates as YYYY-MM-DD) so the
+  // file is analysis-ready in Excel/Sheets. One row per deal, in the tab's current scope.
+  const CSV_COLUMNS = [
+    ["Deal Name", "dealname"],
+    ["Manufacturer", "manufacturer"],
+    ["Stage", "dealstage"],
+    ["Type", "dealtype"],
+    ["Owner", "owner"],
+    ["Brand(s)", "brands"],
+    ["Close Date", r => fmtDate(r.closedate)],
+    ["Create Date", r => fmtDate(r.createdate)],
+    ["Amount", "amount"],
+    ["Term (months)", "term"],
+    ["MRR", "mrr"],
+    ["ARR", "arr"],
+    ["Weighted Amount", "weighted_amount"],
+    ["Probability", "probability"],
+    ["Forecast", "forecast"],
+    ["Ad %", "ad_pct"],
+    ["Brand Activation %", "ba_pct"],
+    ["PrescriberPoint PA %", "pa_pct"],
+    ["Samples %", "sa_pct"],
+    ["Ad Revenue", "ad_rev"],
+    ["Brand Activation Revenue", "ba_rev"],
+    ["PrescriberPoint PA Revenue", "pa_rev"],
+    ["Samples Revenue", "sa_rev"],
+    ["HubSpot URL", r => `https://app.hubspot.com/contacts/21389996/record/0-3/${r.id}`],
+    ["Deal ID", "id"]
+  ];
+  function csvEscape(v) {
+    if (v == null) return "";
+    const s = String(v);
+    return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+  function rowsToCsv(rows) {
+    const header = CSV_COLUMNS.map(c => csvEscape(c[0])).join(",");
+    const lines = rows.map(r => CSV_COLUMNS.map(c => {
+      const acc = c[1];
+      const val = (typeof acc === "function") ? acc(r) : r[acc];
+      return csvEscape(val);
+    }).join(","));
+    return [header].concat(lines).join("\r\n");
+  }
+  function downloadCsv(rows, filenameBase) {
+    const csv = rowsToCsv(rows);
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const stamp = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = `${filenameBase}_${stamp}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  function wireExport(btnId, getRows, filenameBase) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    btn.addEventListener("click", () => {
+      const rows = getRows() || [];
+      if (!rows.length) { btn.textContent = "No rows to export"; setTimeout(() => btn.innerHTML = "⬇ Export CSV", 1500); return; }
+      downloadCsv(rows, filenameBase);
+    });
+  }
 
   // ============ SUB-TABS ============
   document.querySelectorAll(".subtab").forEach(t => {
@@ -555,14 +634,14 @@ function initApp() {
         { name: "Weighted", attributes: { style: "text-align:right" } },
         { name: "Prob", attributes: { style: "text-align:right" }, formatter: htmlFmt },
         { name: "Forecast", formatter: htmlFmt },
-        { name: "Ad %", attributes: { style: "text-align:right" } },
-        { name: "BA %", attributes: { style: "text-align:right" } },
-        { name: "PA %", attributes: { style: "text-align:right" } },
-        { name: "Sa %", attributes: { style: "text-align:right" } },
-        { name: "Ad Rev", attributes: { style: "text-align:right" } },
-        { name: "BA Rev", attributes: { style: "text-align:right" } },
-        { name: "PA Rev", attributes: { style: "text-align:right" } },
-        { name: "Sa Rev", attributes: { style: "text-align:right" } },
+        { name: "Ad Product %", attributes: { style: "text-align:right" } },
+        { name: "Brand Activation %", attributes: { style: "text-align:right" } },
+        { name: "PrescriberPoint PA %", attributes: { style: "text-align:right" } },
+        { name: "Samples %", attributes: { style: "text-align:right" } },
+        { name: "Ad Product Revenue", attributes: { style: "text-align:right" } },
+        { name: "Brand Activation Revenue", attributes: { style: "text-align:right" } },
+        { name: "PrescriberPoint PA Revenue", attributes: { style: "text-align:right" } },
+        { name: "Samples Revenue", attributes: { style: "text-align:right" } },
         { name: "id", hidden: true }
       ],
       data, sort: true, search: true, fixedHeader: true,
@@ -746,6 +825,11 @@ function initApp() {
     document.getElementById("a-wtd").textContent = fmtMoney(sum(agencyRfpRows, "weighted_amount"));
     renderHealthBanner("a-health", agencyRfpRows);
     buildGrid(document.getElementById("grid-agencyrfp"), agencyRfpRows);
+
+    // ===== CSV export buttons (one per tab, exports that tab's scope) =====
+    wireExport("export-pipeline",  () => pipeRows,      "brand_direct_pipeline");
+    wireExport("export-rollover",  () => rollRows,      "brand_direct_rollover");
+    wireExport("export-agencyrfp", () => agencyRfpRows, "brand_direct_agency_rfp");
   })();
 }
 </script>
