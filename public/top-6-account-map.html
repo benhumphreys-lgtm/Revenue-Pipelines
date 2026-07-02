@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="/_shared.css">
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script src="/_api.js" defer></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Top 6 Account Map — Revenue Pipeline</title>
+<style>
+:root { color-scheme: light; }
+* { box-sizing: border-box; }
+body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; background:#f5f6f8; color:#1a1f2b; font-size:13.5px; line-height:1.45; }
+.wrap { max-width:1500px; margin:0 auto; padding:18px 20px 60px; }
+h1 { font-size:20px; margin:0 0 3px; }
+.sub { color:#5b6472; font-size:12.5px; margin:0 0 10px; }
+.note { background:#fff8e6; border:1px solid #f2e2b0; color:#6b5a1e; padding:9px 12px; border-radius:8px; font-size:12px; margin:6px 0 12px; }
+.bar { display:flex; gap:14px; flex-wrap:wrap; align-items:center; margin:0 0 12px; }
+.legend { display:flex; gap:12px; flex-wrap:wrap; font-size:11.5px; color:#5b6472; }
+.legend .b { display:inline-block; padding:1px 7px; border-radius:5px; font-weight:700; font-size:10px; margin-right:4px; }
+.b.mtg{background:#eae2fb;color:#6a2fb0;} .b.deal{background:#e6f5ec;color:#12703a;} .b.lead{background:#e3edff;color:#1f4fb0;}
+.b.task{background:#fdebd2;color:#a5641a;} .b.email{background:#e2f0f4;color:#1f6b7a;} .b.note{background:#e9edf2;color:#4a5568;}
+.reset { margin-left:auto; font-size:11.5px; color:#2f6bd8; cursor:pointer; background:none; border:1px solid #cfe0f7; border-radius:6px; padding:3px 9px; }
+.tip { font-size:11.5px; color:#6b7280; }
+.viewbar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:0 0 10px; }
+.viewbar .vlbl { font-size:12px; color:#5b6472; }
+.viewbar select, .viewbar button, .viewbar .nameinput { font-size:12px; padding:4px 9px; border:1px solid #cfd6e0; border-radius:6px; background:#fff; cursor:pointer; }
+.viewbar .nameinput { cursor:text; min-width:260px; }
+.viewbar button.primary { background:#2f6bd8; color:#fff; border-color:#2f6bd8; }
+.banner { font-size:12px; padding:7px 11px; border-radius:7px; margin:0 0 12px; }
+.banner.master { background:#eef2f8; color:#3a4250; border:1px solid #dfe4ec; }
+.banner.diff { background:#fff4e0; color:#7a5713; border:1px solid #f0dca8; }
+.mtag { display:inline-block; font-size:9px; padding:0 5px; border-radius:4px; margin-left:5px; background:#fdf1d6; color:#a5641a; font-weight:700; vertical-align:middle; }
+.mtag.add { background:#e9edf2; color:#4a5568; }
+.it.moved { border-left:3px solid #e0a416; }
+.it.noteit { background:#fbfcfe; }
+.matrix-wrap { overflow-x:auto; background:#fff; border:1px solid #e3e6ec; border-radius:12px; }
+table.m { width:100%; border-collapse:collapse; min-width:1200px; table-layout:fixed; }
+table.m col.c-acct{width:230px;}
+table.m th { padding:10px 12px; text-align:left; font-size:12px; letter-spacing:.03em; text-transform:uppercase; color:#fff; position:sticky; top:0; z-index:2; }
+th.h-acct{background:#3a4250;} th.h-media{background:#1f8a70;} th.h-presc{background:#2f6bd8;} th.h-access{background:#8a3fd1;}
+td { border:1px solid #eef0f4; vertical-align:top; padding:0; }
+td.acct { background:#f7f9fc; padding:12px 13px; }
+.an { font-weight:700; font-size:15px; }
+.ad { color:#8a929e; font-size:11px; }
+.an a { color:#2f6bd8; text-decoration:none; font-size:11px; font-weight:400; margin-left:6px; }
+.roll { margin-top:8px; font-size:11.5px; color:#5b6472; line-height:1.7; }
+.roll b { color:#1a1f2b; }
+.owners { margin-top:9px; display:flex; gap:5px; flex-wrap:wrap; }
+.chip { background:#eef2f8; color:#3a4250; border:1px solid #dfe4ec; border-radius:20px; padding:1px 8px; font-size:10.5px; }
+.chip.ben{background:#e3edff;border-color:#c3d6f7;color:#1f4fb0;}
+.leadbox { margin-top:10px; border-top:1px dashed #e3e6ec; padding-top:8px; }
+.leadbox h5 { margin:0 0 5px; font-size:10px; text-transform:uppercase; letter-spacing:.04em; color:#9aa3b2; }
+.leadrow { font-size:11.5px; color:#3a4250; padding:2px 0; }
+.leadrow .ls { color:#8a929e; }
+.cell { padding:9px 11px; min-height:60px; }
+.cell.dragover { background:#eef6ff; outline:2px dashed #9cc0f5; outline-offset:-4px; }
+.cell .empty { color:#c8cdd6; font-style:italic; font-size:12px; }
+.it { padding:7px 8px; border:1px solid #eef0f4; border-radius:7px; margin-bottom:6px; background:#fff; cursor:grab; }
+.it:active { cursor:grabbing; }
+.it.dragging { opacity:.4; }
+.it .l1 { font-size:12.5px; font-weight:600; color:#1a1f2b; }
+.it .l1 .b { margin-right:5px; }
+.it .who { color:#334; font-size:11.5px; margin-top:1px; }
+.it .who b{ color:#1a1f2b; font-weight:600; }
+.it .l2 { color:#7a828f; font-size:11px; margin-top:1px; }
+.it .del { float:right; color:#c0392b; cursor:pointer; font-weight:700; margin-left:6px; }
+.tag { display:inline-block; font-size:9.5px; padding:1px 6px; border-radius:4px; margin-left:5px; vertical-align:middle; font-weight:700; }
+.tag.today{background:#c0392b;color:#fff;} .tag.up{background:#e3edff;color:#1f4fb0;} .tag.recent{background:#e6f5ec;color:#12703a;} .tag.open{background:#e6f5ec;color:#12703a;} .tag.pend{background:#fdebd2;color:#a5641a;} .tag.lost{background:#f3f4f6;color:#98a1b0;} .tag.won{background:#dff3e6;color:#12703a;} .tag.in{background:#eef2f8;color:#4a5568;} .tag.out{background:#e2f0f4;color:#1f6b7a;}
+.addbtn { display:inline-block; margin-top:2px; font-size:11px; color:#2f6bd8; cursor:pointer; border:1px dashed #cfe0f7; border-radius:6px; padding:2px 8px; background:#fff; }
+.addwrap { margin-top:4px; display:flex; gap:4px; }
+.addinput { flex:1; font-size:12px; padding:3px 6px; border:1px solid #b9c4d4; border-radius:5px; }
+.addwrap button { font-size:11px; border:1px solid #cfd6e0; background:#f2f5f9; border-radius:5px; cursor:pointer; padding:2px 7px; }
+.addwrap button.save2 { background:#2f6bd8; color:#fff; border-color:#2f6bd8; }
+details.more{margin-top:4px;} details.more summary{cursor:pointer;color:#2f6bd8;font-size:11.5px;}
+.loading{color:#7a828f;padding:20px;text-align:center;}
+.err{color:#c0392b;font-size:11px;}
+.foot{color:#9aa3b2;font-size:11px;margin-top:18px;text-align:center;}
+.prog{font-size:11.5px;color:#7a828f;margin:0 0 10px;}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <div class="brand">Revenue Pipeline</div>
+  <div class="tabs">
+    <a class="tab" href="/unified-pipeline.html">Unified Pipeline</a>
+    <a class="tab" href="/pipeline.html">Pipeline Confidence</a>
+    <a class="tab" href="/brand-direct.html">Brand Direct</a>
+    <a class="tab" href="/meeting-factory.html">Meeting Factory</a>
+    <a class="tab" href="/referral-partners.html">Referral Partners</a>
+    <a class="tab" href="/marketing-attribution.html">Marketing Revenue Accountability</a>
+    <a class="tab" href="/funnel-by-source.html">Funnel by Source</a>
+    <a class="tab active" href="/top-6-account-map.html">Top 6 Account Map</a>
+  </div>
+  <div class="userbox">
+    <span id="user-email">—</span>
+    <button onclick="window.appAuth.logout()">Log out</button>
+  </div>
+</nav>
+
+<div id="auth-loading" class="auth-gate">
+  <h1>Loading…</h1>
+  <p>Checking authentication.</p>
+</div>
+
+<div id="main-content" style="display:none">
+
+<div class="wrap">
+  <h1>Top 6 Account Map — Parallel Lanes</h1>
+  <p class="sub">Every live conversation across the three lanes, with who it's with and who owns it — for cross-pollination across our high-potential accounts.</p>
+  <div class="bar">
+    <div class="legend">
+      <span><span class="b mtg">MTG</span>meeting</span><span><span class="b deal">DEAL</span>deal</span>
+      <span><span class="b note">NOTE</span>your note</span><span><span class="b lead">LEAD</span>open lead (draggable)</span>
+    </div>
+    <span class="tip">· Drag any card between lanes (Working view) · <b>+ add</b> to drop in your own item</span>
+  </div>
+  <div class="viewbar" id="viewbar"></div>
+  <div id="banner"></div>
+  <div class="note">
+    <b>Live &amp; editable.</b> Pulled live from each account's HubSpot record: <b>open deals</b> (with the associated contact), <b>meetings</b> (upcoming or within the last 60 days, with attendees), and <b>open leads</b> in active stages only (Top A/B, Mid A/B) — each shows its scheduled-meeting date when set. Leads default by owner (Dan → Access, Kyle → Brand/Prescribing) and, like every card, can be dragged into any lane. Closed deals, dead leads, tasks and emails are excluded. Your moves and notes save on this device.
+  </div>
+  <p class="prog" id="prog">Loading…</p>
+  <div class="matrix-wrap">
+    <table class="m">
+      <colgroup><col class="c-acct"><col><col><col></colgroup>
+      <thead><tr><th class="h-acct">Account</th><th class="h-media">Media</th><th class="h-presc">Prescribing Activation</th><th class="h-access">Access Activation</th></tr></thead>
+      <tbody id="body"><tr><td colspan="4" class="loading">Loading live data…</td></tr></tbody>
+    </table>
+  </div>
+  <div class="foot" id="foot"></div>
+</div>
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  window.appAuth.init(user => {
+    document.getElementById('auth-loading').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+    document.getElementById('user-email').textContent = user.email;
+    initApp();
+  });
+});
+function initApp() {
+const ACCOUNTS = [
+  { name:"AbbVie", companyId:"54968058701", domain:"abbvie.com" },
+  { name:"Genentech", companyId:"30313020490", domain:"gene.com" },
+  { name:"Takeda", companyId:"52912993653", domain:"takeda.com" },
+  { name:"GSK", companyId:"30490850459", domain:"gsk.com" },
+  { name:"Pfizer", companyId:"54968049996", domain:"pfizer.com" },
+  { name:"Amgen", companyId:"31198690563", domain:"amgen.com" }
+];
+const OWNERS = {"90251481":"Ben Humphreys","314753596":"Kyle McCaig","153408573":"Dan Cornwell","59730113":"Jeff Puckett","79911714":"Nick Vinson","145352455":"Ryan Norris","425247274":"Brian DiGeronimo","445499469":"Yousif Malek","92729253":"Tom O'Donnell","94137593":"Glen Hall","94448398":"Andrew Borgschulte","148548425":"Jeremy Luetge","149547845":"John Harbison","176792101":"John Robinson","359503422":"John Zarifis","402170399":"Peter Robinson","405718017":"Sebastian Beltran","70730949":"Zena Nelson","78606761":"Anne Foelsch","79878581":"Michelle Bornstein","79963911":"Bridget Lindley","84140389":"Asa Curry","86308630":"Sheri Pruitt","90677485":"Robyn Hochstetler","90944377":"Alesia Coleman","93772812":"Rachel Braford","592250769":"Barbara Fine","636865340":"Brescia Gonzalez","637028764":"Shawn Moriarty","685203508":"Autumn Paige","1329000951":"Melinda Ried","1383399306":"Tina Ivankovic","1907981998":"Samantha Akhzar"};
+const SHAWN="637028764";
+const PIPELINES = {"74379150":"Brand (Direct)","698215733":"Brand Activation","77794228":"Sample Store","22572984":"LLY_Taltz","828221743":"IS- PA Sales"};
+const STAGES = {"1341411420":"Committed to proposal","143018394":"Proposal / RFP Delivered","1341581069":"Contract Negotiation","972397873":"Routing for Signature","143017564":"Closed Won","143017565":"Closed Lost","972641437":"On Hold","1363467602":"Did not respond","1340846889":"Rollover","1020571168":"Open for Demo","1020571173":"Demo Complete","148155528":"Added to Cart","148155529":"Ordered Product","148155532":"Order Accepted","161518004":"Shipped","177151923":"Delivered","148155533":"Rejected","1012636952":"Returned","1231873435":"Interest Expressed","1226596777":"Demo Scheduled","1226277807":"Post-Demo Action","1226277808":"Pilot","1226277809":"Active User"};
+const LEAD_STAGES = {"new-stage-id":"Top A – Pending 1st Mtg","attempting-stage-id":"Top B – 1st Mtg Scheduled","connected-stage-id":"Mid A – Mtg complete","qualified-stage-id":"Mid B – Opportunity ID'd","unqualified-stage-id":"Bad Timing","968123417":"Idle","259798673":"Didn't Respond","972389929":"Not a fit","1009181988":"Hand-off"};
+
+const T = "mcp__6b11666e-7029-4baf-a491-3791bd8d9175__";
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function timeout(ms){ return new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")),ms)); }
+// ---- global queue + call pacing + retry/backoff (beats HubSpot burst limiter) ----
+let active=0; const MAXC=2; const queue=[];
+function pump(){ while(active<MAXC && queue.length){ const job=queue.shift(); active++; job().finally(()=>{ active--; pump(); }); } }
+function enqueue(fn){ return new Promise((res,rej)=>{ queue.push(()=>fn().then(res,rej)); pump(); }); }
+let lastStart=0; const MIN_GAP=300;               // pace call starts (~3/sec) so we never burst
+async function gate(){ const now=Date.now(); const start=Math.max(now,lastStart+MIN_GAP); lastStart=start; const w=start-now; if(w>0) await sleep(w); }
+async function rawCall(name,args,ms){
+  const res = await Promise.race([window.cowork.callMcpTool(T+name,args), timeout(ms||16000)]);
+  if (res && res.isError){ const t=(res.content&&res.content[0]&&res.content[0].text)||"tool error"; throw new Error(t); }
+  let p = res && res.structuredContent;
+  if (p==null && res && res.content && res.content[0] && res.content[0].text) p = JSON.parse(res.content[0].text);
+  if (p && typeof p.result==="string"){ const s=p.result.trim(); if(s[0]==="{"||s[0]==="["){ try{return JSON.parse(s);}catch(e){} } throw new Error(p.result.slice(0,80)); }
+  return p;
+}
+async function call(name,args,ms){
+  return enqueue(async ()=>{
+    for(let a=0;a<9;a++){
+      await gate();
+      try{ return await rawCall(name,args,ms); }
+      catch(e){ const m=String(e&&e.message||e);
+        if(/rate limit/i.test(m) && a<8){ await sleep(2000+1500*a); continue; }      // token bucket: wait for refill
+        if(/timeout|not responding/i.test(m) && a<8){ await sleep(800*(a+1)); continue; }
+        throw e; }
+    }
+  });
+}
+async function mapLimit(items, limit, fn){ const out=[]; let i=0;
+  async function w(){ while(i<items.length){ const idx=i++; try{out[idx]=await fn(items[idx]);}catch(e){out[idx]=null;} } }
+  await Promise.all(Array.from({length:Math.min(limit,items.length||1)}, w)); return out; }
+function fmtDate(iso){ if(!iso)return ""; return new Date(iso).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"}); }
+function fmtDT(iso){ if(!iso)return ""; return new Date(iso).toLocaleString(undefined,{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}); }
+function esc(s){ return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c])); }
+function daysFrom(iso){ return iso ? (Date.now()-new Date(iso).getTime())/86400000 : null; }
+function isToday(iso){ if(!iso)return false; return new Date(iso).toDateString()===new Date().toDateString(); }
+function laneOf(text){ const s=(text||"").toLowerCase();
+  if(/\bpa\b|prior auth|automation|coverage|access|reject|leakage|epa|formulary|patient services|\bhub\b|copay|benefit|asembia|specialty pharmacy/.test(s)) return "access";
+  if(/above brand|\bmedia\b|banner|advertis|impression|awareness|onehub|display|programmatic|montage|video|omnichannel/.test(s)) return "media";
+  return "presc"; }
+function pipeLane(p){ if(p==="828221743")return "access"; if(p==="77794228")return "presc"; return null; }
+function ownerName(id){ return OWNERS[id]||("Owner "+id); }
+function nm(c){ return ((c.firstname||"")+" "+(c.lastname||"")).trim() || (c.email||"").split("@")[0] || "Unknown"; }
+const contactCache={};
+async function getContact(id){ if(contactCache[id])return contactCache[id];
+  try{ const c=await call("hubspot_get_contact",{contact_id:String(id)}); contactCache[id]={name:nm(c),title:c.jobtitle||"",company:c.company||"",domain:(c.email||"").split("@")[1]||""}; }
+  catch(e){ contactCache[id]={name:"(contact)",title:"",company:"",domain:""}; } return contactCache[id]; }
+async function assoc(cid,to){ try{ const r=await call("hubspot_get_custom_object_associations",{object_type:"companies",object_id:cid,to_object_type:to,limit:100}); return {ids:(r.results||[]).map(x=>Number(x.id)), plus:!!(r.paging&&r.paging.next)}; }catch(e){ return {ids:[],plus:false,err:true}; } }
+
+async function loadAccount(acct){
+  const o={acct, items:[], owners:new Set(), openDeals:0, upMtgs:0, openLeads:0, err:[]};
+  const nameL=acct.name.toLowerCase(), domL=acct.domain.toLowerCase();
+  const add=(it)=>{ o.items.push(it); if(it.ownerId) o.owners.add(it.ownerId); };
+
+  const da=await assoc(acct.companyId,"deals");
+  const dres=await mapLimit(da.ids.slice(0,10),2, async id=>{
+    const d=await call("hubspot_get_deal",{deal_id:String(id)});
+    const st=STAGES[d.dealstage]||d.dealstage;
+    if(/Closed Won|Closed Lost|Not Interested|Returned|Rejected|Did not/.test(st)) return null; // open deals only
+    let who="";
+    try{ const ca=await call("hubspot_get_custom_object_associations",{object_type:"deals",object_id:String(id),to_object_type:"contacts",limit:3});
+      const cid=((ca.results||[])[0]||{}).id; if(cid){ const c=await getContact(cid); who=c.name+(c.title?" ("+c.title+")":""); } }catch(e){}
+    return {d,st,who}; });
+  dres.filter(Boolean).forEach(({d,st,who})=>{ o.openDeals++;
+    const amt=d.amount&&Number(d.amount)>0?" · $"+Number(d.amount).toLocaleString():"";
+    add({key:"deal:"+d.hs_object_id,type:"deal",lane:pipeLane(d.pipeline)||laneOf(d.dealname),prio:1,date:d.hs_lastmodifieddate,
+      title:d.dealname||"Deal", tag:'<span class="tag open">OPEN</span>', who, l2:(PIPELINES[d.pipeline]||"")+" · "+esc(st)+amt, ownerId:d.hubspot_owner_id}); });
+
+  const ma=await assoc(acct.companyId,"0-47");
+  const mres=await mapLimit(ma.ids.sort((a,b)=>b-a).slice(0,9),2, async id=>{
+    const m=await call("hubspot_get_custom_object",{object_type:"0-47",object_id:String(id),properties:"hs_meeting_title,hs_meeting_start_time,hubspot_owner_id",associations:"contacts"});
+    const cids=((m.associations&&m.associations.contacts&&m.associations.contacts.results)||[]).map(r=>r.id).slice(0,4);
+    m._atts=await mapLimit(cids,2, cid=>getContact(cid)); return m; });
+  mres.filter(Boolean).forEach(m=>{ const title=(m.hs_meeting_title||"Meeting").trim(); const tl=title.toLowerCase();
+    const personalRe=/\b(dentist|dermatolog|eye|doc|doctor|pediatric|orthodont|checkup|physical|vet|salon|haircut|rheum|appointment|apt)\b/i;
+    if(personalRe.test(title)) return;
+    if(String(m.hubspot_owner_id)===SHAWN && !(tl.includes(nameL)||tl.includes("prescriberpoint"))) return;
+    const atts=(m._atts||[]).filter(Boolean);
+    const ext=atts.filter(a=>(a.domain&&a.domain.toLowerCase()===domL)||(a.company||"").toLowerCase().includes(nameL));
+    if(!(tl.includes(nameL)||tl.includes("prescriberpoint")||ext.length>0)) return;
+    const d=daysFrom(m.hs_meeting_start_time); const today=isToday(m.hs_meeting_start_time); const future=d<0;
+    if(!(today||future||(d!=null&&d<=60))) return; // only upcoming or within the last 60 days
+    if(today||future)o.upMtgs++;
+    const shown=(ext.length?ext:atts).slice(0,5);
+    const who=shown.map(a=>a.name+(a.title?" ("+a.title+")":"")).join(", ")||"—";
+    let tag=today?'<span class="tag today">TODAY</span>':(future?'<span class="tag up">UPCOMING</span>':'<span class="tag recent">LAST 60D</span>');
+    let prio=(today||future)?0:1;
+    add({key:"mtg:"+m.hs_object_id,type:"mtg",lane:laneOf(title),prio,date:m.hs_meeting_start_time,title,tag,who,l2:ownerName(m.hubspot_owner_id)+" · "+fmtDT(m.hs_meeting_start_time),ownerId:m.hubspot_owner_id}); });
+
+  // Leads — only OPEN pipeline stages (Top A/B, Mid A/B); default lane by owner (Dan→Access, Kyle→Brand/Presc); draggable
+  const OPEN_LEAD=new Set(["new-stage-id","attempting-stage-id","connected-stage-id","qualified-stage-id"]);
+  const la=await assoc(acct.companyId,"leads");
+  (await mapLimit(la.ids.slice(0,14),2, id=>call("hubspot_get_custom_object",{object_type:"0-136",object_id:String(id),properties:"hs_lead_name,hs_pipeline_stage,hubspot_owner_id,meeting_scheduled_date,hs_lastmodifieddate"}))).filter(Boolean).forEach(l=>{
+    if(!OPEN_LEAD.has(l.hs_pipeline_stage)) return; o.openLeads++;
+    if(l.hubspot_owner_id)o.owners.add(l.hubspot_owner_id);
+    const oid=String(l.hubspot_owner_id); const lane=oid==="153408573"?"access":(oid==="314753596"?"presc":"presc");
+    const stg=LEAD_STAGES[l.hs_pipeline_stage]||"";
+    const msd=l.meeting_scheduled_date; const md=msd?new Date(msd):null;
+    const upcoming=md&&md.getTime()>=Date.now()-86400000;
+    const mtag=md?(upcoming?'<span class="tag up">MTG '+fmtDate(msd)+'</span>':'<span class="tag recent">met '+fmtDate(msd)+'</span>'):'';
+    add({key:"lead:"+l.hs_object_id,type:"lead",lane,prio:upcoming?0:1,date:(msd||l.hs_lastmodifieddate||new Date().toISOString()),
+      title:l.hs_lead_name||"Lead", tag:mtag, who:"", l2:ownerName(l.hubspot_owner_id)+" · "+esc(stg), ownerId:l.hubspot_owner_id}); });
+
+  return o;
+}
+
+const STATE={results:[], view:(localStorage.getItem("am_active")||"working"), saving:false};
+function loadOv(){ try{return JSON.parse(localStorage.getItem("am_overrides")||"{}");}catch(e){return {};} }
+function saveOv(o){ localStorage.setItem("am_overrides",JSON.stringify(o)); }
+function loadMan(){ try{return JSON.parse(localStorage.getItem("am_manual")||"[]");}catch(e){return [];} }
+function saveMan(a){ localStorage.setItem("am_manual",JSON.stringify(a)); }
+function loadViews(){ try{return JSON.parse(localStorage.getItem("am_views")||"[]");}catch(e){return [];} }
+function saveViews(a){ localStorage.setItem("am_views",JSON.stringify(a)); }
+function setView(v){ STATE.view=v; STATE.saving=false; localStorage.setItem("am_active",v); }
+
+// current layout depends on selected view: master = no edits; working = live edits; v:<id> = a saved snapshot
+function currentLayout(){
+  if(STATE.view==="master") return {ov:{},man:[],editable:false,kind:"master",label:"Master — what HubSpot says"};
+  if(STATE.view.indexOf("v:")===0){ const v=loadViews().find(x=>"v:"+x.id===STATE.view);
+    if(v) return {ov:v.overrides||{},man:v.manual||[],editable:false,kind:"saved",label:"Saved view: "+v.name}; setView("working"); }
+  return {ov:loadOv(),man:loadMan(),editable:true,kind:"working",label:"Working view (your edits)"};
+}
+
+function itemHtml(it,editable){
+  const del = (editable && it.type==="note") ? '<span class="del" data-del="'+it.key+'" title="delete">×</span>' : '';
+  const flag = it._moved ? '<span class="mtag">moved</span>' : (it.type==="note" ? '<span class="mtag add">added</span>' : '');
+  return '<div class="it'+(it._moved?' moved':'')+(it.type==="note"?' noteit':'')+'" '+(editable?'draggable="true" ':'')+'data-key="'+esc(it.key)+'" data-acct="'+esc(it.acct)+'">'+
+    del+'<div class="l1"><span class="b '+it.type+'">'+it.type.toUpperCase()+'</span>'+esc(it.title)+(it.tag||'')+flag+'</div>'+
+    (it.who?'<div class="who">with <b>'+it.who+'</b></div>':'')+(it.l2?'<div class="l2">'+esc(it.l2)+'</div>':'')+'</div>';
+}
+function laneCell(acctName, lane, items, editable){
+  items.sort((a,b)=> a.prio-b.prio || (new Date(b.date)-new Date(a.date)));
+  const head=items.slice(0,10).map(it=>itemHtml(it,editable)).join("");
+  const rest=items.slice(10);
+  const more=rest.length?'<details class="more"><summary>+'+rest.length+' more</summary>'+rest.map(it=>itemHtml(it,editable)).join("")+'</details>':'';
+  const body=(head||more)?head+more:'<div class="empty">—</div>';
+  const add = editable ? '<div class="addhost"><span class="addbtn" data-add="'+esc(acctName)+'|'+lane+'">+ add</span></div>' : '';
+  return '<td class="cell" data-acct="'+esc(acctName)+'" data-lane="'+lane+'">'+body+add+'</td>';
+}
+function acctCell(o){
+  const chips=[...o.owners].map(id=>{const n=OWNERS[id]||("Owner "+id);return '<span class="chip '+(n==="Ben Humphreys"?"ben":"")+'">'+esc(n)+'</span>';}).join("");
+  return '<td class="acct"><div class="an">'+esc(o.acct.name)+'<a href="https://app.hubspot.com/contacts/0/record/0-2/'+o.acct.companyId+'" target="_blank">HubSpot ↗</a></div>'+
+    '<div class="ad">'+esc(o.acct.domain)+'</div>'+
+    '<div class="roll"><b>'+o.openDeals+'</b> open deals · <b>'+o.upMtgs+'</b> upcoming mtgs · <b>'+o.openLeads+'</b> open leads</div>'+
+    '<div class="owners">'+chips+'</div>'+(o.err.length?'<div class="err">⚠ '+o.err.join(", ")+'</div>':'')+'</td>';
+}
+function renderRow(o,L){
+  const ovA=L.ov[o.acct.name]||{};
+  const buckets={media:[],presc:[],access:[]};
+  o.items.forEach(it=>{ const k=ovA[it.key]; const lane=k||it.lane; const moved=!!k && k!==it.lane;
+    buckets[lane].push(Object.assign({},it,{acct:o.acct.name,_moved:moved})); });
+  (L.man||[]).filter(m=>m.acct===o.acct.name).forEach(m=>buckets[m.lane].push({key:m.key,type:"note",lane:m.lane,acct:o.acct.name,prio:0,date:m.date,title:m.title,tag:'',who:'',l2:'added by you'}));
+  return '<tr>'+acctCell(o)+laneCell(o.acct.name,"media",buckets.media,L.editable)+laneCell(o.acct.name,"presc",buckets.presc,L.editable)+laneCell(o.acct.name,"access",buckets.access,L.editable)+'</tr>';
+}
+function renderViewBar(L){
+  const vb=document.getElementById("viewbar");
+  if(STATE.saving){
+    vb.innerHTML='<span class="vlbl">Name this view:</span><input class="nameinput" id="vname" placeholder="e.g., Friday call – proposed buckets">'+
+      '<button class="primary" id="vsave">Save</button><button id="vcancel">Cancel</button>';
+    const i=vb.querySelector("#vname"); i.focus();
+    i.addEventListener("keydown",ev=>{ if(ev.key==="Enter")doSaveView(i.value); else if(ev.key==="Escape"){STATE.saving=false;renderAll();} });
+    return;
+  }
+  const views=loadViews();
+  let opts='<option value="working"'+(STATE.view==="working"?" selected":"")+'>✎ Working (your edits)</option>'+
+           '<option value="master"'+(STATE.view==="master"?" selected":"")+'>★ Master — what HubSpot says</option>';
+  views.forEach(v=>opts+='<option value="v:'+v.id+'"'+(STATE.view==="v:"+v.id?" selected":"")+'>▣ '+esc(v.name)+'</option>');
+  let h='<span class="vlbl">View:</span><select id="viewsel">'+opts+'</select>'+
+        '<button class="primary" id="saveview">💾 Save current as…</button>';
+  if(STATE.view==="working") h+='<button id="resetworking">↺ Reset edits</button>';
+  if(STATE.view.indexOf("v:")===0) h+='<button id="editcopy">✎ Edit a copy</button><button id="delview">🗑 Delete view</button>';
+  vb.innerHTML=h;
+}
+function renderBanner(L){
+  const b=document.getElementById("banner");
+  if(L.kind==="master"){ b.className="banner master"; b.innerHTML='<b>Master view</b> — exactly what HubSpot shows (leads/deals/meetings in their system-derived lanes). No manual moves applied.'; return; }
+  let moved=0; STATE.results.forEach(o=>{ const ovA=L.ov[o.acct.name]||{}; o.items.forEach(it=>{ if(ovA[it.key]&&ovA[it.key]!==it.lane)moved++; }); });
+  const added=(L.man||[]).length;
+  b.className="banner diff";
+  b.innerHTML='<b>'+esc(L.label)+'</b> vs HubSpot master: <b>'+moved+'</b> card'+(moved===1?'':'s')+' re-bucketed, <b>'+added+'</b> note'+(added===1?'':'s')+' added. '+
+    (L.editable?'Drag cards to change; ':'Read-only — ')+'switch to <b>Master</b> to see the source of truth.';
+}
+function renderAll(){
+  const L=currentLayout();
+  renderViewBar(L); renderBanner(L);
+  document.getElementById("body").innerHTML = STATE.results.map(o=>renderRow(o,L)).join("");
+}
+function doSaveView(name){ name=(name||"").trim(); if(!name){ const i=document.getElementById("vname"); if(i)i.focus(); return; }
+  const L=currentLayout(); const views=loadViews(); const id=String(Date.now());
+  views.push({id,name,overrides:JSON.parse(JSON.stringify(L.ov)),manual:JSON.parse(JSON.stringify(L.man)),savedAt:new Date().toISOString()});
+  saveViews(views); setView("v:"+id); renderAll();
+}
+
+function wire(){
+  const body=document.getElementById("body");
+  let dragKey=null, dragAcct=null;
+  body.addEventListener("dragstart",e=>{ if(!currentLayout().editable)return; const it=e.target.closest(".it"); if(!it)return; dragKey=it.dataset.key; dragAcct=it.dataset.acct; it.classList.add("dragging"); e.dataTransfer.effectAllowed="move"; try{e.dataTransfer.setData("text/plain",dragKey);}catch(_){} });
+  body.addEventListener("dragend",e=>{ const it=e.target.closest(".it"); if(it)it.classList.remove("dragging"); });
+  body.addEventListener("dragover",e=>{ if(!dragKey)return; const c=e.target.closest(".cell"); if(!c)return; e.preventDefault(); c.classList.add("dragover"); });
+  body.addEventListener("dragleave",e=>{ const c=e.target.closest(".cell"); if(c)c.classList.remove("dragover"); });
+  body.addEventListener("drop",e=>{ const c=e.target.closest(".cell"); if(!c||!dragKey)return; e.preventDefault(); c.classList.remove("dragover");
+    if(c.dataset.acct!==dragAcct){ dragKey=null; return; }
+    const lane=c.dataset.lane;
+    if(dragKey.indexOf("man:")===0){ const man=loadMan(); const m=man.find(x=>x.key===dragKey); if(m){m.lane=lane; saveMan(man);} }
+    else { const ov=loadOv(); ov[dragAcct]=ov[dragAcct]||{}; ov[dragAcct][dragKey]=lane; saveOv(ov); }
+    dragKey=null; renderAll(); });
+  body.addEventListener("click",e=>{
+    if(!currentLayout().editable) return;
+    const addEl=e.target.closest("[data-add]");
+    if(addEl){
+      const [acct,lane]=addEl.dataset.add.split("|"); const host=addEl.closest(".addhost");
+      host.innerHTML='<div class="addwrap"><input class="addinput" placeholder="Add item to '+lane+'…"><button class="save2">Add</button><button class="cancel2">×</button></div>';
+      const inp=host.querySelector(".addinput"); inp.focus();
+      const commit=()=>{ const v=inp.value.trim(); if(v){ const man=loadMan(); man.push({key:"man:"+Date.now(),acct,lane,title:v,date:new Date().toISOString()}); saveMan(man); } renderAll(); };
+      host.querySelector(".save2").onclick=commit;
+      host.querySelector(".cancel2").onclick=()=>renderAll();
+      inp.addEventListener("keydown",ev=>{ if(ev.key==="Enter"){ev.preventDefault();commit();} else if(ev.key==="Escape"){renderAll();} });
+      return;
+    }
+    const del=e.target.closest("[data-del]"); if(del){ saveMan(loadMan().filter(m=>m.key!==del.dataset.del)); renderAll(); }
+  });
+  const vb=document.getElementById("viewbar");
+  vb.addEventListener("change",e=>{ if(e.target.id==="viewsel"){ setView(e.target.value); renderAll(); } });
+  vb.addEventListener("click",e=>{
+    const id=e.target.id;
+    if(id==="saveview"){ STATE.saving=true; renderAll(); }
+    else if(id==="vsave"){ doSaveView((vb.querySelector("#vname")||{}).value); }
+    else if(id==="vcancel"){ STATE.saving=false; renderAll(); }
+    else if(id==="resetworking"){ if(confirm("Reset your working edits (moves + notes)?")){ localStorage.removeItem("am_overrides"); localStorage.removeItem("am_manual"); renderAll(); } }
+    else if(id==="editcopy"){ const L=currentLayout(); saveOv(JSON.parse(JSON.stringify(L.ov))); saveMan(JSON.parse(JSON.stringify(L.man))); setView("working"); renderAll(); }
+    else if(id==="delview"){ const vid=STATE.view.slice(2); if(confirm("Delete this saved view? (HubSpot data is untouched.)")){ saveViews(loadViews().filter(v=>v.id!==vid)); setView("working"); renderAll(); } }
+  });
+}
+
+async function main(){
+  wire(); const prog=document.getElementById("prog"); let n=0;
+  for(const a of ACCOUNTS){ prog.textContent="Loading "+a.name+" ("+n+" / 6 done)…";
+    let o; try{ o=await loadAccount(a); }catch(e){ o={acct:a,items:[],owners:new Set(),openDeals:0,upMtgs:0,openLeads:0,err:["load failed"]}; }
+    STATE.results.push(o); renderAll(); n++; }
+  prog.textContent=""; document.getElementById("foot").textContent="Live from HubSpot + Gmail. Generated "+new Date().toLocaleString()+" · your layout changes are saved on this device.";
+}
+main().catch(e=>{ document.getElementById("body").innerHTML='<tr><td colspan="4" class="err">Failed to load: '+esc(String(e))+'</td></tr>'; });
+}
+</script>
+</body>
+</html>

@@ -161,6 +161,50 @@
     return out;
   }
 
+  // HubSpot GET-by-id — fetches a single record of any object type by ID.
+  // Routes hubspot_get_contact, hubspot_get_deal, hubspot_get_custom_object to
+  // the /api/hubspot-get Netlify Function. Normalizes the MCP tool param shape
+  // (contact_id / deal_id → object_id, tool-specific object_type).
+  async function hubspotGetById(objectType, params) {
+    if (!window.netlifyIdentity) throw new Error('Netlify Identity widget not loaded.');
+    const user = window.netlifyIdentity.currentUser();
+    if (!user) throw new Error('Not authenticated. Please log in.');
+    const jwt = await user.jwt();
+    // Normalize params: hubspot_get_contact passes { contact_id }, hubspot_get_deal
+    // passes { deal_id }, hubspot_get_custom_object passes { object_type, object_id, ... }.
+    const p = params || {};
+    const body = {
+      object_type: p.object_type || objectType,
+      object_id: p.object_id || p.contact_id || p.deal_id || p.id,
+      properties: p.properties,
+      associations: p.associations
+    };
+    const response = await fetch('/api/hubspot-get', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${jwt}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!response.ok) {
+      let errData = {};
+      try { errData = await response.json(); } catch (e) {}
+      let detailMsg = '';
+      if (errData.detail) {
+        if (typeof errData.detail === 'string') detailMsg = errData.detail;
+        else if (errData.detail.message) detailMsg = errData.detail.message;
+        else detailMsg = JSON.stringify(errData.detail).slice(0, 200);
+      }
+      throw new Error(`HubSpot GET failed (${response.status}): ${errData.error || response.statusText}${detailMsg ? ' — ' + detailMsg : ''}`);
+    }
+    const data = await response.json();
+    // Expose MCP envelope shape for artifacts that access res.structuredContent /
+    // res.content[0].text. Build the stringified fallback BEFORE adding the self-ref
+    // to avoid circular JSON.
+    const envelopeText = JSON.stringify(data);
+    data.structuredContent = data;
+    data.content = [{ type: 'text', text: envelopeText }];
+    return data;
+  }
+
   // HubSpot associations (object-to-object walks)
   async function hubspotAssociations(params) {
     if (!window.netlifyIdentity) {
@@ -211,6 +255,18 @@
       if (toolName.includes('hubspot_get_custom_object_associations')) {
         return hubspotAssociations(params);
       }
+      // GET-by-id routes for the Top 6 Account Map dashboard.
+      // hubspot_get_custom_object_associations is matched ABOVE this one — so
+      // this hubspot_get_custom_object match won't accidentally intercept it.
+      if (toolName.includes('hubspot_get_contact')) {
+        return hubspotGetById('contacts', params);
+      }
+      if (toolName.includes('hubspot_get_deal')) {
+        return hubspotGetById('deals', params);
+      }
+      if (toolName.includes('hubspot_get_custom_object')) {
+        return hubspotGetById(params && params.object_type, params);
+      }
       if (toolName.includes('gdrive_export_file')) {
         return gdriveExport(params);
       }
@@ -222,6 +278,7 @@
   window.hubspotSearch = hubspotSearch;
   window.hubspotOwners = hubspotOwners;
   window.hubspotAssociations = hubspotAssociations;
+  window.hubspotGetById = hubspotGetById;
   window.gdriveExport = gdriveExport;
 
   // Auth helpers used by tab pages

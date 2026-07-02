@@ -25,6 +25,11 @@
   to = "/.netlify/functions/hubspot-associations"
   status = 200
 
+[[redirects]]
+  from = "/api/hubspot-get"
+  to = "/.netlify/functions/hubspot-get"
+  status = 200
+
 [[headers]]
   for = "/*"
   [headers.values]
