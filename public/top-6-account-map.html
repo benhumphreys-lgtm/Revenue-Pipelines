@@ -335,7 +335,7 @@ function acctCell(o){
     '<div class="roll"><b>'+o.openDeals+'</b> open deals · <b>'+o.upMtgs+'</b> upcoming mtgs · <b>'+o.openLeads+'</b> open leads</div>'+
     '<div class="owners">'+chips+'</div>'+(o.err.length?'<div class="err">⚠ '+o.err.join(", ")+'</div>':'')+'</td>';
 }
-const ACTION_OWNERS=["Unassigned","Ben","Kyle","Dan","Stu"];
+const ACTION_OWNERS=["Unassigned","Dan","Kyle","Anne","Ben"];
 const ACTION_STATUS=["Not complete","In progress","Blocked","Complete"];
 function statusClass(s){ return ({"Not complete":"st-not","In progress":"st-prog","Blocked":"st-block","Complete":"st-done"})[s]||"st-not"; }
 function actionHtml(it,editable){
