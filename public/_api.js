@@ -229,7 +229,14 @@
       }
       throw new Error(`HubSpot associations failed (${response.status}): ${errData.error || response.statusText}${detailMsg ? ' — ' + detailMsg : ''}`);
     }
-    return response.json();
+    const data = await response.json();
+    // Expose MCP envelope shape for artifacts that access res.structuredContent /
+    // res.content[0].text. Without this, the Top 6 Account Map's rawCall unwrap
+    // returns undefined and every assoc() call silently returns empty results.
+    const envelopeText = JSON.stringify(data);
+    data.structuredContent = data;
+    data.content = [{ type: 'text', text: envelopeText }];
+    return data;
   }
 
   // Compat shim: lets the Cowork artifact code work with minimal changes.
