@@ -131,7 +131,8 @@ function initApp() {
 const SEARCH_TOOL="mcp__6b11666e-7029-4baf-a491-3791bd8d9175__hubspot_search_custom_objects";
 const OBJ="0-136";
 const P_TOPA="hs_v2_date_entered_new_stage_id_1318266061",P_TOPB="hs_v2_date_entered_attempting_stage_id_745667965",P_MIDA="hs_v2_date_entered_connected_stage_id_2058487257",P_MIDB="hs_v2_date_entered_qualified_stage_id_233247981";
-const PROPS=["hs_lead_name","hs_createdate","hs_pipeline_stage","hs_lead_type","hubspot_owner_id","origin","meeting_scheduled_date","hs_associated_company_name",P_TOPA,P_TOPB,P_MIDA,P_MIDB].join(",");
+const PROPS=["hs_lead_name","hs_createdate","hs_pipeline_stage","hs_pipeline","hs_lead_type","hubspot_owner_id","origin","meeting_scheduled_date","hs_associated_company_name",P_TOPA,P_TOPB,P_MIDA,P_MIDB].join(",");
+const EXCLUDE_PIPELINE="918742939"; // exclude the Prospecting Pipeline (patched: source had placeholder "lead-pipeline-id" for KEEP_PIPELINE)
 const SORTS='[{"propertyName":"hs_createdate","direction":"DESCENDING"}]';
 const HS_PORTAL="21389996",HS_LIST="https://app.hubspot.com/contacts/"+HS_PORTAL+"/objects/0-136/views/all/list";
 function leadUrl(n){return HS_LIST+"?query="+encodeURIComponent(n);}
@@ -210,10 +211,10 @@ function copyModal(title,text){
 
 async function fetchAll(){let after='',all=[],p=0;while(p<30){const a={object_type:OBJ,properties:PROPS,sorts:SORTS,limit:100};if(after)a.after=after;const r=unwrap(await window.cowork.callMcpTool(SEARCH_TOOL,a));if(!r||!Array.isArray(r.results))throw new Error('Unexpected HubSpot response');all=all.concat(r.results);p++;const nx=r.paging&&r.paging.next&&r.paging.next.after;if(!nx||r.results.length===0)break;after=nx;}return all;}
 let LEADS=[];
-async function load(){let recs;try{recs=await fetchAll();}catch(e){return fail("Couldn't read the HubSpot Leads object.<br><small>"+(e&&e.message?e.message:e)+"</small>");}if(!recs.length)return fail("HubSpot returned no leads.");LEADS=recs.map(norm);buildUI();}
+async function load(){let recs;try{recs=await fetchAll();}catch(e){return fail("Couldn't read the HubSpot Leads object.<br><small>"+(e&&e.message?e.message:e)+"</small>");}if(!recs.length)return fail("HubSpot returned no leads.");LEADS=recs.map(norm).filter(l=>l.pipeline!==EXCLUDE_PIPELINE);if(!LEADS.length)return fail("No leads found outside the Prospecting pipeline.");buildUI();}
 function fail(m){document.getElementById('content').innerHTML='<div class="error">⚠ '+m+'</div>';}
 function norm(r){const s=(r.hs_pipeline_stage||'').trim();const oid=(r.hubspot_owner_id||'').trim();
- return {name:(r.hs_lead_name||'(unnamed)').trim(),company:(r.hs_associated_company_name||'').trim(),stageRaw:s,stage:STAGE_LABELS[s]||(s?('Other: '+s):'(no stage)'),owner:OWNER_NAMES[oid]||(oid?('Owner '+oid):'(unassigned)'),origin:(r.origin||'').trim()||'Unspecified',typeRaw:(r.hs_lead_type||'').trim(),type:TYPE_LABELS[r.hs_lead_type]||(r.hs_lead_type||'(none)'),isAgency:(r.hs_lead_type==='Agency'),created:d10(r.hs_createdate),topB:d10(r[P_TOPB]),midA:d10(r[P_MIDA]),topA:d10(r[P_TOPA]),midB:d10(r[P_MIDB]),sched:d10(r.meeting_scheduled_date)};}
+ return {name:(r.hs_lead_name||'(unnamed)').trim(),company:(r.hs_associated_company_name||'').trim(),pipeline:(r.hs_pipeline||'').trim(),stageRaw:s,stage:STAGE_LABELS[s]||(s?('Other: '+s):'(no stage)'),owner:OWNER_NAMES[oid]||(oid?('Owner '+oid):'(unassigned)'),origin:(r.origin||'').trim()||'Unspecified',typeRaw:(r.hs_lead_type||'').trim(),type:TYPE_LABELS[r.hs_lead_type]||(r.hs_lead_type||'(none)'),isAgency:(r.hs_lead_type==='Agency'),created:d10(r.hs_createdate),topB:d10(r[P_TOPB]),midA:d10(r[P_MIDA]),topA:d10(r[P_TOPA]),midB:d10(r[P_MIDB]),sched:d10(r.meeting_scheduled_date)};}
 
 function inWeek(d,w){return d&&weekStart(d)===w;}
 function countWeek(leads,field,w){return leads.filter(l=>inWeek(l[field],w)).length;}
