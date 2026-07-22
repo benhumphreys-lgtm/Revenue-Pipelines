@@ -282,7 +282,7 @@ function initApp() {
   const PROPS = [
     "dealname","dealstage","dealtype","pipeline","hubspot_owner_id","closedate","createdate","hs_lastmodifieddate",
     "amount","brand_s_","company_primary","term__months_","mrr","arr",
-    "weighted_amount","weighted_mrr","deal_close_probability","forecast_category",
+    "weighted_amount","weighted_mrr","deal_close_probability","forecast_category","msa","go_live_date",
     "ad_product","brand_activation","prescriberpoint_pa","samples",
     "ad_product_revenue","brand_activation_revenue","prescriberpoint_pa_revenue","samples_revenue"
   ];
@@ -313,6 +313,8 @@ function initApp() {
     ["Manufacturer", "manufacturer"],
     ["Stage", "dealstage"],
     ["Type", "dealtype"],
+    ["MSA", "msa"],
+    ["Go Live Date", r => fmtDate(r.goLive)],
     ["Owner", "owner"],
     ["Brand(s)", "brands"],
     ["Close Date", r => fmtDate(r.closedate)],
@@ -469,6 +471,8 @@ function initApp() {
       weighted_mrr: num(p.weighted_mrr),
       probability: num(p.deal_close_probability),
       forecast: p.forecast_category || "",
+      msa: p.msa || "",
+      goLive: p.go_live_date || "",
       ad_pct: num(p.ad_product),
       ba_pct: num(p.brand_activation),
       pa_pct: num(p.prescriberpoint_pa),
@@ -601,6 +605,8 @@ function initApp() {
       flagCell(r.manufacturer, htmlEscapeForGrid, "Manufacturer"),
       r.dealstage,
       r.dealtype,
+      (r.msa || "—"),
+      fmtDate(r.goLive),
       r.owner,
       flagCell(r.brands, htmlEscapeForGrid, "Brand(s)"),
       flagCell(r.closedate, fmtDate, "Close Date"),
@@ -625,7 +631,10 @@ function initApp() {
             return gridjs.html(`<a href="${url}" target="_blank" rel="noopener" style="color:#2563eb;text-decoration:none;">${cell}</a>`);
         }},
         { name: "Manufacturer", formatter: htmlFmt },
-        "Stage", "Type", "Owner",
+        "Stage", "Type",
+        { name: "MSA", attributes: { style: "text-align:center" } },
+        { name: "Go-Live", attributes: { style: "text-align:right" } },
+        "Owner",
         { name: "Brand(s)", formatter: htmlFmt },
         { name: "Close", formatter: htmlFmt },
         { name: "Amount", attributes: { style: "text-align:right" }, formatter: htmlFmt },
@@ -645,7 +654,7 @@ function initApp() {
         { name: "Samples Revenue", attributes: { style: "text-align:right" } },
         { name: "id", hidden: true }
       ],
-      data, sort: true, search: true, fixedHeader: true,
+      data, sort: true, search: true, fixedHeader: true, height: "640px",
       pagination: { limit: 25, summary: true }
     });
     grid.render(target);
