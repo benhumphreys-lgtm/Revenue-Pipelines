@@ -57,10 +57,12 @@
   .source { font-size: 11px; color:#94a3b8; margin-top: 8px; }
   .loading { padding: 24px; text-align: center; color:#64748b; }
   .error { padding: 16px; background:#fef2f2; color:#991b1b; border-radius: 8px; font-size: 13px; }
-  .gridjs-wrapper { box-shadow: none !important; overflow-x: auto; }
+  .gridjs-wrapper { box-shadow: none !important; overflow: auto; }
   .gridjs-table { font-size: 12px; }
   .gridjs-th, .gridjs-td { padding: 8px 10px; min-width: 84px; }
-  .gridjs-th { background:#f8fafc; color:#475569; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; vertical-align: bottom; white-space: normal; }
+  /* Freeze the header row: every header cell sticks to the top of the scroll area,
+     stays above the body (z-index), and has an opaque background so rows don't show through. */
+  .gridjs-th { background:#f8fafc; color:#475569; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; vertical-align: bottom; white-space: normal; position: sticky; top: 0; z-index: 3; box-shadow: inset 0 -1px 0 #cbd5e1; }
   /* Let header labels wrap onto multiple lines instead of truncating with an ellipsis */
   .gridjs-th .gridjs-th-content { white-space: normal; overflow: visible; text-overflow: clip; word-break: normal; overflow-wrap: break-word; }
 
@@ -232,15 +234,6 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  window.appAuth.init(user => {
-    document.getElementById('auth-loading').style.display = 'none';
-    document.getElementById('main-content').style.display = 'block';
-    document.getElementById('user-email').textContent = user.email;
-    initApp();
-  });
-});
-
 function initApp() {
   // ============ STATIC REFERENCE DATA (from HubSpot get_properties) ============
   // Synced to live HubSpot dealstage definitions (verified 2026-06-10).
@@ -842,6 +835,15 @@ function initApp() {
     wireExport("export-agencyrfp", () => agencyRfpRows, "brand_direct_agency_rfp");
   })();
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  window.appAuth.init(user => {
+    document.getElementById('auth-loading').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+    document.getElementById('user-email').textContent = user.email;
+    initApp();
+  });
+});
 </script>
 </body>
 </html>
