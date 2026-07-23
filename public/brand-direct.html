@@ -81,6 +81,24 @@
   .export-btn { background:#2563eb; color:#fff; border:none; border-radius:6px; padding:7px 14px; font-size:12px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
   .export-btn:hover { background:#1d4ed8; }
   .export-btn:disabled { background:#cbd5e1; cursor:not-allowed; }
+
+  /* Exec scorecard: Plan vs Pipeline */
+  .scorecard { display:grid; grid-template-columns: 1fr 1fr; gap:18px; margin-bottom:18px; }
+  @media (max-width: 900px) { .scorecard { grid-template-columns: 1fr; } }
+  .sc-zone { background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:16px 18px; }
+  .sc-zone.plan { border-top:3px solid #7c3aed; }
+  .sc-zone.pipe { border-top:3px solid #2563eb; }
+  .sc-zone h3 { font-size:12px; text-transform:uppercase; letter-spacing:0.05em; color:#475569; margin:0 0 14px; display:flex; align-items:center; gap:8px; }
+  .sc-zone h3 .tag { font-size:10px; font-weight:700; padding:2px 8px; border-radius:999px; letter-spacing:0.03em; }
+  .sc-zone.plan .tag { background:#ede9fe; color:#6d28d9; }
+  .sc-zone.pipe .tag { background:#dbeafe; color:#1d4ed8; }
+  .sc-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px 12px; }
+  .sc-kpi .lbl { font-size:11px; color:#64748b; margin-bottom:4px; line-height:1.25; }
+  .sc-kpi .val { font-size:21px; font-weight:700; color:#0f172a; font-variant-numeric:tabular-nums; }
+  .sc-kpi .val.gap { color:#b91c1c; }
+  .sc-kpi .val.cov { color:#047857; }
+  .sc-kpi .sub { font-size:10px; color:#94a3b8; margin-top:3px; }
+  .sc-foot { font-size:11px; color:#94a3b8; margin-top:12px; line-height:1.4; }
 </style>
 </head>
 <body>
@@ -121,6 +139,32 @@
 
   <!-- ===================== SUMMARY ===================== -->
   <div class="pane active" id="pane-summary">
+
+    <!-- ============ EXEC SCORECARD: PLAN vs PIPELINE ============ -->
+    <div class="scorecard">
+      <div class="sc-zone plan">
+        <h3>Booked / Plan <span class="tag">FINANCE · SET</span></h3>
+        <div class="sc-grid">
+          <div class="sc-kpi"><div class="lbl">FY26 ARR Goal</div><div class="val" id="sc-goal">—</div></div>
+          <div class="sc-kpi"><div class="lbl">Current Booked ARR</div><div class="val" id="sc-current">—</div><div class="sub" id="sc-current-sub">company-wide run rate</div></div>
+          <div class="sc-kpi"><div class="lbl">Gap to Goal</div><div class="val gap" id="sc-gap">—</div></div>
+        </div>
+        <div class="sc-foot" id="sc-plan-foot"></div>
+      </div>
+      <div class="sc-zone pipe">
+        <h3>Pipeline <span class="tag">LIVE · HUBSPOT</span></h3>
+        <div class="sc-grid">
+          <div class="sc-kpi"><div class="lbl">Total Open (ex On-Hold)</div><div class="val" id="sc-open">—</div></div>
+          <div class="sc-kpi"><div class="lbl">Net-New (ex roll-over &amp; On-Hold)</div><div class="val" id="sc-netnew">—</div></div>
+          <div class="sc-kpi"><div class="lbl">Renewal / Roll-Over</div><div class="val" id="sc-roll">—</div></div>
+          <div class="sc-kpi"><div class="lbl">Coverage (Net-New &divide; Gap)</div><div class="val cov" id="sc-cov">—</div></div>
+          <div class="sc-kpi"><div class="lbl">FY26 New Bookings (closed-won)</div><div class="val" id="sc-bookings">—</div><div class="sub">this pipeline</div></div>
+          <div class="sc-kpi"><div class="lbl">On-Hold (excluded above)</div><div class="val" id="sc-onhold">—</div></div>
+        </div>
+        <div class="sc-foot" id="sc-pipe-foot"></div>
+      </div>
+    </div>
+
     <div class="panel">
       <h2>Headline · Live From HubSpot</h2>
       <div class="kpi-row">
@@ -128,7 +172,7 @@
         <div class="kpi"><div class="lbl">Brands</div><div class="val" id="kpi-brands">—</div><div class="sublbl">Unique</div></div>
         <div class="kpi"><div class="lbl">Manufacturers</div><div class="val" id="kpi-mfrs">—</div><div class="sublbl">Unique</div></div>
         <div class="kpi"><div class="lbl">Pipeline (TCV)</div><div class="val" id="kpi-tcv">—</div><div class="sublbl" id="kpi-tcv-full">—</div></div>
-        <div class="kpi"><div class="lbl">Total ARR</div><div class="val" id="kpi-arr">—</div><div class="sublbl" id="kpi-arr-full">—</div></div>
+        <div class="kpi"><div class="lbl">Open Pipeline ARR</div><div class="val" id="kpi-arr">—</div><div class="sublbl" id="kpi-arr-full">—</div><div class="sublbl" style="color:#b45309;">not booked — open deals</div></div>
         <div class="kpi"><div class="lbl">Weighted</div><div class="val" id="kpi-wtd">—</div><div class="sublbl" id="kpi-wtd-full">—</div></div>
       </div>
       <div class="note" id="scope-note">Scope: <code>pipeline = Brand (Direct)</code>, <code>dealtype &ne; Existing (Roll-Over)</code>, <code>dealtype &ne; Agency RFP</code> (matches both <code>"Agency RFP"</code> and <code>"Agency (RFP)"</code> spellings — see the dedicated <strong>Agency RFP</strong> sub-tab), excluding Closed Won / Closed Lost.</div>
@@ -188,7 +232,7 @@
       <div class="kpi-row" style="grid-template-columns: repeat(4, 1fr); margin-top: 16px;">
         <div class="kpi"><div class="lbl">Deals</div><div class="val" id="p-count">—</div></div>
         <div class="kpi"><div class="lbl">TCV</div><div class="val" id="p-tcv">—</div></div>
-        <div class="kpi"><div class="lbl">ARR</div><div class="val" id="p-arr">—</div></div>
+        <div class="kpi"><div class="lbl">Open Pipeline ARR</div><div class="val" id="p-arr">—</div></div>
         <div class="kpi"><div class="lbl">Weighted</div><div class="val" id="p-wtd">—</div></div>
       </div>
     </div>
@@ -205,7 +249,7 @@
       <div class="kpi-row" style="grid-template-columns: repeat(4, 1fr); margin-top: 16px;">
         <div class="kpi"><div class="lbl">Deals</div><div class="val" id="r-count">—</div></div>
         <div class="kpi"><div class="lbl">TCV</div><div class="val" id="r-tcv">—</div></div>
-        <div class="kpi"><div class="lbl">ARR</div><div class="val" id="r-arr">—</div></div>
+        <div class="kpi"><div class="lbl">Open Pipeline ARR</div><div class="val" id="r-arr">—</div></div>
         <div class="kpi"><div class="lbl">Weighted</div><div class="val" id="r-wtd">—</div></div>
       </div>
     </div>
@@ -222,7 +266,7 @@
       <div class="kpi-row" style="grid-template-columns: repeat(4, 1fr); margin-top: 16px;">
         <div class="kpi"><div class="lbl">Deals</div><div class="val" id="a-count">—</div></div>
         <div class="kpi"><div class="lbl">TCV</div><div class="val" id="a-tcv">—</div></div>
-        <div class="kpi"><div class="lbl">ARR</div><div class="val" id="a-arr">—</div></div>
+        <div class="kpi"><div class="lbl">Open Pipeline ARR</div><div class="val" id="a-arr">—</div></div>
         <div class="kpi"><div class="lbl">Weighted</div><div class="val" id="a-wtd">—</div></div>
       </div>
     </div>
@@ -271,6 +315,19 @@ function initApp() {
   };
   const BRAND_DIRECT_PIPELINE_ID = "74379150";
   const CLOSED_STAGE_IDS = ["143017564", "143017565"];
+  const CLOSED_WON_STAGE_ID = "143017564";
+  const ONHOLD_STAGE_LABEL = "On Hold";   // maps from dealstage 972641437
+  const FY_START = "2026-01-01";           // FY26 start for closed-won bookings
+
+  // ===== FINANCE-SET PLAN INPUTS (not derivable from this pipeline) =====
+  // Current Booked ARR is a COMPANY-WIDE booked run-rate owned by finance
+  // (includes prior-year live contracts, other pipelines, and restatements),
+  // so it is set here rather than summed from HubSpot. Update these when finance restates.
+  const PLAN = {
+    fy26GoalArr:      18000000,   // FY26 ARR goal
+    currentBookedArr: 15300000,   // company-wide booked ARR run-rate
+    currentArrAsOf:   "Jul 22, 2026"
+  };
 
   const PROPS = [
     "dealname","dealstage","dealtype","pipeline","hubspot_owner_id","closedate","createdate","hs_lastmodifieddate",
@@ -439,6 +496,34 @@ function initApp() {
     }
     if (resp.results || resp.owners) return resp;
     return {};
+  }
+
+  // Live FY26 closed-won bookings (this pipeline). Sums ARR of Closed Won deals
+  // with a close date on/after the fiscal-year start. Returns null on failure.
+  async function loadBookings() {
+    try {
+      const resp = await window.cowork.callMcpTool(
+        "mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects",
+        {
+          objectType: "deals",
+          filterGroups: [{
+            filters: [
+              { propertyName: "pipeline", operator: "EQ", value: BRAND_DIRECT_PIPELINE_ID },
+              { propertyName: "dealstage", operator: "EQ", value: CLOSED_WON_STAGE_ID },
+              { propertyName: "closedate", operator: "GTE", value: FY_START }
+            ]
+          }],
+          properties: ["arr", "amount", "deal_currency_code"],
+          limit: 200,
+          chatInsights: { userIntent: "FY26 closed-won bookings for exec scorecard", satisfaction: "NEUTRAL" }
+        }
+      );
+      const data = parseToolResult(resp);
+      return (data.results || []).reduce((s, d) => s + (Number(d.properties && d.properties.arr) || 0), 0);
+    } catch (e) {
+      console.warn("Bookings load failed.", e);
+      return null;
+    }
   }
 
   // ============ ROW NORMALIZATION ============
@@ -676,6 +761,42 @@ function initApp() {
     const pipeRows       = normalized.filter(r => r.dealtype !== "Existing (Roll-Over)" && !isAgencyRfp(r.dealtype));
     const rollRows       = normalized.filter(r => r.dealtype === "Existing (Roll-Over)");
     const agencyRfpRows  = normalized.filter(r => isAgencyRfp(r.dealtype));
+
+    // ===== EXEC SCORECARD: Plan vs Pipeline =====
+    // Pipeline side is fully live. Definitions match the leadership framing:
+    //   Total Open   = all open deals EXCEPT On-Hold
+    //   Net-New      = Total Open MINUS renewals (roll-over)   [includes Agency RFP]
+    //   Roll-Over    = renewal book
+    //   Coverage     = Net-New TCV / Gap-to-Goal
+    const onHoldRows      = normalized.filter(r => r.dealstage === ONHOLD_STAGE_LABEL);
+    const openExHold      = normalized.filter(r => r.dealstage !== ONHOLD_STAGE_LABEL);
+    const rollExHold      = openExHold.filter(r => r.dealtype === "Existing (Roll-Over)");
+    const totalOpenExHold = sum(openExHold, "amount");
+    const rollTcv         = sum(rollExHold, "amount");
+    const netNewTcv       = totalOpenExHold - rollTcv;
+    const onHoldTcv       = sum(onHoldRows, "amount");
+    const gapToGoal       = PLAN.fy26GoalArr - PLAN.currentBookedArr;
+    const coverage        = gapToGoal > 0 ? (netNewTcv / gapToGoal) : null;
+
+    document.getElementById("sc-goal").textContent    = fmtMoney(PLAN.fy26GoalArr);
+    document.getElementById("sc-current").textContent = fmtMoney(PLAN.currentBookedArr);
+    document.getElementById("sc-current-sub").textContent = "company-wide run rate · as of " + PLAN.currentArrAsOf;
+    document.getElementById("sc-gap").textContent     = fmtMoney(gapToGoal);
+    document.getElementById("sc-open").textContent    = fmtMoney(totalOpenExHold);
+    document.getElementById("sc-netnew").textContent  = fmtMoney(netNewTcv);
+    document.getElementById("sc-roll").textContent    = fmtMoney(rollTcv);
+    document.getElementById("sc-cov").textContent     = coverage != null ? coverage.toFixed(1) + "x" : "—";
+    document.getElementById("sc-onhold").textContent  = fmtMoney(onHoldTcv);
+    document.getElementById("sc-plan-foot").textContent =
+      "Goal & Current ARR are finance-set inputs (company-wide booked run rate). Gap = Goal − Current.";
+    document.getElementById("sc-pipe-foot").textContent =
+      "Live from HubSpot Brand (Direct), TCV. Total Open excludes On-Hold; Net-New = open ex roll-over & On-Hold; Coverage = Net-New ÷ Gap.";
+
+    // Live FY26 closed-won bookings (async; fills in when ready)
+    loadBookings().then(v => {
+      const el = document.getElementById("sc-bookings");
+      if (el) el.textContent = (v == null) ? "n/a" : fmtMoney(v);
+    });
 
     // ===== THIS WEEK: deals created in last 7 days (Pipeline + Roll-Over + Agency RFP combined) =====
     const now = new Date();

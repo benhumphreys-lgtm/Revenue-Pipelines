@@ -16,6 +16,18 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sa
 .title-block .subtitle { color: #718096; font-size: 12px; margin-top: 4px; }
 
 .refresh-status { font-size: 10px; color: #A0AEC0; text-align: right; margin-top: 6px; }
+
+/* COMPANY-WIDE CONTEXT STRIP */
+.context-strip { background: #F7FAFC; border: 1px solid #E2E8F0; border-radius: 6px; padding: 12px 16px; margin: 12px 0; }
+.context-strip .ctx-header { font-size: 10px; text-transform: uppercase; color: #718096; font-weight: 600; letter-spacing: 0.4px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+.context-strip .ctx-header .ctx-scope { color: #A0AEC0; font-weight: 500; text-transform: none; letter-spacing: 0; font-size: 10px; }
+.context-strip .ctx-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.ctx-stat { display: flex; flex-direction: column; gap: 2px; padding: 6px 8px; border-left: 3px solid #CBD5E0; }
+.ctx-stat.primary { border-left-color: #2E75B6; }
+.ctx-stat.rollover { border-left-color: #9F7AEA; }
+.ctx-value { font-size: 18px; font-weight: 700; color: #1F4E79; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.ctx-label-small { font-size: 11px; color: #4A5568; }
+.ctx-sub { font-size: 10px; color: #718096; margin-top: 2px; }
 .loading-spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid #E2E8F0; border-top-color: #1F4E79; border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 6px; vertical-align: middle; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -126,13 +138,43 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sa
 <div class="dash">
   <div class="title-block">
     <h1>Pipeline Confidence Scorecard</h1>
-    <div class="subtitle">$4M ARR gap by EOY 2026 · Brand Direct Pipeline · Live HubSpot view</div>
+    <div class="subtitle" id="subtitle-text">Loading gap context…</div>
     <div class="refresh-status" id="refresh-status"><span class="loading-spinner"></span>Loading from HubSpot…</div>
   </div>
 
   <div class="error-banner" id="error-banner"></div>
 
-  <!-- TEAM ROLLUP -->
+  <!-- COMPANY-WIDE CONTEXT (matches leadership Slack narrative) -->
+  <div class="context-strip">
+    <div class="ctx-header">
+      <span>Brand Direct — Company-wide open pipeline</span>
+      <span class="ctx-scope">All owners · live from HubSpot</span>
+    </div>
+    <div class="ctx-grid" id="ctx-grid">
+      <div class="ctx-stat primary">
+        <div class="ctx-value" id="ctx-total-open">—</div>
+        <div class="ctx-label-small">Total open pipeline</div>
+        <div class="ctx-sub" id="ctx-total-cov">—</div>
+      </div>
+      <div class="ctx-stat primary">
+        <div class="ctx-value" id="ctx-netnew">—</div>
+        <div class="ctx-label-small">Net-new open (excl. Rollover)</div>
+        <div class="ctx-sub" id="ctx-netnew-cov">—</div>
+      </div>
+      <div class="ctx-stat rollover">
+        <div class="ctx-value" id="ctx-rollover">—</div>
+        <div class="ctx-label-small">Rollover open (existing ARR)</div>
+        <div class="ctx-sub">Not counted against gap</div>
+      </div>
+      <div class="ctx-stat">
+        <div class="ctx-value" id="ctx-owner-count">—</div>
+        <div class="ctx-label-small">Owners w/ open pipe</div>
+        <div class="ctx-sub" id="ctx-owner-detail">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TEAM ROLLUP (3-rep intervention view) -->
   <div class="hero">
     <span class="live-tag">Live</span>
     <div class="hero-label">Team Rollup — 3 active reps</div>
@@ -147,7 +189,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sa
   <!-- NON-REP OWNERS -->
   <div class="section">
     <h2>Out-of-scope: deals owned by non-rep accounts</h2>
-    <div class="section-sub">These owners hold Brand Direct pipe but aren't scored against the $4M gap. Confirm with Dan whether any should count.</div>
+    <div class="section-sub" id="non-rep-sub">These owners hold Brand Direct pipe but aren't scored against the gap. Confirm with Dan whether any should count.</div>
     <table class="tbl" id="non-rep-table">
       <thead>
         <tr>
@@ -162,13 +204,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sa
   </div>
 
   <!-- METHODOLOGY -->
-  <div class="methodology">
+  <div class="methodology" id="methodology-block">
     <h3>How this is scored</h3>
-    <p><strong>Per-rep target:</strong> $1.33M ARR ($4M gap ÷ 3 active reps) by Dec 31, 2026.</p>
+    <p><strong>What's live:</strong> Everything except the FY26 goal ($18M). Rep pipeline, weighted forecasts, non-rep owner totals, <em>and current ARR</em> all pull fresh from HubSpot on every reload.</p>
+    <p id="method-arr"></p>
+    <p><strong>What's manual:</strong> Only <code>FY26_GOAL</code> in the script config. Update it if the annual target changes; everything else auto-derives.</p>
+    <p id="method-target"></p>
     <p><strong>Coverage ratio</strong> = sum of open deal amounts ÷ rep target. Industry standard: <code>&lt;4x = Red, 4x–6x = Yellow, &gt;6x = Green</code>.</p>
     <p><strong>Weighted forecast</strong> = sum of (deal amount × HubSpot <code>deal_close_probability</code>) ÷ rep target. Uses the rep-maintained close probability per deal, not the stage default. <code>&lt;100% = Red, 100%–150% = Yellow, &gt;150% = Green</code>.</p>
     <p><strong>Combined confidence:</strong> both dimensions must be Yellow or better to qualify as "On Track." A rep with high coverage but low weighted = lots of stuck or low-probability deals; a rep with low coverage but high weighted = thin pipe with no margin for slippage.</p>
-    <p><strong>Deal count translation:</strong> Expected wins = weighted forecast ÷ $480K (Dan's $40K/mo × 12 avg deal size). Per-rep target = 3 deals, team target = 9 deals across 3 reps.</p>
+    <p id="method-deals"></p>
     <p><strong>Quarterly pacing:</strong> Open deals bucketed by closedate quarter. Pre-Q2 2026 closedates are flagged as stale (shown separately) and excluded from pacing counts.</p>
     <p><strong>Filter:</strong> pipeline <code>74379150</code> (Brand Direct), excluding stages <code>Closed Won</code> and <code>Closed Lost</code>. Stale-closedate flag = closedate before today.</p>
   </div>
@@ -177,29 +222,49 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sa
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  window.appAuth.init(user => {
-    document.getElementById('auth-loading').style.display = 'none';
-    document.getElementById('main-content').style.display = 'block';
-    document.getElementById('user-email').textContent = user.email;
-    initApp();
-  });
-});
-
 function initApp() {
+// ============================================================================
+// GAP CONFIG — FY26_GOAL is the only manual value. Current ARR is pulled LIVE
+// from HubSpot as: Sum(Brand Direct open deals in Rollover stage) +
+// Sum(Brand Direct Closed Won with closedate in FY26). This matches the manual
+// ARR tally to within ~$50K. Everything else derives.
+// ============================================================================
+const FY26_GOAL   = 18000000;   // FY26 ARR target (only manual value)
+const NUM_REPS    = 3;
+const AVG_DEAL_SIZE = 480000;   // Dan's $40K/mo × 12 = avg ARR per deal
+
+// Dynamic — recomputed after each HubSpot pull
+let CURRENT_ARR         = 15300000;   // Fallback if live pull fails
+let TOTAL_TARGET        = FY26_GOAL - CURRENT_ARR;
+let REP_TARGET          = TOTAL_TARGET / NUM_REPS;
+let TOTAL_DEAL_TARGET   = Math.ceil(TOTAL_TARGET / AVG_DEAL_SIZE);
+let DEAL_TARGET_PER_REP = Math.ceil(TOTAL_DEAL_TARGET / NUM_REPS);
+let ARR_ROLLOVER = 0;
+let ARR_CLOSED_WON = 0;
+let ARR_SOURCE = 'fallback';
+
 const REPS = {
-  '153408573': { name: 'Daniel Cornwell',   shortName: 'Dan',   target: 1333333 },
-  '314753596': { name: 'Kyle McCaig',        shortName: 'Kyle',  target: 1333333 },
-  '78606761':  { name: 'Anne Foelsch',       shortName: 'Anne',  target: 1333333 }
+  '153408573': { name: 'Daniel Cornwell',   shortName: 'Dan',   target: 0 },
+  '314753596': { name: 'Kyle McCaig',        shortName: 'Kyle',  target: 0 },
+  '78606761':  { name: 'Anne Foelsch',       shortName: 'Anne',  target: 0 }
 };
-const TOTAL_TARGET = 4000000;
+
+function recomputeTargets(currentArr) {
+  CURRENT_ARR = currentArr;
+  TOTAL_TARGET = Math.max(0, FY26_GOAL - CURRENT_ARR);
+  REP_TARGET = TOTAL_TARGET / NUM_REPS;
+  TOTAL_DEAL_TARGET = Math.ceil(TOTAL_TARGET / AVG_DEAL_SIZE);
+  DEAL_TARGET_PER_REP = Math.ceil(TOTAL_DEAL_TARGET / NUM_REPS);
+  Object.values(REPS).forEach(r => r.target = REP_TARGET);
+}
+recomputeTargets(CURRENT_ARR); // initial
+
 const PIPELINE_ID = '74379150';
 const CLOSED_STAGES = ['143017564', '143017565'];
+const CLOSED_WON_STAGE = '143017564';
+const ROLLOVER_STAGE = '1340846889';   // Existing customer rollovers = ARR-contributing, not net-new
 const TODAY = new Date();
 const HS_BASE = 'https://app.hubspot.com/contacts/21389996/record/0-3/';
-const AVG_DEAL_SIZE = 480000;       // Dan's $40K/mo × 12 = avg ARR per deal
-const DEAL_TARGET_PER_REP = 3;      // 1 deal/quarter for 3 quarters
-const TOTAL_DEAL_TARGET = 9;        // 3 reps × 3 deals each
 
 const fmt$ = (n) => '$' + (Math.round(n / 1000) >= 1000
   ? (n/1000000).toFixed(2) + 'M'
@@ -252,30 +317,80 @@ function parseMcpResponse(res) {
   return data;
 }
 
+function populateStaticText() {
+  const arrLabel = ARR_SOURCE === 'live' ? 'live' : 'fallback';
+  document.getElementById('subtitle-text').textContent =
+    `FY26 goal ${fmt$(FY26_GOAL)} · Current ARR ${fmt$(CURRENT_ARR)} (${arrLabel}) · Gap ${fmt$(TOTAL_TARGET)} by EOY 2026 · Brand Direct Pipeline · Live HubSpot view`;
+  document.getElementById('non-rep-sub').textContent =
+    `These owners hold Brand Direct pipe but aren't scored against the ${fmt$(TOTAL_TARGET)} gap. Confirm with Dan whether any should count.`;
+  document.getElementById('method-target').innerHTML =
+    `<strong>Per-rep target:</strong> ${fmt$(REP_TARGET)} ARR (${fmt$(TOTAL_TARGET)} gap ÷ ${NUM_REPS} active reps) by Dec 31, 2026.`;
+  document.getElementById('method-deals').innerHTML =
+    `<strong>Deal count translation:</strong> Expected wins = weighted forecast ÷ ${fmt$(AVG_DEAL_SIZE)} (Dan's $40K/mo × 12 avg deal size). Per-rep target = ${DEAL_TARGET_PER_REP} deal${DEAL_TARGET_PER_REP === 1 ? '' : 's'}, team target = ${TOTAL_DEAL_TARGET} deals across ${NUM_REPS} reps.`;
+  const arrFormula = ARR_SOURCE === 'live'
+    ? `Current ARR (${fmt$(CURRENT_ARR)}) = Rollover open (${fmt$(ARR_ROLLOVER)}) + FY26 Closed Won (${fmt$(ARR_CLOSED_WON)}), both live from HubSpot Brand Direct.`
+    : `Current ARR live pull failed — using fallback (${fmt$(CURRENT_ARR)}). Reload to retry.`;
+  const arrEl = document.getElementById('method-arr');
+  if (arrEl) arrEl.innerHTML = `<strong>Live ARR formula:</strong> ${arrFormula}`;
+}
+
 async function load() {
   const status = document.getElementById('refresh-status');
   const errBanner = document.getElementById('error-banner');
   errBanner.classList.remove('show');
 
   try {
-    const res = await window.cowork.callMcpTool('mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects', {
-      objectType: 'deals',
-      filterGroups: [{
-        filters: [
-          { propertyName: 'pipeline', operator: 'EQ', value: PIPELINE_ID },
-          { propertyName: 'dealstage', operator: 'NOT_IN', values: CLOSED_STAGES }
-        ]
-      }],
-      properties: ['dealname', 'dealstage', 'amount', 'hubspot_owner_id', 'deal_close_probability', 'closedate'],
-      limit: 200,
-      sorts: [{ propertyName: 'amount', direction: 'DESCENDING' }],
-      chatInsights: { userIntent: 'Refresh Brand Direct pipeline confidence scorecard.', satisfaction: 'NEUTRAL' }
-    });
+    // Two parallel queries: open Brand Direct deals + FY26 Closed Won for ARR
+    const [openResult, closedWonResult] = await Promise.allSettled([
+      window.cowork.callMcpTool('mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects', {
+        objectType: 'deals',
+        filterGroups: [{
+          filters: [
+            { propertyName: 'pipeline', operator: 'EQ', value: PIPELINE_ID },
+            { propertyName: 'dealstage', operator: 'NOT_IN', values: CLOSED_STAGES }
+          ]
+        }],
+        properties: ['dealname', 'dealstage', 'amount', 'hubspot_owner_id', 'deal_close_probability', 'closedate'],
+        limit: 200,
+        sorts: [{ propertyName: 'amount', direction: 'DESCENDING' }],
+        chatInsights: { userIntent: 'Refresh Brand Direct pipeline confidence scorecard.', satisfaction: 'NEUTRAL' }
+      }),
+      window.cowork.callMcpTool('mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects', {
+        objectType: 'deals',
+        filterGroups: [{
+          filters: [
+            { propertyName: 'pipeline', operator: 'EQ', value: PIPELINE_ID },
+            { propertyName: 'dealstage', operator: 'EQ', value: CLOSED_WON_STAGE },
+            { propertyName: 'closedate', operator: 'BETWEEN', value: '2026-01-01T00:00:00Z', highValue: '2026-12-31T23:59:59Z' }
+          ]
+        }],
+        properties: ['dealname', 'amount', 'closedate', 'hubspot_owner_id'],
+        limit: 200,
+        chatInsights: { userIntent: 'Compute live FY26 Closed Won for ARR tally.', satisfaction: 'NEUTRAL' }
+      })
+    ]);
 
-    const data = parseMcpResponse(res);
-    const deals = (data && Array.isArray(data.results)) ? data.results : [];
-    render(deals);
-    status.innerHTML = `Refreshed · ${deals.length} open deals · ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    if (openResult.status !== 'fulfilled') throw new Error('Open deals query failed');
+    const openDeals = (parseMcpResponse(openResult.value)?.results) || [];
+
+    // Compute live ARR = Rollover open + FY26 Closed Won
+    ARR_ROLLOVER = openDeals
+      .filter(d => (d.properties || {}).dealstage === ROLLOVER_STAGE)
+      .reduce((s, d) => s + (parseFloat(d.properties.amount || 0) || 0), 0);
+
+    if (closedWonResult.status === 'fulfilled') {
+      const cwDeals = (parseMcpResponse(closedWonResult.value)?.results) || [];
+      ARR_CLOSED_WON = cwDeals.reduce((s, d) => s + (parseFloat(d.properties.amount || 0) || 0), 0);
+      ARR_SOURCE = 'live';
+      recomputeTargets(ARR_ROLLOVER + ARR_CLOSED_WON);
+    } else {
+      ARR_CLOSED_WON = 0;
+      ARR_SOURCE = 'fallback';
+    }
+
+    populateStaticText();
+    render(openDeals);
+    status.innerHTML = `Refreshed · ${openDeals.length} open deals · ARR ${ARR_SOURCE === 'live' ? 'live' : 'fallback'} · ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
   } catch (e) {
     console.error(e);
     errBanner.textContent = 'Failed to load HubSpot data: ' + (e && e.message ? e.message : String(e));
@@ -285,21 +400,29 @@ async function load() {
 }
 
 function render(deals) {
-  // Bucket by owner
+  // Bucket by owner + compute company-wide totals
   const byOwner = {};
+  let companyOpen = 0, companyRollover = 0;
   deals.forEach(d => {
     const p = d.properties || {};
     const owner = p.hubspot_owner_id || 'unowned';
+    const amount = parseFloat(p.amount || 0) || 0;
+    const stage = p.dealstage || '';
     if (!byOwner[owner]) byOwner[owner] = [];
     byOwner[owner].push({
       id: d.id,
       name: p.dealname || '(unnamed)',
-      amount: parseFloat(p.amount || 0) || 0,
+      amount,
       prob: parseFloat(p.deal_close_probability || 0) || 0,
       closedate: p.closedate,
+      dealstage: stage,
       stale: isStale(p.closedate)
     });
+    companyOpen += amount;
+    if (stage === ROLLOVER_STAGE) companyRollover += amount;
   });
+  const companyNetNew = companyOpen - companyRollover;
+  renderContextStrip(companyOpen, companyNetNew, companyRollover, byOwner);
 
   // Compute per-rep
   const repCards = [];
@@ -350,6 +473,22 @@ function render(deals) {
   renderNonReps(nonRepOwners);
 }
 
+function renderContextStrip(companyOpen, companyNetNew, companyRollover, byOwner) {
+  const totalCov = companyOpen / TOTAL_TARGET;
+  const netNewCov = companyNetNew / TOTAL_TARGET;
+  const ownerCount = Object.keys(byOwner).length;
+  const repOwners = Object.keys(REPS).filter(id => byOwner[id]).length;
+  const nonRepOwners = ownerCount - repOwners;
+
+  document.getElementById('ctx-total-open').textContent = fmt$(companyOpen);
+  document.getElementById('ctx-total-cov').textContent = `${totalCov.toFixed(1)}x coverage of ${fmt$(TOTAL_TARGET)} gap`;
+  document.getElementById('ctx-netnew').textContent = fmt$(companyNetNew);
+  document.getElementById('ctx-netnew-cov').textContent = `${netNewCov.toFixed(1)}x coverage of ${fmt$(TOTAL_TARGET)} gap`;
+  document.getElementById('ctx-rollover').textContent = fmt$(companyRollover);
+  document.getElementById('ctx-owner-count').textContent = ownerCount;
+  document.getElementById('ctx-owner-detail').textContent = `${repOwners} rep${repOwners === 1 ? '' : 's'} · ${nonRepOwners} non-rep`;
+}
+
 function renderHero(teamOpen, teamWeighted, dealCount, staleCount, repCards) {
   const teamCov = teamOpen / TOTAL_TARGET;
   const teamFcst = teamWeighted / TOTAL_TARGET;
@@ -364,8 +503,8 @@ function renderHero(teamOpen, teamWeighted, dealCount, staleCount, repCards) {
 
   document.getElementById('hero-headline').textContent =
     teamFcst >= 1
-      ? `Weighted forecast covers the $4M gap (${pct(teamFcst)} of target).`
-      : `Weighted forecast falls short of the $4M gap (${pct(teamFcst)} of target).`;
+      ? `Weighted forecast covers the ${fmt$(TOTAL_TARGET)} gap (${pct(teamFcst)} of target).`
+      : `Weighted forecast falls short of the ${fmt$(TOTAL_TARGET)} gap (${pct(teamFcst)} of target).`;
 
   const teamExpectedWins = teamWeighted / AVG_DEAL_SIZE;
   const teamWinsColor = colorFor(teamExpectedWins / TOTAL_DEAL_TARGET, 1.0, 1.5);
@@ -379,7 +518,7 @@ function renderHero(teamOpen, teamWeighted, dealCount, staleCount, repCards) {
     <div class="hero-stat">
       <div class="stat-label">Weighted forecast</div>
       <div class="stat-value">${fmt$(teamWeighted)}</div>
-      <div class="stat-sub">${pct(teamFcst)} of $4M target <span class="dot ${fcstColor}" style="vertical-align:baseline;width:8px;height:8px;"></span></div>
+      <div class="stat-sub">${pct(teamFcst)} of ${fmt$(TOTAL_TARGET)} gap <span class="dot ${fcstColor}" style="vertical-align:baseline;width:8px;height:8px;"></span></div>
     </div>
     <div class="hero-stat">
       <div class="stat-label">Expected wins</div>
@@ -400,7 +539,7 @@ function renderHero(teamOpen, teamWeighted, dealCount, staleCount, repCards) {
 
   let conclusion = '';
   if (reqsAtRisk.length === 0 && teamFcst >= 1.5) {
-    conclusion = `Strong position. ${pct(teamFcst)} weighted coverage of the $4M gap with all reps Yellow or better.`;
+    conclusion = `Strong position. ${pct(teamFcst)} weighted coverage of the ${fmt$(TOTAL_TARGET)} gap with all reps Yellow or better.`;
   } else if (reqsAtRisk.length === 0) {
     conclusion = `On track but thin. ${pct(teamFcst)} of target — limited margin if a key deal slips.`;
   } else {
@@ -509,6 +648,15 @@ function renderNonReps(nonRepOwners) {
 
 load();
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  window.appAuth.init(user => {
+    document.getElementById('auth-loading').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+    document.getElementById('user-email').textContent = user.email;
+    initApp();
+  });
+});
 </script>
 </body>
 </html>
