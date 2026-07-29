@@ -30,6 +30,11 @@
   to = "/.netlify/functions/hubspot-get"
   status = 200
 
+[[redirects]]
+  from = "/api/gtm-events"
+  to = "/.netlify/functions/gtm-events"
+  status = 200
+
 [[headers]]
   for = "/*"
   [headers.values]
