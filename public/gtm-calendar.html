@@ -132,7 +132,7 @@ h1{font-size:18px;margin:0;font-weight:650}
 <div id="main-content" style="display:none">
 <div class="wrap">
   <h1>Integrated GTM Calendar</h1>
-  <p class="sub">Cross-team month view — press, social content, webinars, interviews, conferences &amp; more. Live from Google Calendar, Zoom &amp; HubSpot, plus curated conferences and anything you add or edit.</p>
+  <p class="sub">Cross-team month view — press, social content, webinars, interviews, conferences &amp; more.</p>
 
   <div class="bar">
     <div class="nav">
@@ -505,7 +505,7 @@ function updateStatus(msg,err){
   if(msg){st.className="status"+(err?" err":"");st.textContent=msg;return;}
   const nUser=loadUser().length; const nOv=Object.keys(loadOv()).length;
   st.className="status";
-  st.textContent="Live from Google Calendar, Zoom, HubSpot + "+SEED_EVENTS.length+" curated conferences"
+  st.textContent=SEED_EVENTS.length+" curated conferences"
     +(nUser?" + "+nUser+" added":"")+(nOv?" · "+nOv+" edited":"")+" · "+ALL.length+" moments.";
 }
 
