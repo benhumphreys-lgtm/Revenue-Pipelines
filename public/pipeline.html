@@ -81,6 +81,82 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sa
 
 .stale-flag { display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; font-size: 11px; color: #C53030; background: #FFF5F5; padding: 4px 8px; border-radius: 3px; border: 1px solid #FEB2B2; }
 
+/* PROGRESS BAR TO QUOTA */
+.progress-section { margin: 10px 0 14px; padding: 10px 12px; background: #F7FAFC; border-radius: 6px; border: 1px solid #EDF2F7; }
+.progress-labels-top { display: flex; justify-content: space-between; font-size: 11px; color: #4A5568; font-weight: 600; margin-bottom: 6px; }
+.progress-track { position: relative; height: 20px; background: #E2E8F0; border-radius: 4px; overflow: visible; display: flex; }
+.seg-delivered { background: #276749; height: 100%; }
+.seg-weighted  { background: #9AE6B4; height: 100%; }
+.target-line { position: absolute; top: -3px; bottom: -3px; right: 0; width: 2px; background: #1A202C; z-index: 2; border-radius: 1px; }
+.overflow-badge { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); background: #276749; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; font-weight: 600; z-index: 3; }
+.progress-labels-bot { display: flex; justify-content: space-between; font-size: 10.5px; color: #4A5568; margin-top: 6px; gap: 10px; }
+.progress-labels-bot span { display: flex; align-items: center; gap: 5px; }
+.legend-dot { display: inline-block; width: 8px; height: 8px; border-radius: 2px; }
+.legend-dot.delivered { background: #276749; }
+.legend-dot.weighted  { background: #9AE6B4; }
+
+/* WEEKLY ACTIVITY SPARKLINE */
+.activity-section { margin: 10px 0; padding: 10px 12px; background: #F7FAFC; border-radius: 6px; border: 1px solid #EDF2F7; }
+.activity-header { display: flex; justify-content: space-between; font-size: 11px; color: #4A5568; font-weight: 600; margin-bottom: 6px; }
+.activity-wow { color: #718096; font-weight: 500; font-style: italic; }
+.spark-container { display: flex; align-items: flex-end; justify-content: space-between; gap: 3px; height: 36px; margin: 4px 0; }
+.spark-bar { flex: 1; background: #2E75B6; border-radius: 2px 2px 0 0; min-height: 2px; opacity: 0.8; transition: opacity 0.2s; }
+.spark-bar:last-child { background: #1F4E79; opacity: 1; }
+.spark-bar:hover { opacity: 1; }
+.activity-footer { display: flex; justify-content: space-between; font-size: 10.5px; color: #4A5568; margin-top: 4px; align-items: center; gap: 6px; }
+.activity-footer .dot { display: inline-block; border-radius: 50%; vertical-align: middle; margin-right: 4px; }
+
+/* First-meetings bar chart */
+.fm-chart { position: relative; height: 52px; margin-top: 4px; }
+.fm-container { display: flex; align-items: flex-end; justify-content: space-between; gap: 4px; height: 100%; position: relative; z-index: 1; }
+.fm-bar-wrap { flex: 1; height: 100%; display: flex; align-items: flex-end; justify-content: center; }
+.fm-bar { width: 100%; background: #CBD5E0; border-radius: 2px 2px 0 0; position: relative; min-height: 3px; display: flex; align-items: flex-start; justify-content: center; padding-top: 2px; }
+.fm-bar.at-goal { background: #2F855A; }
+.fm-bar-label { font-size: 9px; font-weight: 700; color: white; line-height: 1; }
+.fm-bar:not(.at-goal) .fm-bar-label { color: #2D3748; }
+.fm-bar-wrap:last-child .fm-bar { background: #1F4E79; }
+.fm-bar-wrap:last-child .fm-bar.at-goal { background: #276749; }
+.fm-goal-line { position: absolute; left: 0; right: 0; height: 1px; background: #C53030; z-index: 2; border-top: 1px dashed #C53030; background: transparent; }
+.fm-goal-line::after { content: 'goal'; position: absolute; right: -2px; top: -14px; font-size: 9px; color: #C53030; font-weight: 600; background: white; padding: 0 3px; }
+.fm-week-labels { display: flex; justify-content: space-between; gap: 4px; margin-top: 2px; font-size: 9px; color: #A0AEC0; }
+.fm-week-labels span { flex: 1; text-align: center; }
+
+/* Activity row (this-week counts) */
+.activity-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; padding-top: 8px; border-top: 1px dashed #E2E8F0; }
+.act-stat { display: flex; flex-direction: column; align-items: center; padding: 4px; }
+.act-num { font-size: 15px; font-weight: 700; color: #1F4E79; line-height: 1.1; }
+.act-label { font-size: 9.5px; color: #718096; margin-top: 2px; text-align: center; }
+.act-link { display: flex; flex-direction: column; align-items: center; text-decoration: none; }
+.act-link:hover .act-num { color: #2E75B6; }
+.act-link:hover .act-label { color: #2E75B6; text-decoration: underline; }
+.click-count { color: #2E75B6; text-decoration: none; font-weight: 600; }
+.click-count:hover { text-decoration: underline; }
+.metric-link { text-decoration: none; cursor: pointer; }
+.metric-link:hover { opacity: 0.75; }
+.metric-link:hover .metric-ratio { text-decoration: underline; }
+.fc-link { text-decoration: none; cursor: pointer; }
+.fc-link:hover { text-decoration: underline; opacity: 0.85; }
+
+/* Email progress bar (25/wk goal) */
+.email-progress-wrap { margin: 8px 0 4px; padding: 8px 10px; background: #FFFFFF; border: 1px solid #EDF2F7; border-radius: 4px; }
+.email-progress-top { display: flex; justify-content: space-between; font-size: 11px; color: #4A5568; font-weight: 600; margin-bottom: 4px; }
+.email-progress-track { height: 10px; background: #E2E8F0; border-radius: 3px; overflow: hidden; }
+.email-progress-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+
+/* Stage breakdown tables (Lead + Deal) — stacked vertically so labels + amounts never clip */
+.stage-breakdown-wrap { margin: 12px 0; display: flex; flex-direction: column; gap: 10px; }
+.stage-table { background: #F7FAFC; border: 1px solid #E2E8F0; border-radius: 6px; padding: 8px 10px; min-width: 0; }
+.stage-table-header { font-size: 10px; text-transform: uppercase; color: #1F4E79; font-weight: 700; letter-spacing: 0.3px; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid #E2E8F0; }
+.stage-row { padding: 2px 0; }
+.stage-link { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 11.5px; color: #2D3748; text-decoration: none; padding: 3px 5px; border-radius: 3px; }
+.stage-link:hover { background: #EBF8FF; color: #1F4E79; }
+.stage-label { flex: 1 1 auto; min-width: 0; word-break: break-word; line-height: 1.3; }
+.stage-count { font-weight: 700; color: #1F4E79; min-width: 22px; text-align: right; flex: 0 0 auto; }
+.stage-count-amt { font-weight: 600; color: #1F4E79; font-variant-numeric: tabular-nums; font-size: 11px; white-space: nowrap; flex: 0 0 auto; }
+.stage-row.emph-top .stage-link { background: #FFFBEA; }
+.stage-row.emph-top:hover .stage-link { background: #FEF5CC; }
+.stage-empty { text-align: center; color: #A0AEC0; font-size: 11px; font-style: italic; padding: 10px 0; }
+
 .deals-toggle { font-size: 11px; color: #2E75B6; cursor: pointer; margin-top: 10px; user-select: none; }
 .deals-toggle:hover { text-decoration: underline; }
 .deals-list { margin-top: 8px; font-size: 11px; display: none; }
@@ -175,10 +251,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sa
     </div>
   </div>
 
-  <!-- TEAM ROLLUP (3-rep intervention view) -->
+  <!-- TEAM ROLLUP (3-rep view) -->
   <div class="hero">
     <span class="live-tag">Live</span>
-    <div class="hero-label">Team Rollup — 3 active reps</div>
+    <div class="hero-label">Team quota rollup — Kyle, Anne, Richard · $2M/rep · $6M total</div>
     <div class="hero-headline" id="hero-headline">Loading team rollup…</div>
     <div class="hero-detail" id="hero-detail"></div>
     <div class="hero-conclusion" id="hero-conclusion"></div>
@@ -190,7 +266,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sa
   <!-- NON-REP OWNERS -->
   <div class="section">
     <h2>Out-of-scope: deals owned by non-rep accounts</h2>
-    <div class="section-sub" id="non-rep-sub">These owners hold Brand Direct pipe but aren't scored against the gap. Confirm with Dan whether any should count.</div>
+    <div class="section-sub" id="non-rep-sub">Loading non-rep owner summary…</div>
     <table class="tbl" id="non-rep-table">
       <thead>
         <tr>
@@ -212,7 +288,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sa
     <p><strong>What's manual:</strong> Only <code>FY26_GOAL</code> in the script config. Update it if the annual target changes; everything else auto-derives.</p>
     <p id="method-target"></p>
     <p><strong>Coverage ratio</strong> = sum of open deal amounts ÷ rep target. Industry standard: <code>&lt;4x = Red, 4x–6x = Yellow, &gt;6x = Green</code>.</p>
-    <p><strong>Weighted forecast</strong> = sum of (deal amount × HubSpot <code>deal_close_probability</code>) ÷ rep target. Uses the rep-maintained close probability per deal, not the stage default. <code>&lt;100% = Red, 100%–150% = Yellow, &gt;150% = Green</code>.</p>
+    <p><strong>Weighted forecast</strong> = sum of (deal amount × HubSpot <code>deal_close_probability</code>) ÷ rep target. The probability is driven by the custom <code>forecast_category</code> property: <strong>Other = 25%, Possible = 50%, Likely = 75%</strong> (confirmed matching across all open rep deals). The Forecast Category row on each card shows the $ by category so you can verify the weighted number. <code>&lt;100% = Red, 100%–150% = Yellow, &gt;150% = Green</code>.</p>
+    <p><strong>Weekly review signals:</strong> First meetings per week = leads that <strong>entered Top B stage</strong> during that week (HubSpot property <code>hs_v2_date_entered_attempting_stage_id_745667965</code>, same methodology as the Meeting Factory dashboard). A lead counts the week it was scheduled, even if it's currently in a later stage. Goal: <strong>2 first meetings per rep per week (6/wk team)</strong>. External email goal: <strong>25 per rep per week</strong>. An email counts as external if ANY recipient (To/Cc/Bcc) is outside <code>@prescriberpoint.com</code> — this catches "Reply to teammate, Cc prospect" style outreach. Click any count (first meetings or emails) to open the live HubSpot list filtered to that rep.</p>
+    <p><em>Data hygiene note:</em> If a rep's HubSpot inbox extension isn't connected, their outbound emails won't log to HubSpot and the activity count will understate reality. If a count looks suspiciously low, that's the first thing to check.</p>
+    <p><strong>Stage breakdowns:</strong> Each rep card ends with two tables — Lead pipeline (open stages only: Top A → Mid B + Idle) and Deal pipeline (open Brand Direct deals by stage with count + $). Top A/Top B leads are highlighted since those are the active top-of-funnel progression targets. Every row is clickable and opens the HubSpot list filtered to that rep + that stage.</p>
     <p><strong>Combined confidence:</strong> both dimensions must be Yellow or better to qualify as "On Track." A rep with high coverage but low weighted = lots of stuck or low-probability deals; a rep with low coverage but high weighted = thin pipe with no margin for slippage.</p>
     <p id="method-deals"></p>
     <p><strong>Quarterly pacing:</strong> Open deals bucketed by closedate quarter. Pre-Q2 2026 closedates are flagged as stale (shown separately) and excluded from pacing counts.</p>
@@ -223,40 +302,46 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sa
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', () => {
+  window.appAuth.init(user => {
+    document.getElementById('auth-loading').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+    document.getElementById('user-email').textContent = user.email;
+    initApp();
+  });
+});
 function initApp() {
 // ============================================================================
-// GAP CONFIG — FY26_GOAL is the only manual value. Current ARR is pulled LIVE
-// from HubSpot as: Sum(Brand Direct open deals in Rollover stage) +
-// Sum(Brand Direct Closed Won with closedate in FY26). This matches the manual
-// ARR tally to within ~$50K. Everything else derives.
+// CONFIG — only FY26_GOAL and REP_QUOTA are manual. Everything else live from HubSpot.
+// Reps are scored against their individual $2M quota, not the gap.
+// Gap is shown as COMPANY context (does our team quota cover the gap?).
 // ============================================================================
-const FY26_GOAL   = 18000000;   // FY26 ARR target (only manual value)
+const FY26_GOAL   = 18000000;      // FY26 ARR target (manual)
+const REP_QUOTA   = 2000000;       // Fixed per-rep annual quota (manual)
 const NUM_REPS    = 3;
-const AVG_DEAL_SIZE = 480000;   // Dan's $40K/mo × 12 = avg ARR per deal
+const TOTAL_QUOTA = REP_QUOTA * NUM_REPS;   // $6M total team quota
+const AVG_DEAL_SIZE = 480000;      // Avg ARR per deal (used for deal-count translation)
 
 // Dynamic — recomputed after each HubSpot pull
 let CURRENT_ARR         = 15300000;   // Fallback if live pull fails
-let TOTAL_TARGET        = FY26_GOAL - CURRENT_ARR;
-let REP_TARGET          = TOTAL_TARGET / NUM_REPS;
+let TOTAL_TARGET        = FY26_GOAL - CURRENT_ARR;   // Gap (company context)
 let TOTAL_DEAL_TARGET   = Math.ceil(TOTAL_TARGET / AVG_DEAL_SIZE);
-let DEAL_TARGET_PER_REP = Math.ceil(TOTAL_DEAL_TARGET / NUM_REPS);
+let DEAL_TARGET_PER_REP = Math.ceil(REP_QUOTA / AVG_DEAL_SIZE);   // Deals needed per rep to hit quota
 let ARR_ROLLOVER = 0;
 let ARR_CLOSED_WON = 0;
 let ARR_SOURCE = 'fallback';
 
 const REPS = {
-  '153408573': { name: 'Daniel Cornwell',   shortName: 'Dan',   target: 0 },
-  '314753596': { name: 'Kyle McCaig',        shortName: 'Kyle',  target: 0 },
-  '78606761':  { name: 'Anne Foelsch',       shortName: 'Anne',  target: 0 }
+  '314753596': { name: 'Kyle McCaig',    shortName: 'Kyle',    target: REP_QUOTA },
+  '78606761':  { name: 'Anne Foelsch',   shortName: 'Anne',    target: REP_QUOTA },
+  '96962499':  { name: 'Richard Salazar', shortName: 'Richard', target: REP_QUOTA }
 };
 
 function recomputeTargets(currentArr) {
   CURRENT_ARR = currentArr;
   TOTAL_TARGET = Math.max(0, FY26_GOAL - CURRENT_ARR);
-  REP_TARGET = TOTAL_TARGET / NUM_REPS;
   TOTAL_DEAL_TARGET = Math.ceil(TOTAL_TARGET / AVG_DEAL_SIZE);
-  DEAL_TARGET_PER_REP = Math.ceil(TOTAL_DEAL_TARGET / NUM_REPS);
-  Object.values(REPS).forEach(r => r.target = REP_TARGET);
+  // Per-rep quota is fixed — doesn't change with gap
 }
 recomputeTargets(CURRENT_ARR); // initial
 
@@ -264,6 +349,42 @@ const PIPELINE_ID = '74379150';
 const CLOSED_STAGES = ['143017564', '143017565'];
 const CLOSED_WON_STAGE = '143017564';
 const ROLLOVER_STAGE = '1340846889';   // Existing customer rollovers = ARR-contributing, not net-new
+
+// Lead-pipeline stages (Meeting Factory methodology)
+const LEAD_STAGE_SCHEDULED = 'attempting-stage-id'; // Top B — First Meeting Scheduled
+const LEAD_STAGE_HELD      = 'connected-stage-id';  // Mid A — First meeting complete
+// HubSpot "date entered Top B" property — the actual Meeting Factory signal
+const PROP_ENTERED_TOP_B   = 'hs_v2_date_entered_attempting_stage_id_745667965';
+const FIRST_MEETING_GOAL   = 2;  // per rep per week (team goal: 2 × 3 reps = 6/wk)
+const FIRST_MEETING_TEAM_GOAL = 6;
+const FM_LOOKBACK_WEEKS    = 12; // weeks of history for the chart
+const EMAIL_GOAL           = 25; // external emails per rep per week
+const HS_PORTAL_ID         = '21389996';
+
+// Lead-pipeline open stages (ordered by funnel progression)
+const LEAD_PIPELINE_ID = 'lead-pipeline-id';
+const LEAD_OPEN_STAGES = [
+  { id: 'new-stage-id',        label: 'Top A — Pending First Meeting' },
+  { id: 'attempting-stage-id', label: 'Top B — First Meeting Scheduled' },
+  { id: 'connected-stage-id',  label: 'Mid A — First Meeting Complete' },
+  { id: 'qualified-stage-id',  label: 'Mid B — Opportunity Identified' },
+  { id: '968123417',           label: 'Idle' }
+];
+
+// Deal-stage labels (Brand Direct pipeline only — open stages, kept concise so they fit)
+const DEAL_STAGE_LABELS = {
+  '1341411420': 'Opportunity (Brand + Budget)',
+  '143018394':  'Proposal Delivered',
+  '1341581069': 'Proposal Under Evaluation',
+  '972397872':  'Verbal Agreement',
+  '1341581070': 'Legal / Regulatory',
+  '143018398':  'Paperwork Complete',
+  '972397873':  'Routing for Signature',
+  '972641437':  'On Hold',
+  '1340846889': 'Rollover'
+};
+// Order for display (early → late)
+const DEAL_STAGE_ORDER = ['1341411420', '143018394', '1341581069', '972397872', '1341581070', '143018398', '972397873', '972641437', '1340846889'];
 const TODAY = new Date();
 const HS_BASE = 'https://app.hubspot.com/contacts/21389996/record/0-3/';
 
@@ -288,14 +409,14 @@ function badgeLabel(color) {
 }
 function actionFor(covColor, fcstColor, repName) {
   if (covColor === 'red' && fcstColor === 'red')
-    return { tone: 'red', headline: 'Needs more leads', detail: `Both coverage and forecast below target. ${repName} needs top-of-funnel intervention — assign more accounts or redirect inbound.` };
+    return { tone: 'red', headline: 'Needs more leads', detail: `Both coverage and forecast below target. ${repName} needs more top-of-funnel — assign more accounts or redirect inbound.` };
   if (covColor !== 'red' && fcstColor === 'red')
     return { tone: 'red', headline: 'Coach deals — quality is the gap', detail: `Coverage is fine but weighted forecast is below target. ${repName}'s pipe is full of low-probability or stuck deals. Qualify out junk or push stages.` };
   if (covColor === 'red' && fcstColor !== 'red')
     return { tone: 'yellow', headline: 'Build coverage cushion', detail: `Forecast just clears target but coverage is thin. ${repName} needs 2–3 more deals to reach a 4x+ cushion. No margin for slippage.` };
   if (covColor === 'yellow' || fcstColor === 'yellow')
     return { tone: 'yellow', headline: 'On track — protect velocity', detail: `${repName} is performing but has limited cushion. Watch for slippage on key deals.` };
-  return { tone: 'green', headline: 'On track', detail: `${repName}'s pipeline supports the target with margin. No intervention needed.` };
+  return { tone: 'green', headline: 'On track', detail: `${repName}'s pipeline supports the target with margin.` };
 }
 
 function isStale(closedateIso) {
@@ -304,6 +425,56 @@ function isStale(closedateIso) {
 }
 
 function dealUrl(id) { return HS_BASE + id; }
+
+// Build HubSpot filter-view URLs so counts are clickable and open the live record list.
+function hsLeadsUrl(ownerId) {
+  const filters = encodeURIComponent(JSON.stringify([
+    { property: 'hubspot_owner_id', operator: 'EQ', value: ownerId },
+    { property: 'hs_pipeline_stage', operator: 'IN', values: [LEAD_STAGE_SCHEDULED, LEAD_STAGE_HELD] }
+  ]));
+  return `https://app.hubspot.com/contacts/${HS_PORTAL_ID}/objects/0-136/views/all/list?filters=${filters}`;
+}
+function hsEmailsUrl(ownerId) {
+  const filters = encodeURIComponent(JSON.stringify([
+    { property: 'hubspot_owner_id', operator: 'EQ', value: ownerId },
+    { property: 'hs_email_direction', operator: 'EQ', value: 'EMAIL' }
+  ]));
+  return `https://app.hubspot.com/contacts/${HS_PORTAL_ID}/objects/0-49?filters=${filters}`;
+}
+function hsLeadsStageUrl(ownerId, stageId) {
+  const filters = encodeURIComponent(JSON.stringify([
+    { property: 'hubspot_owner_id', operator: 'EQ', value: ownerId },
+    { property: 'hs_pipeline_stage', operator: 'EQ', value: stageId }
+  ]));
+  return `https://app.hubspot.com/contacts/${HS_PORTAL_ID}/objects/0-136/views/all/list?filters=${filters}`;
+}
+function hsDealsStageUrl(ownerId, stageId) {
+  const filters = encodeURIComponent(JSON.stringify([
+    { property: 'hubspot_owner_id', operator: 'EQ', value: ownerId },
+    { property: 'pipeline', operator: 'EQ', value: PIPELINE_ID },
+    { property: 'dealstage', operator: 'EQ', value: stageId }
+  ]));
+  return `https://app.hubspot.com/contacts/${HS_PORTAL_ID}/objects/0-3/views/all/list?filters=${filters}`;
+}
+// All open Brand Direct deals for a rep (used by Open pipe / Weighted / Open deals rows)
+function hsOpenDealsUrl(ownerId) {
+  const filters = encodeURIComponent(JSON.stringify([
+    { property: 'hubspot_owner_id', operator: 'EQ', value: ownerId },
+    { property: 'pipeline', operator: 'EQ', value: PIPELINE_ID },
+    { property: 'dealstage', operator: 'NOT_IN', values: CLOSED_STAGES }
+  ]));
+  return `https://app.hubspot.com/contacts/${HS_PORTAL_ID}/objects/0-3/views/all/list?filters=${filters}`;
+}
+// Open deals filtered by Forecast Category (Likely / Possible / Other)
+function hsForecastCategoryUrl(ownerId, category) {
+  const filters = encodeURIComponent(JSON.stringify([
+    { property: 'hubspot_owner_id', operator: 'EQ', value: ownerId },
+    { property: 'pipeline', operator: 'EQ', value: PIPELINE_ID },
+    { property: 'dealstage', operator: 'NOT_IN', values: CLOSED_STAGES },
+    { property: 'forecast_category', operator: 'EQ', value: category }
+  ]));
+  return `https://app.hubspot.com/contacts/${HS_PORTAL_ID}/objects/0-3/views/all/list?filters=${filters}`;
+}
 
 // MCP responses can come back as a raw object, a JSON string, wrapped in .body,
 // or wrapped in .content[].text (MCP protocol shape). Unwrap defensively.
@@ -321,13 +492,12 @@ function parseMcpResponse(res) {
 function populateStaticText() {
   const arrLabel = ARR_SOURCE === 'live' ? 'live' : 'fallback';
   document.getElementById('subtitle-text').textContent =
-    `FY26 goal ${fmt$(FY26_GOAL)} · Current ARR ${fmt$(CURRENT_ARR)} (${arrLabel}) · Gap ${fmt$(TOTAL_TARGET)} by EOY 2026 · Brand Direct Pipeline · Live HubSpot view`;
+    `FY26 goal ${fmt$(FY26_GOAL)} · Current ARR ${fmt$(CURRENT_ARR)} (${arrLabel}) · Gap ${fmt$(TOTAL_TARGET)} · Team quota ${fmt$(TOTAL_QUOTA)} (${fmt$(REP_QUOTA)}/rep × ${NUM_REPS}) · Live HubSpot view`;
   document.getElementById('non-rep-sub').textContent =
-    `These owners hold Brand Direct pipe but aren't scored against the ${fmt$(TOTAL_TARGET)} gap. Confirm with Dan whether any should count.`;
+    `These owners hold Brand Direct pipe but aren't on the ${NUM_REPS}-rep quota team. Their deals still contribute to closing the ${fmt$(TOTAL_TARGET)} company gap.`;
   document.getElementById('method-target').innerHTML =
-    `<strong>Per-rep target:</strong> ${fmt$(REP_TARGET)} ARR (${fmt$(TOTAL_TARGET)} gap ÷ ${NUM_REPS} active reps) by Dec 31, 2026.`;
-  document.getElementById('method-deals').innerHTML =
-    `<strong>Deal count translation:</strong> Expected wins = weighted forecast ÷ ${fmt$(AVG_DEAL_SIZE)} (Dan's $40K/mo × 12 avg deal size). Per-rep target = ${DEAL_TARGET_PER_REP} deal${DEAL_TARGET_PER_REP === 1 ? '' : 's'}, team target = ${TOTAL_DEAL_TARGET} deals across ${NUM_REPS} reps.`;
+    `<strong>Per-rep quota:</strong> ${fmt$(REP_QUOTA)} ARR by Dec 31, 2026. Fixed per rep (not derived from gap). Team quota = ${fmt$(TOTAL_QUOTA)}, which covers the ${fmt$(TOTAL_TARGET)} company gap at ${(TOTAL_QUOTA/Math.max(1,TOTAL_TARGET)).toFixed(1)}x.`;
+  document.getElementById('method-deals').innerHTML = '';
   const arrFormula = ARR_SOURCE === 'live'
     ? `Current ARR (${fmt$(CURRENT_ARR)}) = Rollover open (${fmt$(ARR_ROLLOVER)}) + FY26 Closed Won (${fmt$(ARR_CLOSED_WON)}), both live from HubSpot Brand Direct.`
     : `Current ARR live pull failed — using fallback (${fmt$(CURRENT_ARR)}). Reload to retry.`;
@@ -341,8 +511,15 @@ async function load() {
   errBanner.classList.remove('show');
 
   try {
-    // Two parallel queries: open Brand Direct deals + FY26 Closed Won for ARR
-    const [openResult, closedWonResult] = await Promise.allSettled([
+    // Compute lookback dates: 12 wks for first-meetings chart, 7 days for current-week activity
+    const now = new Date();
+    const twelveWksAgo = new Date(now.getTime() - FM_LOOKBACK_WEEKS * 7 * 86400000).toISOString();
+    const dow = (now.getUTCDay() + 6) % 7; // Mon=0
+    const curWeekStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - dow)).toISOString();
+    const repOwnerIds = Object.keys(REPS);
+
+    // Parallel fetches: deals + ARR + open leads (stage breakdown) + entered-Top-B leads (FM chart) + emails + meetings
+    const [openResult, closedWonResult, leadsResult, enteredTopBResult, emailsResult, meetingsResult] = await Promise.allSettled([
       window.cowork.callMcpTool('mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects', {
         objectType: 'deals',
         filterGroups: [{
@@ -351,7 +528,7 @@ async function load() {
             { propertyName: 'dealstage', operator: 'NOT_IN', values: CLOSED_STAGES }
           ]
         }],
-        properties: ['dealname', 'dealstage', 'amount', 'hubspot_owner_id', 'deal_close_probability', 'closedate'],
+        properties: ['dealname', 'dealstage', 'amount', 'hubspot_owner_id', 'deal_close_probability', 'closedate', 'forecast_category'],
         limit: 200,
         sorts: [{ propertyName: 'amount', direction: 'DESCENDING' }],
         chatInsights: { userIntent: 'Refresh Brand Direct pipeline confidence scorecard.', satisfaction: 'NEUTRAL' }
@@ -368,6 +545,58 @@ async function load() {
         properties: ['dealname', 'amount', 'closedate', 'hubspot_owner_id'],
         limit: 200,
         chatInsights: { userIntent: 'Compute live FY26 Closed Won for ARR tally.', satisfaction: 'NEUTRAL' }
+      }),
+      window.cowork.callMcpTool('mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects', {
+        objectType: 'LEAD',
+        filterGroups: [{
+          filters: [
+            { propertyName: 'hubspot_owner_id', operator: 'IN', values: repOwnerIds },
+            { propertyName: 'hs_pipeline', operator: 'EQ', value: LEAD_PIPELINE_ID },
+            { propertyName: 'hs_pipeline_stage', operator: 'IN', values: LEAD_OPEN_STAGES.map(s => s.id) }
+          ]
+        }],
+        properties: ['hs_lead_name', 'hs_pipeline_stage', 'hubspot_owner_id', 'hs_createdate'],
+        limit: 200,
+        sorts: [{ propertyName: 'hs_createdate', direction: 'DESCENDING' }],
+        chatInsights: { userIntent: 'Pull open leads across all funnel stages per rep for stage breakdown.', satisfaction: 'NEUTRAL' }
+      }),
+      window.cowork.callMcpTool('mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects', {
+        objectType: 'LEAD',
+        filterGroups: [{
+          filters: [
+            { propertyName: 'hubspot_owner_id', operator: 'IN', values: repOwnerIds },
+            { propertyName: PROP_ENTERED_TOP_B, operator: 'GTE', value: twelveWksAgo }
+          ]
+        }],
+        properties: ['hs_lead_name', 'hs_pipeline_stage', 'hubspot_owner_id', PROP_ENTERED_TOP_B],
+        limit: 200,
+        sorts: [{ propertyName: PROP_ENTERED_TOP_B, direction: 'DESCENDING' }],
+        chatInsights: { userIntent: 'Meeting Factory methodology: leads that entered Top B in last 12 weeks for WoW first-meetings chart.', satisfaction: 'NEUTRAL' }
+      }),
+      window.cowork.callMcpTool('mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects', {
+        objectType: 'EMAIL',
+        filterGroups: [{
+          filters: [
+            { propertyName: 'hubspot_owner_id', operator: 'IN', values: repOwnerIds },
+            { propertyName: 'hs_timestamp', operator: 'GTE', value: curWeekStart },
+            { propertyName: 'hs_email_direction', operator: 'EQ', value: 'EMAIL' }
+          ]
+        }],
+        properties: ['hubspot_owner_id', 'hs_timestamp', 'hs_email_to_email', 'hs_email_cc_email', 'hs_email_bcc_email', 'hs_email_direction'],
+        limit: 200,
+        chatInsights: { userIntent: 'Count outgoing emails this week per rep for activity review.', satisfaction: 'NEUTRAL' }
+      }),
+      window.cowork.callMcpTool('mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects', {
+        objectType: 'MEETING_EVENT',
+        filterGroups: [{
+          filters: [
+            { propertyName: 'hubspot_owner_id', operator: 'IN', values: repOwnerIds },
+            { propertyName: 'hs_timestamp', operator: 'GTE', value: curWeekStart }
+          ]
+        }],
+        properties: ['hubspot_owner_id', 'hs_timestamp'],
+        limit: 200,
+        chatInsights: { userIntent: 'Count meeting activities this week per rep for activity review.', satisfaction: 'NEUTRAL' }
       })
     ]);
 
@@ -379,8 +608,9 @@ async function load() {
       .filter(d => (d.properties || {}).dealstage === ROLLOVER_STAGE)
       .reduce((s, d) => s + (parseFloat(d.properties.amount || 0) || 0), 0);
 
+    let cwDeals = [];
     if (closedWonResult.status === 'fulfilled') {
-      const cwDeals = (parseMcpResponse(closedWonResult.value)?.results) || [];
+      cwDeals = (parseMcpResponse(closedWonResult.value)?.results) || [];
       ARR_CLOSED_WON = cwDeals.reduce((s, d) => s + (parseFloat(d.properties.amount || 0) || 0), 0);
       ARR_SOURCE = 'live';
       recomputeTargets(ARR_ROLLOVER + ARR_CLOSED_WON);
@@ -389,9 +619,15 @@ async function load() {
       ARR_SOURCE = 'fallback';
     }
 
+    // Parse the activity results (quiet failure → empty array)
+    const leads         = leadsResult.status === 'fulfilled'       ? (parseMcpResponse(leadsResult.value)?.results       || []) : [];
+    const topBEntries   = enteredTopBResult.status === 'fulfilled' ? (parseMcpResponse(enteredTopBResult.value)?.results || []) : [];
+    const emails        = emailsResult.status === 'fulfilled'      ? (parseMcpResponse(emailsResult.value)?.results      || []) : [];
+    const mtgs          = meetingsResult.status === 'fulfilled'    ? (parseMcpResponse(meetingsResult.value)?.results    || []) : [];
+
     populateStaticText();
-    render(openDeals);
-    status.innerHTML = `Refreshed · ${openDeals.length} open deals · ARR ${ARR_SOURCE === 'live' ? 'live' : 'fallback'} · ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    render(openDeals, cwDeals, leads, emails, mtgs, topBEntries);
+    status.innerHTML = `Refreshed · ${openDeals.length} open deals · ${topBEntries.length} Top B entries (12w) · ${emails.length} emails this wk · ARR ${ARR_SOURCE === 'live' ? 'live' : 'fallback'} · ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
   } catch (e) {
     console.error(e);
     errBanner.textContent = 'Failed to load HubSpot data: ' + (e && e.message ? e.message : String(e));
@@ -400,8 +636,65 @@ async function load() {
   }
 }
 
-function render(deals) {
-  // Bucket by owner + compute company-wide totals
+function render(deals, cwDeals, leads, emails, mtgs, topBEntries) {
+  cwDeals = cwDeals || [];
+  leads = leads || [];
+  emails = emails || [];
+  mtgs = mtgs || [];
+  topBEntries = topBEntries || [];
+
+  // Bucket OPEN LEADS by owner for stage breakdown
+  const leadsByOwner = {};
+  leads.forEach(l => {
+    const p = l.properties || {};
+    const owner = p.hubspot_owner_id || '';
+    if (!leadsByOwner[owner]) leadsByOwner[owner] = [];
+    leadsByOwner[owner].push({
+      id: l.id,
+      name: p.hs_lead_name,
+      stage: p.hs_pipeline_stage,
+      createdate: p.hs_createdate
+    });
+  });
+  // Bucket TOP-B-ENTRIES by owner for the Meeting Factory first-meetings chart
+  const topBByOwner = {};
+  topBEntries.forEach(l => {
+    const p = l.properties || {};
+    const owner = p.hubspot_owner_id || '';
+    const enteredAt = p[PROP_ENTERED_TOP_B];
+    if (!enteredAt) return;
+    if (!topBByOwner[owner]) topBByOwner[owner] = [];
+    topBByOwner[owner].push({
+      id: l.id,
+      name: p.hs_lead_name,
+      enteredTopB: enteredAt
+    });
+  });
+  // Bucket EMAILS per owner (this week only, EXTERNAL outreach only).
+  // Count the email if ANY recipient (to/cc/bcc) is non-internal.
+  // This catches cases like "Reply to Kyle, CC external prospect".
+  const INTERNAL_DOMAIN = '@prescriberpoint.com';
+  const hasExternalRecipient = (rawCombined) => {
+    if (!rawCombined) return false;
+    return rawCombined.toLowerCase().split(/[;,]/).map(s => s.trim())
+      .some(addr => addr.includes('@') && !addr.includes(INTERNAL_DOMAIN));
+  };
+  const emailsByOwner = {};
+  emails.forEach(e => {
+    const p = e.properties || {};
+    const o = p.hubspot_owner_id || '';
+    const dir = (p.hs_email_direction || '').toUpperCase();
+    if (dir !== 'EMAIL') return;             // only outgoing
+    const combined = [p.hs_email_to_email, p.hs_email_cc_email, p.hs_email_bcc_email].filter(Boolean).join(';');
+    if (!hasExternalRecipient(combined)) return;
+    emailsByOwner[o] = (emailsByOwner[o] || 0) + 1;
+  });
+  const mtgsByOwner = {};
+  mtgs.forEach(m => {
+    const o = (m.properties || {}).hubspot_owner_id || '';
+    mtgsByOwner[o] = (mtgsByOwner[o] || 0) + 1;
+  });
+  // Bucket OPEN deals by owner + compute company-wide totals
   const byOwner = {};
   let companyOpen = 0, companyRollover = 0;
   deals.forEach(d => {
@@ -415,46 +708,104 @@ function render(deals) {
       name: p.dealname || '(unnamed)',
       amount,
       prob: parseFloat(p.deal_close_probability || 0) || 0,
+      forecastCategory: p.forecast_category || null,  // Likely / Possible / Other
       closedate: p.closedate,
+      createdate: p.createdate,
+      lastmodified: p.hs_lastmodifieddate,
       dealstage: stage,
       stale: isStale(p.closedate)
     });
     companyOpen += amount;
     if (stage === ROLLOVER_STAGE) companyRollover += amount;
   });
+  // Bucket CLOSED WON deals by owner (for delivered-to-quota)
+  const deliveredByOwner = {};
+  cwDeals.forEach(d => {
+    const p = d.properties || {};
+    const owner = p.hubspot_owner_id || 'unowned';
+    const amount = parseFloat(p.amount || 0) || 0;
+    if (!deliveredByOwner[owner]) deliveredByOwner[owner] = { total: 0, deals: [] };
+    deliveredByOwner[owner].total += amount;
+    deliveredByOwner[owner].deals.push({
+      id: d.id, name: p.dealname || '(unnamed)', amount, closedate: p.closedate
+    });
+  });
   const companyNetNew = companyOpen - companyRollover;
   renderContextStrip(companyOpen, companyNetNew, companyRollover, byOwner);
 
-  // Compute per-rep
+  // Compute per-rep (scored against $2M quota, not gap)
   const repCards = [];
-  let teamOpen = 0, teamWeighted = 0, teamDealCount = 0, teamStaleCount = 0;
+  let teamOpen = 0, teamWeighted = 0, teamDelivered = 0, teamDealCount = 0, teamStaleCount = 0;
+  const NOW = new Date();
   for (const [ownerId, info] of Object.entries(REPS)) {
     const dealsForRep = byOwner[ownerId] || [];
     const open = dealsForRep.reduce((s, d) => s + d.amount, 0);
     const weighted = dealsForRep.reduce((s, d) => s + d.amount * d.prob, 0);
+    const delivered = (deliveredByOwner[ownerId]?.total) || 0;
+    const deliveredDeals = (deliveredByOwner[ownerId]?.deals) || [];
     const stale = dealsForRep.filter(d => d.stale).length;
-    const cov = open / info.target;
-    const fcst = weighted / info.target;
+    // Score against $2M quota
+    const cov = open / REP_QUOTA;
+    const fcst = weighted / REP_QUOTA;
+    const progress = (delivered + weighted) / REP_QUOTA;   // Progress to quota
     const covColor = colorFor(cov, 4, 6);
     const fcstColor = colorFor(fcst, 1.0, 1.5);
+    const progressColor = colorFor(progress, 0.70, 1.0);   // <70% red, 70-100% yellow, >=100% green
     const combined = combinedColor(covColor, fcstColor);
-    // Deal count translation (Dan's framing: ~$40K/mo avg = $480K/yr per deal)
     const expectedWins = weighted / AVG_DEAL_SIZE;
-    // Quarterly pacing: bucket open deals by closedate quarter (2026 only; 2027+ separate; pre-Q2 excluded as those are stale)
-    const pacing = { Q2: 0, Q3: 0, Q4: 0, future: 0 };
+    // Quarterly pacing (Oct 1 2026 = Q4 is current quarter)
+    const pacing = { Q3: 0, Q4: 0, future: 0, past: 0 };
     dealsForRep.forEach(d => {
       if (!d.closedate) return;
       const dt = new Date(d.closedate);
       const yr = dt.getUTCFullYear();
       const mo = dt.getUTCMonth();
-      if (yr === 2026 && mo >= 3 && mo <= 5) pacing.Q2++;
-      else if (yr === 2026 && mo >= 6 && mo <= 8) pacing.Q3++;
+      if (yr === 2026 && mo >= 6 && mo <= 8) pacing.Q3++;
       else if (yr === 2026 && mo >= 9 && mo <= 11) pacing.Q4++;
       else if (yr >= 2027) pacing.future++;
+      else if (dt < NOW) pacing.past++;
     });
-    repCards.push({ ownerId, info, deals: dealsForRep, open, weighted, stale, cov, fcst, covColor, fcstColor, combined, expectedWins, pacing });
+    // Forecast Category breakdown — ratifies the weighted number
+    const fcBreakdown = { Likely: 0, Possible: 0, Other: 0, Unset: 0 };
+    dealsForRep.forEach(d => {
+      const bucket = d.forecastCategory && fcBreakdown.hasOwnProperty(d.forecastCategory) ? d.forecastCategory : 'Unset';
+      fcBreakdown[bucket] += d.amount;
+    });
+    // Lead stage breakdown (count by stage, ordered by funnel)
+    const leadStageCounts = {};
+    LEAD_OPEN_STAGES.forEach(s => { leadStageCounts[s.id] = 0; });
+    (leadsByOwner[ownerId] || []).forEach(l => {
+      if (leadStageCounts.hasOwnProperty(l.stage)) leadStageCounts[l.stage]++;
+    });
+    const totalOpenLeads = Object.values(leadStageCounts).reduce((s,n) => s+n, 0);
+    // Deal stage breakdown (count + $ by stage)
+    const dealStageBreakdown = {};
+    DEAL_STAGE_ORDER.forEach(sid => { dealStageBreakdown[sid] = { count: 0, amount: 0 }; });
+    dealsForRep.forEach(d => {
+      if (dealStageBreakdown[d.dealstage]) {
+        dealStageBreakdown[d.dealstage].count++;
+        dealStageBreakdown[d.dealstage].amount += d.amount;
+      }
+    });
+    // Weekly activity histogram — deals CREATED per week (kept for compat)
+    const activity = computeWeeklyActivity(dealsForRep, 8);
+    // Weekly first-meetings histogram — leads that ENTERED Top B per week (Meeting Factory methodology)
+    const firstMeetings = computeWeeklyTopBEntries(topBByOwner[ownerId] || [], FM_LOOKBACK_WEEKS);
+    // This-week activity counts
+    const emailsThisWeek = emailsByOwner[ownerId] || 0;
+    const mtgsThisWeek   = mtgsByOwner[ownerId] || 0;
+    repCards.push({
+      ownerId, info, deals: dealsForRep, deliveredDeals,
+      open, weighted, delivered, stale,
+      cov, fcst, progress,
+      covColor, fcstColor, progressColor, combined,
+      expectedWins, pacing, activity, firstMeetings,
+      emailsThisWeek, mtgsThisWeek, fcBreakdown,
+      leadStageCounts, totalOpenLeads, dealStageBreakdown
+    });
     teamOpen += open;
     teamWeighted += weighted;
+    teamDelivered += delivered;
     teamDealCount += dealsForRep.length;
     teamStaleCount += stale;
   }
@@ -469,9 +820,57 @@ function render(deals) {
     };
   });
 
-  renderHero(teamOpen, teamWeighted, teamDealCount, teamStaleCount, repCards);
+  renderHero(teamOpen, teamWeighted, teamDelivered, teamDealCount, teamStaleCount, repCards);
   renderReps(repCards);
   renderNonReps(nonRepOwners);
+}
+
+// Compute weekly first-meetings histogram from LEAD records that ENTERED Top B.
+// This mirrors the Meeting Factory dashboard ("by date entered Top B").
+function computeWeeklyTopBEntries(leads, numWeeks) {
+  const now = new Date();
+  const dayOfWeek = (now.getUTCDay() + 6) % 7;
+  const weekStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - dayOfWeek));
+  const weeks = [];
+  for (let i = numWeeks - 1; i >= 0; i--) {
+    const start = new Date(weekStart.getTime() - i * 7 * 86400000);
+    const end = new Date(start.getTime() + 7 * 86400000);
+    weeks.push({ start, end, label: `${start.getUTCMonth()+1}/${start.getUTCDate()}`, scheduled: 0, held: 0 });
+  }
+  leads.forEach(l => {
+    const dt = l.enteredTopB ? new Date(l.enteredTopB) : null;
+    if (!dt) return;
+    weeks.forEach(w => {
+      if (dt >= w.start && dt < w.end) {
+        // Scheduled = entered Top B this week. (Held is tracked separately via current stage if needed.)
+        w.scheduled++;
+      }
+    });
+  });
+  return weeks;
+}
+
+// Compute weekly deals-created histogram for last N weeks (newest week last)
+function computeWeeklyActivity(deals, numWeeks) {
+  const now = new Date();
+  // Anchor to start of current week (Monday)
+  const dayOfWeek = (now.getUTCDay() + 6) % 7; // Mon=0..Sun=6
+  const weekStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - dayOfWeek));
+  const weeks = [];
+  for (let i = numWeeks - 1; i >= 0; i--) {
+    const start = new Date(weekStart.getTime() - i * 7 * 86400000);
+    const end = new Date(start.getTime() + 7 * 86400000);
+    weeks.push({ start, end, label: `${start.getUTCMonth()+1}/${start.getUTCDate()}`, created: 0, touched: 0 });
+  }
+  deals.forEach(d => {
+    const cd = d.createdate ? new Date(d.createdate) : null;
+    const md = d.lastmodified ? new Date(d.lastmodified) : null;
+    weeks.forEach(w => {
+      if (cd && cd >= w.start && cd < w.end) w.created++;
+      if (md && md >= w.start && md < w.end) w.touched++;
+    });
+  });
+  return weeks;
 }
 
 function renderContextStrip(companyOpen, companyNetNew, companyRollover, byOwner) {
@@ -490,41 +889,47 @@ function renderContextStrip(companyOpen, companyNetNew, companyRollover, byOwner
   document.getElementById('ctx-owner-detail').textContent = `${repOwners} rep${repOwners === 1 ? '' : 's'} · ${nonRepOwners} non-rep`;
 }
 
-function renderHero(teamOpen, teamWeighted, dealCount, staleCount, repCards) {
-  const teamCov = teamOpen / TOTAL_TARGET;
-  const teamFcst = teamWeighted / TOTAL_TARGET;
+function renderHero(teamOpen, teamWeighted, teamDelivered, dealCount, staleCount, repCards) {
+  // Team scored against TEAM QUOTA ($6M = 3 × $2M), not gap
+  const teamProgress = (teamDelivered + teamWeighted) / TOTAL_QUOTA;
+  const teamFcst = teamWeighted / TOTAL_QUOTA;
+  const teamCov = teamOpen / TOTAL_QUOTA;
+  const progressColor = colorFor(teamProgress, 0.70, 1.0);
   const fcstColor = colorFor(teamFcst, 1.0, 1.5);
   const covColor = colorFor(teamCov, 4, 6);
-  const combined = combinedColor(covColor, fcstColor);
 
-  // Concentration risk
-  const danCard = repCards.find(c => c.info && c.ownerId === '153408573');
-  const danShare = danCard ? Math.round((danCard.weighted / teamWeighted) * 100) : 0;
-  const reqsAtRisk = repCards.filter(c => c.info && c.combined === 'red').map(c => c.info.shortName);
+  // Concentration risk: highest-weighted rep's share
+  const topRep = [...repCards].sort((a,b) => b.weighted - a.weighted)[0];
+  const topShare = topRep && teamWeighted > 0 ? Math.round((topRep.weighted / teamWeighted) * 100) : 0;
+  const reqsAtRisk = repCards.filter(c => c.progress < 0.70).map(c => c.info.shortName);
+
+  // Gap-vs-quota context (does the team's committed quota cover the company gap?)
+  const gapCoverage = TOTAL_QUOTA / Math.max(1, TOTAL_TARGET);
 
   document.getElementById('hero-headline').textContent =
-    teamFcst >= 1
-      ? `Weighted forecast covers the ${fmt$(TOTAL_TARGET)} gap (${pct(teamFcst)} of target).`
-      : `Weighted forecast falls short of the ${fmt$(TOTAL_TARGET)} gap (${pct(teamFcst)} of target).`;
+    teamProgress >= 1
+      ? `Team is tracking at ${pct(teamProgress)} of combined quota (${fmt$(TOTAL_QUOTA)}).`
+      : `Team is tracking at ${pct(teamProgress)} of combined quota (${fmt$(TOTAL_QUOTA)}).`;
 
   const teamExpectedWins = teamWeighted / AVG_DEAL_SIZE;
-  const teamWinsColor = colorFor(teamExpectedWins / TOTAL_DEAL_TARGET, 1.0, 1.5);
+  const teamDealTarget = DEAL_TARGET_PER_REP * NUM_REPS;
+  const teamWinsColor = colorFor(teamExpectedWins / teamDealTarget, 1.0, 1.5);
 
   document.getElementById('hero-detail').innerHTML = `
     <div class="hero-stat">
-      <div class="stat-label">Total open pipe</div>
-      <div class="stat-value">${fmt$(teamOpen)}</div>
-      <div class="stat-sub">${teamCov.toFixed(2)}x team coverage <span class="dot ${covColor}" style="vertical-align:baseline;width:8px;height:8px;"></span></div>
+      <div class="stat-label">Closed Won YTD</div>
+      <div class="stat-value">${fmt$(teamDelivered)}</div>
+      <div class="stat-sub">${pct(teamDelivered / TOTAL_QUOTA)} of ${fmt$(TOTAL_QUOTA)} quota</div>
     </div>
     <div class="hero-stat">
       <div class="stat-label">Weighted forecast</div>
       <div class="stat-value">${fmt$(teamWeighted)}</div>
-      <div class="stat-sub">${pct(teamFcst)} of ${fmt$(TOTAL_TARGET)} gap <span class="dot ${fcstColor}" style="vertical-align:baseline;width:8px;height:8px;"></span></div>
+      <div class="stat-sub">${pct(teamFcst)} of quota <span class="dot ${fcstColor}" style="vertical-align:baseline;width:8px;height:8px;"></span></div>
     </div>
     <div class="hero-stat">
-      <div class="stat-label">Expected wins</div>
-      <div class="stat-value">${teamExpectedWins.toFixed(1)}</div>
-      <div class="stat-sub">vs ${TOTAL_DEAL_TARGET} deal target <span class="dot ${teamWinsColor}" style="vertical-align:baseline;width:8px;height:8px;"></span></div>
+      <div class="stat-label">Total open pipe</div>
+      <div class="stat-value">${fmt$(teamOpen)}</div>
+      <div class="stat-sub">${teamCov.toFixed(2)}x team coverage <span class="dot ${covColor}" style="vertical-align:baseline;width:8px;height:8px;"></span></div>
     </div>
     <div class="hero-stat">
       <div class="stat-label">Open deals (3 reps)</div>
@@ -532,19 +937,20 @@ function renderHero(teamOpen, teamWeighted, dealCount, staleCount, repCards) {
       <div class="stat-sub">${staleCount} with past closedate</div>
     </div>
     <div class="hero-stat">
-      <div class="stat-label">Concentration on Dan</div>
-      <div class="stat-value">${danShare}%</div>
-      <div class="stat-sub">of team weighted forecast</div>
+      <div class="stat-label">Top-rep concentration</div>
+      <div class="stat-value">${topShare}%</div>
+      <div class="stat-sub">${topRep ? topRep.info.shortName : '—'} share of team weighted</div>
     </div>
   `;
 
   let conclusion = '';
-  if (reqsAtRisk.length === 0 && teamFcst >= 1.5) {
-    conclusion = `Strong position. ${pct(teamFcst)} weighted coverage of the ${fmt$(TOTAL_TARGET)} gap with all reps Yellow or better.`;
+  const gapNote = `Team quota ${fmt$(TOTAL_QUOTA)} covers the ${fmt$(TOTAL_TARGET)} company gap ${gapCoverage.toFixed(1)}x.`;
+  if (reqsAtRisk.length === 0 && teamProgress >= 1.5) {
+    conclusion = `${gapNote} All reps tracking at ≥70% of quota — safety margin intact.`;
   } else if (reqsAtRisk.length === 0) {
-    conclusion = `On track but thin. ${pct(teamFcst)} of target — limited margin if a key deal slips.`;
+    conclusion = `${gapNote} All reps tracking at ≥70% of quota, but limited margin for slippage.`;
   } else {
-    conclusion = `Math says we close the gap — but ${danShare}% of weighted forecast sits on Dan, and ${reqsAtRisk.join(' & ')} ${reqsAtRisk.length === 1 ? 'is' : 'are'} below target. Intervention focus: see action cards below.`;
+    conclusion = `${gapNote} ${reqsAtRisk.join(' & ')} ${reqsAtRisk.length === 1 ? 'is' : 'are'} below 70% of quota.`;
   }
   document.getElementById('hero-conclusion').textContent = conclusion;
 }
@@ -566,52 +972,185 @@ function renderReps(repCards) {
         </div>
       `).join('');
 
+    // Progress bar segments (cap at 100% for visual — status pill shows total % to quota)
+    const deliveredPct = Math.min(100, (card.delivered / REP_QUOTA) * 100);
+    const weightedPct  = Math.min(100 - deliveredPct, (card.weighted / REP_QUOTA) * 100);
+    const progressPctLabel = Math.round(card.progress * 100);
+
+    // Weekly FIRST MEETINGS sparkline (Meeting Factory methodology)
+    const fm = card.firstMeetings;
+    const maxTotalFm = Math.max(FIRST_MEETING_GOAL, ...fm.map(w => w.scheduled + w.held));
+    const fmBars = fm.map(w => {
+      const total = w.scheduled + w.held;
+      const h = (total / maxTotalFm) * 100;
+      const atOrAboveGoal = total >= FIRST_MEETING_GOAL;
+      return `<div class="fm-bar-wrap" title="Week of ${w.label}: ${w.scheduled} scheduled + ${w.held} held = ${total} (goal ${FIRST_MEETING_GOAL})">
+        <div class="fm-bar ${atOrAboveGoal ? 'at-goal' : ''}" style="height:${Math.max(4, h)}%">
+          <span class="fm-bar-label">${total || ''}</span>
+        </div>
+      </div>`;
+    }).join('');
+    const latestFmWeek = fm[fm.length - 1];
+    const latestFmTotal = latestFmWeek.scheduled + latestFmWeek.held;
+    const prevFmWeek = fm[fm.length - 2] || { scheduled: 0, held: 0 };
+    const prevFmTotal = prevFmWeek.scheduled + prevFmWeek.held;
+    const fmWow = latestFmTotal - prevFmTotal;
+    const fmWowStr = fmWow === 0 ? 'flat vs prior wk' : (fmWow > 0 ? `+${fmWow} vs prior wk` : `${fmWow} vs prior wk`);
+    const totalFm = fm.reduce((s,w) => s + w.scheduled + w.held, 0);
+    const goalLinePct = (FIRST_MEETING_GOAL / maxTotalFm) * 100;
+    const fmPaceColor = latestFmTotal >= FIRST_MEETING_GOAL ? 'green' : (latestFmTotal >= FIRST_MEETING_GOAL * 0.5 ? 'yellow' : 'red');
+
     grid.insertAdjacentHTML('beforeend', `
       <div class="rep-card ${card.combined}">
         <div class="rep-header">
           <div>
             <div class="rep-name">${card.info.name}</div>
-            <div class="rep-target">Target: ${fmt$(card.info.target)} ARR by EOY 2026</div>
+            <div class="rep-target">Quota: ${fmt$(REP_QUOTA)} ARR by EOY 2026</div>
           </div>
-          <span class="rep-badge ${card.combined}">${badgeLabel(card.combined)}</span>
+          <span class="rep-badge ${card.progressColor}">${progressPctLabel}% to quota</span>
         </div>
 
+        <!-- PROGRESS BAR TO QUOTA -->
+        <div class="progress-section">
+          <div class="progress-labels-top">
+            <span>Progress to $2M quota</span>
+            <span>${fmt$(card.delivered + card.weighted)} / ${fmt$(REP_QUOTA)}</span>
+          </div>
+          <div class="progress-track">
+            <div class="seg-delivered" style="width:${deliveredPct}%" title="Closed Won: ${fmt$(card.delivered)}"></div>
+            <div class="seg-weighted" style="width:${weightedPct}%" title="Weighted forecast: ${fmt$(card.weighted)}"></div>
+            <div class="target-line"></div>
+          </div>
+          <div class="progress-labels-bot">
+            <span><span class="legend-dot delivered"></span>${fmt$(card.delivered)} closed won${card.deliveredDeals.length ? ` (${card.deliveredDeals.map(d=>`<a href="${dealUrl(d.id)}" target="_blank" style="color:inherit;text-decoration:underline;">${d.name.trim()}</a>`).join(', ')})` : ''}</span>
+            <span><span class="legend-dot weighted"></span>${fmt$(card.weighted)} weighted</span>
+          </div>
+        </div>
+
+        <!-- STANDARD METRICS -->
         <div class="metric-row">
           <span class="metric-label">Open pipeline</span>
-          <span class="metric-value">
+          <a href="${hsOpenDealsUrl(card.ownerId)}" target="_blank" class="metric-value metric-link">
             <span class="dot ${card.covColor}"></span>
             ${fmt$(card.open)}
-            <span class="metric-ratio">(${card.cov.toFixed(2)}x cov)</span>
-          </span>
+            <span class="metric-ratio">(${card.cov.toFixed(2)}x cov) ↗</span>
+          </a>
         </div>
         <div class="metric-row">
           <span class="metric-label">Weighted forecast</span>
-          <span class="metric-value">
+          <a href="${hsOpenDealsUrl(card.ownerId)}" target="_blank" class="metric-value metric-link">
             <span class="dot ${card.fcstColor}"></span>
             ${fmt$(card.weighted)}
-            <span class="metric-ratio">(${pct(card.fcst)} of target)</span>
-          </span>
+            <span class="metric-ratio">(${pct(card.fcst)} of quota) ↗</span>
+          </a>
         </div>
         <div class="metric-row">
-          <span class="metric-label">Expected wins</span>
-          <span class="metric-value">
-            <span class="dot ${card.fcstColor}"></span>
-            ${card.expectedWins.toFixed(1)}
-            <span class="metric-ratio">/ ${DEAL_TARGET_PER_REP} deal target</span>
+          <span class="metric-label" style="display:flex;align-items:center;gap:4px;">
+            Forecast Category
+            <span style="font-size:9px;color:#A0AEC0;font-weight:400;">(drives weighted)</span>
           </span>
-        </div>
-        <div class="metric-row">
-          <span class="metric-label">Pacing (open by quarter)</span>
-          <span class="metric-value" style="font-size:11px;color:#4A5568;font-weight:500;">
-            Q2: ${card.pacing.Q2} · Q3: ${card.pacing.Q3} · Q4: ${card.pacing.Q4}${card.pacing.future > 0 ? ' · 2027+: ' + card.pacing.future : ''}
+          <span class="metric-value" style="font-size:11px;font-weight:500;color:#4A5568;">
+            <a href="${hsForecastCategoryUrl(card.ownerId, 'Other')}" target="_blank" class="fc-link" style="color:#C53030;">Other (25%) ${fmt$(card.fcBreakdown.Other)}</a>
+            <span style="color:#A0AEC0;margin:0 2px;">·</span>
+            <a href="${hsForecastCategoryUrl(card.ownerId, 'Possible')}" target="_blank" class="fc-link" style="color:#D69E2E;">Possible (50%) ${fmt$(card.fcBreakdown.Possible)}</a>
+            <span style="color:#A0AEC0;margin:0 2px;">·</span>
+            <a href="${hsForecastCategoryUrl(card.ownerId, 'Likely')}" target="_blank" class="fc-link" style="color:#276749;">Likely (75%) ${fmt$(card.fcBreakdown.Likely)}</a>${card.fcBreakdown.Unset > 0 ? `<span style="color:#A0AEC0;margin:0 2px;">·</span><span style="color:#A0AEC0;">Unset ${fmt$(card.fcBreakdown.Unset)}</span>` : ''}
           </span>
         </div>
         <div class="metric-row">
           <span class="metric-label">Open deals</span>
-          <span class="metric-value">${card.deals.length}</span>
+          <a href="${hsOpenDealsUrl(card.ownerId)}" target="_blank" class="metric-value metric-link">${card.deals.length} ↗</a>
         </div>
 
         ${card.stale > 0 ? `<div class="stale-flag">⚠ ${card.stale} deal${card.stale === 1 ? '' : 's'} with past closedate — needs hygiene fix</div>` : ''}
+
+        <!-- WEEKLY SALES REVIEW -->
+        <div class="activity-section">
+          <div class="activity-header">
+            <span>First meetings — by date entered Top B · last ${FM_LOOKBACK_WEEKS}w</span>
+            <span class="activity-wow">${fmWowStr}</span>
+          </div>
+          <div class="fm-chart">
+            <div class="fm-goal-line" style="bottom:${goalLinePct}%" title="Goal: ${FIRST_MEETING_GOAL}/wk"></div>
+            <div class="fm-container">${fmBars}</div>
+          </div>
+          <div class="fm-week-labels">${fm.map(w => `<span>${w.label}</span>`).join('')}</div>
+          <div class="activity-footer">
+            <span><span class="dot ${fmPaceColor}" style="width:7px;height:7px;"></span>
+              <a href="${hsLeadsUrl(card.ownerId)}" target="_blank" class="click-count">${latestFmTotal} this wk ↗</a>
+              · goal ${FIRST_MEETING_GOAL}/wk · ${totalFm} in last 8 wks
+            </span>
+          </div>
+
+          <!-- EMAIL PROGRESS BAR vs 25/wk goal -->
+          ${(() => {
+            const emailPct = Math.min(100, (card.emailsThisWeek / EMAIL_GOAL) * 100);
+            const emailColor = card.emailsThisWeek >= EMAIL_GOAL ? 'green' : (card.emailsThisWeek >= EMAIL_GOAL * 0.6 ? 'yellow' : 'red');
+            const emailFillColor = emailColor === 'green' ? '#276749' : (emailColor === 'yellow' ? '#D69E2E' : '#C53030');
+            return `
+            <div class="email-progress-wrap">
+              <div class="email-progress-top">
+                <span>External emails this wk</span>
+                <span><a href="${hsEmailsUrl(card.ownerId)}" target="_blank" class="click-count">${card.emailsThisWeek} / ${EMAIL_GOAL} ↗</a></span>
+              </div>
+              <div class="email-progress-track">
+                <div class="email-progress-fill" style="width:${emailPct}%;background:${emailFillColor};"></div>
+              </div>
+            </div>`;
+          })()}
+
+          <div class="activity-row">
+            <div class="act-stat">
+              <a href="${hsEmailsUrl(card.ownerId)}" target="_blank" class="act-link">
+                <span class="act-num">${card.emailsThisWeek}</span>
+                <span class="act-label">external emails ↗</span>
+              </a>
+            </div>
+            <div class="act-stat">
+              <span class="act-num">${card.mtgsThisWeek}</span>
+              <span class="act-label">meetings this wk</span>
+            </div>
+            <div class="act-stat">
+              <span class="act-num">${card.activity[card.activity.length - 1].created}</span>
+              <span class="act-label">new deals this wk</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- LEAD + DEAL STAGE BREAKDOWNS (click any stage to open HubSpot) -->
+        <div class="stage-breakdown-wrap">
+          <div class="stage-table">
+            <div class="stage-table-header">
+              Lead pipeline — ${card.totalOpenLeads} open
+            </div>
+            ${LEAD_OPEN_STAGES.map(s => {
+              const count = card.leadStageCounts[s.id] || 0;
+              const emph = (s.id === 'new-stage-id' || s.id === 'attempting-stage-id') ? 'emph-top' : '';
+              return `<div class="stage-row ${emph}">
+                <a href="${hsLeadsStageUrl(card.ownerId, s.id)}" target="_blank" class="stage-link">
+                  <span class="stage-label">${s.label}</span>
+                  <span class="stage-count">${count}</span>
+                </a>
+              </div>`;
+            }).join('')}
+          </div>
+
+          <div class="stage-table">
+            <div class="stage-table-header">
+              Deal pipeline — ${card.deals.length} open · ${fmt$(card.open)}
+            </div>
+            ${DEAL_STAGE_ORDER.map(sid => {
+              const b = card.dealStageBreakdown[sid];
+              if (b.count === 0) return '';
+              return `<div class="stage-row">
+                <a href="${hsDealsStageUrl(card.ownerId, sid)}" target="_blank" class="stage-link">
+                  <span class="stage-label">${DEAL_STAGE_LABELS[sid]}</span>
+                  <span class="stage-count-amt">${b.count} · ${fmt$(b.amount)}</span>
+                </a>
+              </div>`;
+            }).join('') || '<div class="stage-row stage-empty">No open deals</div>'}
+          </div>
+        </div>
 
         <div class="action-box ${action.tone}">
           <strong>Action — ${action.headline}</strong>
@@ -649,15 +1188,6 @@ function renderNonReps(nonRepOwners) {
 
 load();
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-  window.appAuth.init(user => {
-    document.getElementById('auth-loading').style.display = 'none';
-    document.getElementById('main-content').style.display = 'block';
-    document.getElementById('user-email').textContent = user.email;
-    initApp();
-  });
-});
 </script>
 </body>
 </html>
