@@ -60,13 +60,9 @@
   .gridjs-wrapper { box-shadow: none !important; overflow: auto; }
   .gridjs-table { font-size: 12px; }
   .gridjs-th, .gridjs-td { padding: 8px 10px; min-width: 84px; }
-  /* Freeze the header row: every header cell sticks to the top of the scroll area,
-     stays above the body (z-index), and has an opaque background so rows don't show through. */
   .gridjs-th { background:#f8fafc; color:#475569; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; vertical-align: bottom; white-space: normal; position: sticky; top: 0; z-index: 3; box-shadow: inset 0 -1px 0 #cbd5e1; }
-  /* Let header labels wrap onto multiple lines instead of truncating with an ellipsis */
   .gridjs-th .gridjs-th-content { white-space: normal; overflow: visible; text-overflow: clip; word-break: normal; overflow-wrap: break-word; }
 
-  /* Data hygiene: red flag for missing fields */
   .missing-cell { display: inline-block; background: #fef2f2; color: #991b1b; font-weight: 700; font-size: 10px; padding: 2px 6px; border-radius: 3px; border: 1px solid #fecaca; letter-spacing: 0.5px; }
   .health-banner { padding: 10px 14px; border-radius: 6px; margin-bottom: 14px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .health-banner.good { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
@@ -75,14 +71,12 @@
   .health-banner .health-icon { font-size: 18px; }
   .health-banner .health-detail { color: inherit; font-weight: 400; font-size: 12px; margin-left: auto; }
 
-  /* CSV export */
   .grid-toolbar { display:flex; justify-content:flex-end; align-items:center; gap:10px; margin-bottom:8px; }
   .grid-toolbar .count-hint { font-size:12px; color:#94a3b8; margin-right:auto; }
   .export-btn { background:#2563eb; color:#fff; border:none; border-radius:6px; padding:7px 14px; font-size:12px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
   .export-btn:hover { background:#1d4ed8; }
   .export-btn:disabled { background:#cbd5e1; cursor:not-allowed; }
 
-  /* Exec scorecard: Plan vs Pipeline */
   .scorecard { display:grid; grid-template-columns: 1fr 1fr; gap:18px; margin-bottom:18px; }
   @media (max-width: 900px) { .scorecard { grid-template-columns: 1fr; } }
   .sc-zone { background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:16px 18px; }
@@ -143,11 +137,13 @@
     <!-- ============ EXEC SCORECARD: PLAN vs PIPELINE ============ -->
     <div class="scorecard">
       <div class="sc-zone plan">
-        <h3>Booked / Plan <span class="tag">FINANCE · SET</span></h3>
+        <h3>Booked / Plan <span class="tag">LIVE · HUBSPOT</span></h3>
         <div class="sc-grid">
-          <div class="sc-kpi"><div class="lbl">FY26 ARR Goal</div><div class="val" id="sc-goal">—</div></div>
-          <div class="sc-kpi"><div class="lbl">Current Booked ARR</div><div class="val" id="sc-current">—</div><div class="sub" id="sc-current-sub">company-wide run rate</div></div>
+          <div class="sc-kpi"><div class="lbl">FY26 ARR Goal</div><div class="val" id="sc-goal">—</div><div class="sub">config · by 12/31/26</div></div>
+          <div class="sc-kpi"><div class="lbl">Current Booked ARR</div><div class="val" id="sc-current">—</div><div class="sub" id="sc-current-sub">—</div></div>
           <div class="sc-kpi"><div class="lbl">Gap to Goal</div><div class="val gap" id="sc-gap">—</div></div>
+          <div class="sc-kpi"><div class="lbl">FY26 Revenue (contracted)</div><div class="val" id="sc-fy26">—</div><div class="sub" id="sc-fy26-sub">—</div></div>
+          <div class="sc-kpi"><div class="lbl">Lilly Share of ARR</div><div class="val" id="sc-lilly">—</div></div>
         </div>
         <div class="sc-foot" id="sc-plan-foot"></div>
       </div>
@@ -278,9 +274,15 @@
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', () => {
+  window.appAuth.init(user => {
+    document.getElementById('auth-loading').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+    document.getElementById('user-email').textContent = user.email;
+    initApp();
+  });
+});
 function initApp() {
-  // ============ STATIC REFERENCE DATA (from HubSpot get_properties) ============
-  // Synced to live HubSpot dealstage definitions (verified 2026-06-10).
   const STAGE_LABEL = {
     "1341411420": "Client Committed / Proposal Meeting Pending",
     "143018394":  "Proposal / RFP Delivered",
@@ -292,7 +294,6 @@ function initApp() {
     "1363467602": "Did Not Respond",
     "1340846889": "Rollover"
   };
-  // Synced to live HubSpot dealtype definitions (verified 2026-06-10).
   const DEALTYPE_LABEL = {
     "newbusiness": "New Business",
     "existingbusiness": "Existing (Up-Sell)",
@@ -301,10 +302,9 @@ function initApp() {
     "Win-back": "Win-back",
     "Agency": "Agency",
     "Agency RFP": "Agency RFP",
-    "Agency (RFP)": "Agency RFP",   // legacy HubSpot value — normalize to canonical
+    "Agency (RFP)": "Agency RFP",
     "Specialty Pharma": "Specialty Pharma"
   };
-  // Match either "Agency RFP" or "Agency (RFP)" (HubSpot has both spellings live).
   function isAgencyRfp(s) {
     return /^\s*agency\s*\(?\s*rfp\s*\)?\s*$/i.test(s || "");
   }
@@ -316,18 +316,11 @@ function initApp() {
   const BRAND_DIRECT_PIPELINE_ID = "74379150";
   const CLOSED_STAGE_IDS = ["143017564", "143017565"];
   const CLOSED_WON_STAGE_ID = "143017564";
-  const ONHOLD_STAGE_LABEL = "On Hold";   // maps from dealstage 972641437
-  const FY_START = "2026-01-01";           // FY26 start for closed-won bookings
+  const ONHOLD_STAGE_LABEL = "On Hold";
+  const FY_START = "2026-01-01";
 
-  // ===== FINANCE-SET PLAN INPUTS (not derivable from this pipeline) =====
-  // Current Booked ARR is a COMPANY-WIDE booked run-rate owned by finance
-  // (includes prior-year live contracts, other pipelines, and restatements),
-  // so it is set here rather than summed from HubSpot. Update these when finance restates.
-  const PLAN = {
-    fy26GoalArr:      18000000,   // FY26 ARR goal
-    currentBookedArr: 15300000,   // company-wide booked ARR run-rate
-    currentArrAsOf:   "Jul 22, 2026"
-  };
+  const GOAL_ARR = 18000000;
+  const ROLLOVER_STAGE_ID = "1340846889";
 
   const PROPS = [
     "dealname","dealstage","dealtype","pipeline","hubspot_owner_id","closedate","createdate","hs_lastmodifieddate",
@@ -337,7 +330,6 @@ function initApp() {
     "ad_product_revenue","brand_activation_revenue","prescriberpoint_pa_revenue","samples_revenue"
   ];
 
-  // ============ FORMATTERS ============
   const fmtMoney = (n) => {
     if (n == null || isNaN(n)) return "—";
     const v = Number(n);
@@ -355,9 +347,6 @@ function initApp() {
     try { return new Date(d).toISOString().slice(0,10); } catch(e) { return "—"; }
   };
 
-  // ============ CSV EXPORT ============
-  // Exports raw, unformatted values (numbers stay numbers, dates as YYYY-MM-DD) so the
-  // file is analysis-ready in Excel/Sheets. One row per deal, in the tab's current scope.
   const CSV_COLUMNS = [
     ["Deal Name", "dealname"],
     ["Manufacturer", "manufacturer"],
@@ -424,7 +413,6 @@ function initApp() {
     });
   }
 
-  // ============ SUB-TABS ============
   document.querySelectorAll(".subtab").forEach(t => {
     t.addEventListener("click", () => {
       document.querySelectorAll(".subtab").forEach(x => x.classList.remove("active"));
@@ -434,11 +422,9 @@ function initApp() {
     });
   });
 
-  // ============ DATA LOAD ============
   async function loadAll() {
     let allDeals = [];
     let offset = 0;
-    // Page through up to ~600 deals (current Brand (Direct) open pipeline is well under this)
     for (let i = 0; i < 6; i++) {
       const resp = await window.cowork.callMcpTool(
         "mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects",
@@ -464,7 +450,6 @@ function initApp() {
       offset += 100;
     }
 
-    // Build owner lookup from unique IDs in the result
     const ownerIds = Array.from(new Set(
       allDeals.map(d => d.properties && d.properties.hubspot_owner_id).filter(Boolean)
     )).map(x => parseInt(x, 10)).filter(x => !isNaN(x));
@@ -498,8 +483,6 @@ function initApp() {
     return {};
   }
 
-  // Live FY26 closed-won bookings (this pipeline). Sums ARR of Closed Won deals
-  // with a close date on/after the fiscal-year start. Returns null on failure.
   async function loadBookings() {
     try {
       const resp = await window.cowork.callMcpTool(
@@ -526,7 +509,50 @@ function initApp() {
     }
   }
 
-  // ============ ROW NORMALIZATION ============
+  async function loadArrBook() {
+    try {
+      const resp = await window.cowork.callMcpTool(
+        "mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects",
+        {
+          objectType: "deals",
+          filterGroups: [{ filters: [{ propertyName: "in_arr_book", operator: "EQ", value: "Yes" }] }],
+          properties: ["arr", "dealstage", "company_primary", "dealname"],
+          limit: 200,
+          chatInsights: { userIntent: "Live Booked ARR book for exec scorecard", satisfaction: "NEUTRAL" }
+        }
+      );
+      const data = parseToolResult(resp);
+      return (data.results || []).map(d => ({
+        arr: Number((d.properties && d.properties.arr) || 0),
+        stage: d.properties && d.properties.dealstage,
+        company: (d.properties && d.properties.company_primary) || ""
+      }));
+    } catch (e) {
+      console.warn("ARR book load failed.", e);
+      return [];
+    }
+  }
+
+  async function loadFy26Rev() {
+    try {
+      const resp = await window.cowork.callMcpTool(
+        "mcp__80845023-77a5-4d5b-b850-dc5e2f1b5bed__search_crm_objects",
+        {
+          objectType: "deals",
+          filterGroups: [{ filters: [{ propertyName: "fy2026_revenue", operator: "HAS_PROPERTY" }] }],
+          properties: ["fy2026_revenue", "dealname"],
+          limit: 200,
+          chatInsights: { userIntent: "Live FY26 contracted revenue for exec scorecard", satisfaction: "NEUTRAL" }
+        }
+      );
+      const data = parseToolResult(resp);
+      return (data.results || []).map(d => ({ rev: Number((d.properties && d.properties.fy2026_revenue) || 0) }));
+    } catch (e) {
+      console.warn("FY26 revenue load failed.", e);
+      return [];
+    }
+  }
+
   function normalize(deal, ownerMap) {
     const p = deal.properties || {};
     const num = (v) => (v == null || v === "") ? null : Number(v);
@@ -562,7 +588,6 @@ function initApp() {
     };
   }
 
-  // ============ ROLLUPS ============
   function sum(arr, key) { return arr.reduce((s,r) => s + (r[key] || 0), 0); }
 
   function rollupBy(rows, keyFn) {
@@ -617,7 +642,6 @@ function initApp() {
     target.innerHTML = html;
   }
 
-  // ============ DATA HYGIENE: missing-field flagging ============
   function isFieldMissing(v) {
     return v == null || v === "" || (typeof v === "string" && v.trim() === "");
   }
@@ -625,8 +649,6 @@ function initApp() {
     if (s == null) return "";
     return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
   }
-  // Render a cell as either a formatted value OR a red "MISSING" badge.
-  // treatZeroAsMissing: for numeric fields where 0 likely means "not entered."
   function flagCell(rawValue, fmt, fieldName, treatZeroAsMissing) {
     const missing = isFieldMissing(rawValue) || (treatZeroAsMissing && Number(rawValue) === 0);
     if (missing) {
@@ -635,7 +657,6 @@ function initApp() {
     const formatted = fmt ? fmt(rawValue) : rawValue;
     return formatted == null ? "" : String(formatted);
   }
-  // Per-deal list of missing critical fields. Drives the top-of-grid health banner.
   function dealMissingFields(r) {
     const m = [];
     if (isFieldMissing(r.manufacturer)) m.push("Manufacturer");
@@ -647,7 +668,6 @@ function initApp() {
     if (isFieldMissing(r.forecast))     m.push("Forecast");
     return m;
   }
-  // Update the green/red banner above a deal grid.
   function renderHealthBanner(targetId, rows) {
     const el = document.getElementById(targetId);
     if (!el) return;
@@ -662,10 +682,8 @@ function initApp() {
       el.innerHTML = `<span class="health-icon">✓</span> <strong>All ${rows.length} deals have complete data.</strong> <span class="health-detail">Pipeline hygiene 100% — keep it here.</span>`;
       return;
     }
-    // Owners-to-nudge: skip ones rendered as "ID 12345" since we don't have a name to put in front of leadership
     const reps = [...new Set(issueRows.map(x => x.r.owner).filter(o => o && !/^ID\s/.test(o)))].sort();
     const repText = reps.length ? `Owners to nudge: <strong>${reps.map(htmlEscapeForGrid).join(", ")}</strong>` : "";
-    // Most common missing field across affected deals
     const fieldCounts = {};
     issueRows.forEach(x => x.missing.forEach(f => { fieldCounts[f] = (fieldCounts[f] || 0) + 1; }));
     const topField = Object.entries(fieldCounts).sort((a, b) => b[1] - a[1])[0];
@@ -674,7 +692,6 @@ function initApp() {
     el.innerHTML = `<span class="health-icon">⚠</span> <strong>${issueRows.length} of ${rows.length}</strong> deals are missing key fields — see red badges below. <span class="health-detail">${topText}${topText && repText ? " · " : ""}${repText}</span>`;
   }
 
-  // ============ GRID.JS TABLE ============
   function buildGrid(target, rows) {
     if (target._grid) { target._grid.destroy(); target.innerHTML = ""; }
     const htmlFmt = (cell) => gridjs.html(cell);
@@ -739,7 +756,6 @@ function initApp() {
     target._grid = grid;
   }
 
-  // ============ ENTRYPOINT ============
   (async function main() {
     let allDeals = [], ownerMap = {};
     try {
@@ -756,18 +772,10 @@ function initApp() {
 
     const normalized = allDeals.map(d => normalize(d, ownerMap));
 
-    // Tab splits — Pipeline excludes Roll-Over AND Agency RFPs (both "Agency RFP" and "Agency (RFP)" spellings);
-    // Roll-Over isolates Existing (Roll-Over); Agency RFP isolates the agency-RFP deals via the regex helper.
     const pipeRows       = normalized.filter(r => r.dealtype !== "Existing (Roll-Over)" && !isAgencyRfp(r.dealtype));
     const rollRows       = normalized.filter(r => r.dealtype === "Existing (Roll-Over)");
     const agencyRfpRows  = normalized.filter(r => isAgencyRfp(r.dealtype));
 
-    // ===== EXEC SCORECARD: Plan vs Pipeline =====
-    // Pipeline side is fully live. Definitions match the leadership framing:
-    //   Total Open   = all open deals EXCEPT On-Hold
-    //   Net-New      = Total Open MINUS renewals (roll-over)   [includes Agency RFP]
-    //   Roll-Over    = renewal book
-    //   Coverage     = Net-New TCV / Gap-to-Goal
     const onHoldRows      = normalized.filter(r => r.dealstage === ONHOLD_STAGE_LABEL);
     const openExHold      = normalized.filter(r => r.dealstage !== ONHOLD_STAGE_LABEL);
     const rollExHold      = openExHold.filter(r => r.dealtype === "Existing (Roll-Over)");
@@ -775,30 +783,44 @@ function initApp() {
     const rollTcv         = sum(rollExHold, "amount");
     const netNewTcv       = totalOpenExHold - rollTcv;
     const onHoldTcv       = sum(onHoldRows, "amount");
-    const gapToGoal       = PLAN.fy26GoalArr - PLAN.currentBookedArr;
-    const coverage        = gapToGoal > 0 ? (netNewTcv / gapToGoal) : null;
-
-    document.getElementById("sc-goal").textContent    = fmtMoney(PLAN.fy26GoalArr);
-    document.getElementById("sc-current").textContent = fmtMoney(PLAN.currentBookedArr);
-    document.getElementById("sc-current-sub").textContent = "company-wide run rate · as of " + PLAN.currentArrAsOf;
-    document.getElementById("sc-gap").textContent     = fmtMoney(gapToGoal);
+    document.getElementById("sc-goal").textContent    = fmtMoney(GOAL_ARR);
     document.getElementById("sc-open").textContent    = fmtMoney(totalOpenExHold);
     document.getElementById("sc-netnew").textContent  = fmtMoney(netNewTcv);
     document.getElementById("sc-roll").textContent    = fmtMoney(rollTcv);
-    document.getElementById("sc-cov").textContent     = coverage != null ? coverage.toFixed(1) + "x" : "—";
     document.getElementById("sc-onhold").textContent  = fmtMoney(onHoldTcv);
-    document.getElementById("sc-plan-foot").textContent =
-      "Goal & Current ARR are finance-set inputs (company-wide booked run rate). Gap = Goal − Current.";
     document.getElementById("sc-pipe-foot").textContent =
-      "Live from HubSpot Brand (Direct), TCV. Total Open excludes On-Hold; Net-New = open ex roll-over & On-Hold; Coverage = Net-New ÷ Gap.";
+      "Live from HubSpot Brand (Direct), TCV. Total Open excludes On-Hold; Net-New = open ex roll-over & On-Hold; Coverage = Net-New ÷ live Gap.";
+    document.getElementById("sc-plan-foot").textContent =
+      "Live from HubSpot (same logic as the finance sheet): Current Booked ARR = SUM(arr) where in_arr_book = Yes; FY26 Revenue = SUM(fy2026_revenue). Goal is the only fixed input; Gap = Goal − Booked ARR.";
 
-    // Live FY26 closed-won bookings (async; fills in when ready)
-    loadBookings().then(v => {
-      const el = document.getElementById("sc-bookings");
-      if (el) el.textContent = (v == null) ? "n/a" : fmtMoney(v);
+    Promise.all([loadArrBook(), loadFy26Rev(), loadBookings()]).then(([book, fy26, bookings]) => {
+      const roundSum = (vals) => Math.round(vals.reduce((s, x) => s + x, 0));
+      const bookedArr   = roundSum(book.map(d => d.arr));
+      const rolloverArr = roundSum(book.filter(d => d.stage === ROLLOVER_STAGE_ID).map(d => d.arr));
+      const closedWon   = roundSum(book.filter(d => d.stage === CLOSED_WON_STAGE_ID).map(d => d.arr));
+      const lillyArr    = book.filter(d => /lilly/i.test(d.company)).reduce((s, d) => s + d.arr, 0);
+      const lillyShare  = bookedArr ? (lillyArr / bookedArr) : 0;
+      const fy26Rev     = roundSum(fy26.map(d => d.rev));
+      const gap         = GOAL_ARR - bookedArr;
+      const coverage    = gap > 0 ? (netNewTcv / gap) : null;
+
+      document.getElementById("sc-current").textContent = fmtMoney(bookedArr);
+      document.getElementById("sc-current-sub").textContent =
+        `${book.length} deals · Rollover ${fmtMoney(rolloverArr)} + Closed Won ${fmtMoney(closedWon)}`;
+      document.getElementById("sc-gap").textContent = fmtMoney(gap);
+      document.getElementById("sc-cov").textContent = coverage != null ? coverage.toFixed(1) + "x" : "—";
+      document.getElementById("sc-fy26").textContent = fmtMoney(fy26Rev);
+      document.getElementById("sc-fy26-sub").textContent = `${fy26.length} deals · contracted`;
+      document.getElementById("sc-lilly").textContent = (lillyShare * 100).toFixed(1) + "%";
+      const bEl = document.getElementById("sc-bookings");
+      if (bEl) bEl.textContent = (bookings == null) ? "n/a" : fmtMoney(bookings);
+    }).catch(e => {
+      console.warn("Booked ARR / FY26 load failed.", e);
+      ["sc-current", "sc-gap", "sc-fy26", "sc-lilly", "sc-cov"].forEach(id => {
+        const el = document.getElementById(id); if (el && el.textContent === "—") el.textContent = "load failed";
+      });
     });
 
-    // ===== THIS WEEK: deals created in last 7 days (Pipeline + Roll-Over + Agency RFP combined) =====
     const now = new Date();
     const cutoff = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const isAfterCutoff = (iso) => {
@@ -809,7 +831,6 @@ function initApp() {
     const newThisWeek = normalized.filter(r => isAfterCutoff(r.createdate));
     const existing    = normalized.filter(r => !isAfterCutoff(r.createdate));
 
-    // Helper: distinct trimmed non-empty values
     const setOf = (rows, fn) => {
       const s = new Set();
       rows.forEach(r => {
@@ -828,7 +849,6 @@ function initApp() {
 
     const tcvAdded = sum(newThisWeek, "amount");
 
-    // Format the date window
     const fmt = (d) => d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
     document.getElementById("week-window").textContent = `· ${fmt(cutoff)} – ${fmt(now)}`;
 
@@ -840,7 +860,6 @@ function initApp() {
       ? `${fmtMoneyFull(tcvAdded)} from ${newThisWeek.length} new deal${newThisWeek.length === 1 ? "" : "s"}`
       : "No new deals this week";
 
-    // New deals table
     const wkTable = document.getElementById("wk-deals-table");
     if (newThisWeek.length === 0) {
       wkTable.innerHTML = '<div style="padding: 12px; color:#94a3b8; font-style: italic;">No new deals created in the last 7 days.</div>';
@@ -866,7 +885,6 @@ function initApp() {
       wkTable.innerHTML = html;
     }
 
-    // Brand / manufacturer chips
     const brandChips = document.getElementById("wk-brand-chips");
     brandChips.innerHTML = firstAppearanceBrands.length
       ? firstAppearanceBrands.map(b => `<span class="chip">${b}</span>`).join("")
@@ -878,7 +896,6 @@ function initApp() {
       : '<span class="chip empty">No new manufacturers this week</span>';
 
 
-    // ===== SUMMARY: live KPIs =====
     const liveScope = pipeRows;
     const uniq = (arr, fn) => new Set(arr.map(fn).filter(v => v && String(v).trim().length)).size;
     const tcv = sum(liveScope, "amount");
@@ -895,7 +912,6 @@ function initApp() {
     document.getElementById("kpi-wtd").textContent = fmtMoney(wtd);
     document.getElementById("kpi-wtd-full").textContent = fmtMoneyFull(wtd);
 
-    // Live rollups
     const byType = rollupBy(liveScope, r => r.dealtype);
     renderRollupTable(
       document.getElementById("live-by-dealtype"),
@@ -920,13 +936,11 @@ function initApp() {
       ["TOTAL", liveScope.length, fmtMoneyFull(tcv), fmtMoneyFull(wtd)]
     );
 
-    // Freshness + source line
     const ts = new Date();
     document.getElementById("freshness").textContent = "Live · " + ts.toLocaleString();
     document.getElementById("live-source").textContent =
       `Source: HubSpot Brand (Direct) pipeline · ${liveScope.length} open deals in Pipeline scope · ${rollRows.length} in Roll-Over · ${agencyRfpRows.length} in Agency RFP · Refreshed ${ts.toLocaleString()}`;
 
-    // ===== Pipeline tab KPIs + grid =====
     document.getElementById("p-count").textContent = pipeRows.length.toLocaleString();
     document.getElementById("p-tcv").textContent = fmtMoney(sum(pipeRows, "amount"));
     document.getElementById("p-arr").textContent = fmtMoney(sum(pipeRows, "arr"));
@@ -934,7 +948,6 @@ function initApp() {
     renderHealthBanner("p-health", pipeRows);
     buildGrid(document.getElementById("grid-pipeline"), pipeRows);
 
-    // ===== Roll-Over tab KPIs + grid =====
     document.getElementById("r-count").textContent = rollRows.length.toLocaleString();
     document.getElementById("r-tcv").textContent = fmtMoney(sum(rollRows, "amount"));
     document.getElementById("r-arr").textContent = fmtMoney(sum(rollRows, "arr"));
@@ -942,7 +955,6 @@ function initApp() {
     renderHealthBanner("r-health", rollRows);
     buildGrid(document.getElementById("grid-rollover"), rollRows);
 
-    // ===== Agency RFP tab KPIs + grid =====
     document.getElementById("a-count").textContent = agencyRfpRows.length.toLocaleString();
     document.getElementById("a-tcv").textContent = fmtMoney(sum(agencyRfpRows, "amount"));
     document.getElementById("a-arr").textContent = fmtMoney(sum(agencyRfpRows, "arr"));
@@ -950,21 +962,11 @@ function initApp() {
     renderHealthBanner("a-health", agencyRfpRows);
     buildGrid(document.getElementById("grid-agencyrfp"), agencyRfpRows);
 
-    // ===== CSV export buttons (one per tab, exports that tab's scope) =====
     wireExport("export-pipeline",  () => pipeRows,      "brand_direct_pipeline");
     wireExport("export-rollover",  () => rollRows,      "brand_direct_rollover");
     wireExport("export-agencyrfp", () => agencyRfpRows, "brand_direct_agency_rfp");
   })();
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-  window.appAuth.init(user => {
-    document.getElementById('auth-loading').style.display = 'none';
-    document.getElementById('main-content').style.display = 'block';
-    document.getElementById('user-email').textContent = user.email;
-    initApp();
-  });
-});
 </script>
 </body>
 </html>

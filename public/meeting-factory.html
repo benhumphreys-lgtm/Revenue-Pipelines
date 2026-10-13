@@ -126,13 +126,12 @@ document.addEventListener('DOMContentLoaded', () => {
     initApp();
   });
 });
-
 function initApp() {
 const SEARCH_TOOL="mcp__6b11666e-7029-4baf-a491-3791bd8d9175__hubspot_search_custom_objects";
 const OBJ="0-136";
 const P_TOPA="hs_v2_date_entered_new_stage_id_1318266061",P_TOPB="hs_v2_date_entered_attempting_stage_id_745667965",P_MIDA="hs_v2_date_entered_connected_stage_id_2058487257",P_MIDB="hs_v2_date_entered_qualified_stage_id_233247981";
 const PROPS=["hs_lead_name","hs_createdate","hs_pipeline_stage","hs_pipeline","hs_lead_type","hubspot_owner_id","origin","meeting_scheduled_date","hs_associated_company_name",P_TOPA,P_TOPB,P_MIDA,P_MIDB].join(",");
-const EXCLUDE_PIPELINE="918742939"; // exclude the Prospecting Pipeline (patched: source had placeholder "lead-pipeline-id" for KEEP_PIPELINE)
+const EXCLUDE_PIPELINE="918742939"; // exclude the Prospecting Pipeline
 const SORTS='[{"propertyName":"hs_createdate","direction":"DESCENDING"}]';
 const HS_PORTAL="21389996",HS_LIST="https://app.hubspot.com/contacts/"+HS_PORTAL+"/objects/0-136/views/all/list";
 function leadUrl(n){return HS_LIST+"?query="+encodeURIComponent(n);}
@@ -140,7 +139,7 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 
 const STAGE_LABELS={"new-stage-id":"Top A · Pending First Meeting","attempting-stage-id":"Top B · First Meeting Scheduled","connected-stage-id":"Mid A · First Meeting Complete","qualified-stage-id":"Mid B · Opportunity Identified","unqualified-stage-id":"Bad Timing","968123417":"Idle","259798673":"Didn't Respond","972389929":"Not a Fit","1009181988":"Hand-off to Sales"};
 const TYPE_LABELS={NEW_BUSINESS:"New business",Expansion:"Existing (Expansion)",Rollover:"Existing (Rollover)",UPSELL:"Existing (Upsell)",Agency:"Agency","Agency RFP":"Agency RFP","Specialty Pharma":"Specialty Pharma","Win-Back":"Win-Back"};
-const OWNER_NAMES={"59730113":"Jeff Puckett","70730949":"Zena Nelson","78606761":"Anne Foelsch","79878581":"Michelle Bornstein","79911714":"Nick Vinson","79963911":"Bridget Lindley","84065570":"Pedro Matos","84140389":"Asa Curry","86308630":"Sheri Pruitt","90251481":"Ben Humphreys","90944377":"Alesia Coleman","92729253":"Tom O'Donnell","145352455":"Ryan Norris","148548425":"Jeremy Luetge","149547845":"John Harbison","153408573":"Daniel Cornwell","176792101":"John Robinson","314753596":"Kyle McCaig","359503422":"John Zarifis","402170399":"Pete Robinson","405718017":"Sebastian Beltran","425247274":"Brian DiGeronimo","445499469":"Yousif Malek","592250769":"Barbara Fine","636865340":"Brescia Gonzalez","637028764":"Shawn Moriarty","685203508":"Autumn Paige","1329000951":"Melinda Ried","1383399306":"Tina Ivankovic","1907981998":"Samantha Akhzar"};
+const OWNER_NAMES={"59730113":"Jeff Puckett","70730949":"Zena Nelson","78606761":"Anne Foelsch","79878581":"Michelle Bornstein","79911714":"Nick Vinson","79963911":"Bridget Lindley","84065570":"Pedro Matos","84140389":"Asa Curry","86308630":"Sheri Pruitt","90251481":"Ben Humphreys","90944377":"Alesia Coleman","92729253":"Tom O'Donnell","145352455":"Ryan Norris","148548425":"Jeremy Luetge","149547845":"John Harbison","153408573":"Daniel Cornwell","176792101":"John Robinson","314753596":"Kyle McCaig","359503422":"John Zarifis","402170399":"Pete Robinson","405718017":"Sebastian Beltran","425247274":"Brian DiGeronimo","445499469":"Yousif Malek","592250769":"Barbara Fine","636865340":"Brescia Gonzalez","637028764":"Shawn Moriarty","685203508":"Autumn Paige","1329000951":"Melinda Ried","1383399306":"Tina Ivankovic","1907981998":"Samantha Akhzar","96962499":"Richard Salazar"};
 const CORE_REPS=["Kyle McCaig","Anne Foelsch","Daniel Cornwell"];
 const REP_COL={"Anne Foelsch":"#ef8a6a","Daniel Cornwell":"#3dc0c7","Kyle McCaig":"#a78bdb","Other":"#c2ccd6"};
 const ORIGIN_COL={"Direct":"#3dc0c7","Referral Partner":"#a78bdb","Event":"#e0a83e","Marketing":"#3a9d6e","Inbound Form":"#2bb3a3","Agent":"#4a7fb5","Referral (non-RP)":"#d2607a","Unspecified":"#c2ccd6"};

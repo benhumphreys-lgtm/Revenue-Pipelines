@@ -329,29 +329,98 @@
   <button data-tab="tab-omap">🎯 Opportunity Map</button>
 </nav>
 <div id="tab-dashboard" class="tabpane active">
-  <div id="pace-engine">
-    <div class="pe-hd">🏃 RP Health &amp; Pipeline <span>— Producing = 3 first meetings entered THIS month · Pace = on-track projection (annualized)</span></div>
-    <div class="pe-note" id="pe-status">Loading live RP + meeting data from HubSpot…</div>
-    <div class="pe-kpis" id="pe-kpis"></div>
-    <h4>First meetings this month — by RP <span class="pe-sub">only RPs with a lead created or a first meeting this month · click a row for detail (opens in HubSpot)</span></h4>
-    <div id="pe-tracker"></div>
-    <h4 style="margin-top:16px;">▲ Can still hit 3 this month <span class="pe-sub">— on pace / close</span></h4>
-    <div id="pe-push"></div>
-    <h4 style="margin-top:16px;">Active in the funnel — by referral partner <span class="pe-sub">open leads (Top A/B, Mid A) + open deals (any stage except Closed Won/Lost, On Hold) · Mid B excluded (becomes a deal) · ↑ = moved this month</span></h4>
-    <div id="pe-funnel-move"></div>
-    <div class="pe-grid" style="margin-top:16px;">
-      <div>
-        <h4>▼ Stalled / aging <span class="pe-sub">— deprioritize or air cover</span></h4>
-        <div id="pe-stalled"></div>
-      </div>
-      <div>
-        <h4>Monthly rollup</h4>
-        <div id="pe-rollup"></div>
-      </div>
-    </div>
-    <h4 style="margin-top:16px;">New RP pipeline → Lawler <span class="pe-sub">goal 3 signed/mo</span></h4>
-    <div id="pe-pipeline"></div>
-  </div>
+<!-- BEGIN RP WEEKLY SCORECARD (live from HubSpot on each refresh) -->
+<div class="rpsc-section-label">Program scorecard — live from HubSpot on each refresh · green ≥ 90% of goal · yellow ≥ 50% · red below</div>
+<div id="rp-weekly-scorecard">
+<style>
+  #rp-weekly-scorecard{--g:#16a34a;--y:#d97706;--r:#dc2626;--gbg:#dcfce7;--ybg:#fef3c7;--rbg:#fee2e2;--muted:#6b7280;--line:#e5e7eb;--ink:#111827;
+    border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:#fff;margin-bottom:18px;color:var(--ink);}
+  .rpsc-section-label{font-size:12px;font-weight:600;color:#374151;letter-spacing:.01em;margin:0 0 8px;}
+  #rp-weekly-scorecard .ws-asof{color:var(--muted)!important;font-size:13px;margin:0 0 14px}
+  #rp-weekly-scorecard .ws-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+  #rp-weekly-scorecard .ws-tile{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:#fafbfc}
+  #rp-weekly-scorecard .ws-tile .l{font-size:11px;color:var(--muted)!important;text-transform:uppercase;letter-spacing:.04em;display:flex;justify-content:space-between}
+  #rp-weekly-scorecard .ws-tile .l .goal{text-transform:none;letter-spacing:0;font-weight:600}
+  #rp-weekly-scorecard .ws-tile .b{font-size:32px;font-weight:700;line-height:1.1;margin:4px 0 2px;color:var(--ink)}
+  #rp-weekly-scorecard .ws-tile .c{font-size:12.5px;color:var(--muted)!important} #rp-weekly-scorecard .ws-tile .c b{color:var(--ink)!important}
+  #rp-weekly-scorecard .ws-tile.g .b{color:var(--g)!important} #rp-weekly-scorecard .ws-tile.y .b{color:var(--y)!important} #rp-weekly-scorecard .ws-tile.r .b{color:var(--r)!important}
+  #rp-weekly-scorecard .ws-tile.met .l .goal{color:var(--g)!important} #rp-weekly-scorecard .ws-tile.miss .l .goal{color:var(--r)!important}
+  #rp-weekly-scorecard table{width:100%;border-collapse:collapse;font-size:14px;background:transparent;margin:0}
+  #rp-weekly-scorecard th{font-size:11px;color:var(--muted)!important;text-transform:uppercase;letter-spacing:.04em;text-align:left;padding:6px 10px;border-bottom:1px solid var(--line);background:transparent}
+  #rp-weekly-scorecard td{padding:10px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink)!important;background:transparent}
+  #rp-weekly-scorecard td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  #rp-weekly-scorecard .m{font-weight:600;color:var(--ink)!important} #rp-weekly-scorecard .d{font-size:12px;color:var(--muted)!important;margin-top:2px;max-width:360px;line-height:1.35}
+  #rp-weekly-scorecard .dot{display:inline-block;width:11px;height:11px;border-radius:50%;vertical-align:-1px;margin-right:6px}
+  #rp-weekly-scorecard .dot.g{background:var(--g)} #rp-weekly-scorecard .dot.y{background:var(--y)} #rp-weekly-scorecard .dot.r{background:var(--r)}
+  #rp-weekly-scorecard .pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+  #rp-weekly-scorecard .pill.g{background:var(--gbg);color:var(--g)!important} #rp-weekly-scorecard .pill.y{background:var(--ybg);color:var(--y)!important} #rp-weekly-scorecard .pill.r{background:var(--rbg);color:var(--r)!important}
+  #rp-weekly-scorecard .hist{display:flex;gap:3px} #rp-weekly-scorecard .hist span{width:14px;height:22px;border-radius:3px;background:var(--line)}
+  #rp-weekly-scorecard .hist span.g{background:var(--g)} #rp-weekly-scorecard .hist span.y{background:var(--y)} #rp-weekly-scorecard .hist span.r{background:var(--r)}
+  #rp-weekly-scorecard .hist span.now{outline:2px solid var(--ink);outline-offset:1px}
+  #rp-weekly-scorecard .chg{font-size:13px;white-space:nowrap} #rp-weekly-scorecard .chg.up{color:var(--g)!important} #rp-weekly-scorecard .chg.down{color:var(--r)!important} #rp-weekly-scorecard .chg.flat{color:var(--muted)!important}
+  #rp-weekly-scorecard .moved{font-size:12px;color:var(--muted)!important}
+  #rp-weekly-scorecard .foot{color:var(--muted)!important;font-size:12px;margin-top:10px}
+  @media (max-width:720px){#rp-weekly-scorecard .ws-strip{grid-template-columns:1fr} #rp-weekly-scorecard th:nth-child(5),#rp-weekly-scorecard td:nth-child(5){display:none}}
+</style>
+  <p class="ws-asof" id="ws-asof">Loading scorecard live from HubSpot…</p>
+  <div class="ws-strip" id="ws-strip"></div>
+  <table>
+    <thead><tr><th>Metric</th><th class="n">This week</th><th class="n">Goal</th><th>Status</th><th>Last 8 weeks</th><th>vs last week</th></tr></thead>
+    <tbody id="ws-rows"></tbody>
+  </table>
+  <p class="foot">Live from HubSpot on each refresh. Trend reconstructed from stage-entry dates. Status goal: at least 4 green, no more than 1 red (Q4 target). Comms touches is a manual input.</p>
+</div>
+<!-- END RP WEEKLY SCORECARD -->
+
+<!-- BEGIN RP METRIC DETAIL (drill-in per scorecard metric; reads window.__RPSC) -->
+<div class="rpsc-section-label">Metric detail — click any card to see the exact HubSpot records behind the number</div>
+<div id="rp-metric-detail">
+<style>
+  #rp-metric-detail{--g:#16a34a;--y:#d97706;--r:#dc2626;--muted:#6b7280;--line:#e5e7eb;--ink:#111827;margin-bottom:18px;color:var(--ink);}
+  #rp-metric-detail .rpd-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;}
+  #rp-metric-detail .rpd-card{border:1px solid var(--line);border-radius:12px;background:#fff;padding:13px 15px;cursor:pointer;transition:box-shadow .12s,border-color .12s;}
+  #rp-metric-detail .rpd-card:hover{box-shadow:0 2px 10px rgba(0,0,0,.06);border-color:#cbd5e1;}
+  #rp-metric-detail .rpd-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+  #rp-metric-detail .rpd-label{font-size:12.5px;font-weight:600;color:var(--ink)!important;line-height:1.3;}
+  #rp-metric-detail .rpd-goal{font-size:11px;color:var(--muted)!important;white-space:nowrap;}
+  #rp-metric-detail .rpd-num{font-size:30px;font-weight:700;line-height:1.1;margin:6px 0 2px;color:var(--ink)!important;}
+  #rp-metric-detail .rpd-card.g .rpd-num{color:var(--g)!important;} #rp-metric-detail .rpd-card.y .rpd-num{color:var(--y)!important;} #rp-metric-detail .rpd-card.r .rpd-num{color:var(--r)!important;}
+  #rp-metric-detail .rpd-statusline{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)!important;}
+  #rp-metric-detail .rpd-dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+  #rp-metric-detail .rpd-dot.g{background:var(--g);} #rp-metric-detail .rpd-dot.y{background:var(--y);} #rp-metric-detail .rpd-dot.r{background:var(--r);} #rp-metric-detail .rpd-dot.na{background:#cbd5e1;}
+  #rp-metric-detail .rpd-pill{font-weight:600;}
+  #rp-metric-detail .rpd-pill.g{color:var(--g)!important;} #rp-metric-detail .rpd-pill.y{color:var(--y)!important;} #rp-metric-detail .rpd-pill.r{color:var(--r)!important;}
+  #rp-metric-detail .rpd-caret{margin-left:auto;color:var(--muted)!important;font-size:11px;}
+  #rp-metric-detail .rpd-detail{display:none;margin-top:11px;padding-top:11px;border-top:1px solid var(--line);}
+  #rp-metric-detail .rpd-card.open .rpd-detail{display:block;}
+  #rp-metric-detail .rpd-card.open{cursor:default;}
+  #rp-metric-detail .rpd-desc{font-size:11.5px;color:var(--muted)!important;margin:0 0 8px;line-height:1.4;}
+  #rp-metric-detail .rpd-rp{margin:7px 0;}
+  #rp-metric-detail .rpd-rp-h{font-size:12.5px;font-weight:600;color:var(--ink)!important;margin-bottom:2px;}
+  #rp-metric-detail .rpd-rec{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:#374151!important;padding:2px 0;}
+  #rp-metric-detail .rpd-rec .rpd-sub{color:var(--muted)!important;white-space:nowrap;}
+  #rp-metric-detail .rpd-rec a{color:#2563eb!important;text-decoration:none;}
+  #rp-metric-detail .rpd-rec a:hover{text-decoration:underline;}
+  #rp-metric-detail .rpd-empty{font-size:12px;color:var(--muted)!important;font-style:italic;}
+  #rp-metric-detail .rpd-note{font-size:11.5px;color:var(--muted)!important;margin-top:8px;}
+  #rp-metric-detail .rpd-loading{font-size:13px;color:var(--muted)!important;padding:8px 2px;}
+</style>
+  <div class="rpd-grid" id="rpd-grid"><div class="rpd-loading" id="rpd-loading">Loading metric detail from HubSpot…</div></div>
+</div>
+<!-- END RP METRIC DETAIL -->
+
+<div class="section-label" style="margin-top: 24px;">② Lead funnel — RP-origin leads (going forward, new business)</div>
+<div class="card">
+  <h2>RP-sourced lead funnel <span class="h2-hint">— origin = Referral Partner · click a stage to view those leads</span><span class="xref-banner" id="xref-banner">Cross-reference: pending…</span></h2>
+  <div id="funnel" class="funnel"><div class="loading">Loading…</div></div>
+</div>
+
+<div class="section-label" style="margin-top: 24px;">③ Deal pipeline — RP-attributed deals (North Star · retroactive · contact-RP link)</div>
+<div class="card">
+  <h2>RP-attributed deal funnel — Brand (Direct) <span class="h2-hint">— every Brand Direct deal with a direct Deal → Referral Partner association · click a stage to view deals</span><span class="xref-banner" id="deal-banner">Deal walk: pending…</span></h2>
+  <div id="deal-funnel" class="funnel funnel-6"><div class="loading">Loading…</div></div>
+  <div id="bridge-note" style="margin-top: 12px; padding: 10px 12px; background: #f6f7f9; border-radius: 8px; font-size: 12px; color: #4a4a4a; display: none;"></div>
+</div>
 
 <div class="section-label">Summary — weekly snapshot + momentum</div>
 <div class="exec-summary">
@@ -393,67 +462,6 @@
   </div>
 </div>
 
-<div class="section-label">Program scorecard — targets: 3 newly active/month · 75% network health · 2 first meetings/week</div>
-<div class="scorecard">
-  <div class="sc-lane">
-    <span class="sc-tag sc-tag-inputs">Inputs</span>
-    <div class="sc-lane-sub">Is the engine being fed?</div>
-    <div class="sc-metric">
-      <div class="sc-metric-head"><span class="sc-metric-label">Active RPs this month</span><span class="sc-metric-status sc-status-tbd" id="sc-newactive-status">loading…</span></div>
-      <div class="sc-metric-value"><span class="sc-metric-num" id="sc-newactive">—</span><span class="sc-metric-target">/ 3 target</span></div>
-      <div class="sc-metric-hint" id="sc-newactive-hint">unique RPs with a meeting in the last 30 days</div>
-      <div class="sc-bar"><div class="sc-bar-fill sc-bar-on" id="sc-newactive-bar" style="width: 5%;"></div></div>
-    </div>
-    <div class="sc-metric">
-      <div class="sc-metric-head"><span class="sc-metric-label">Active-network health (60-day)</span><span class="sc-metric-status sc-status-tbd" id="sc-health-status">loading…</span></div>
-      <div class="sc-metric-value"><span class="sc-metric-num" id="sc-health">—</span><span class="sc-metric-target">/ 75% target</span></div>
-      <div class="sc-metric-hint" id="sc-health-hint">computing from signed RP activity</div>
-      <div class="sc-bar"><div class="sc-bar-fill sc-bar-risk" id="sc-health-bar" style="width: 5%;"></div></div>
-    </div>
-  </div>
-
-  <div class="sc-lane">
-    <span class="sc-tag sc-tag-output">Output</span>
-    <div class="sc-lane-sub">Is it producing?</div>
-    <div class="sc-metric">
-      <div class="sc-metric-head"><span class="sc-metric-label">First meetings (this week)</span><span class="sc-metric-status sc-status-tbd" id="sc-fm-status">loading…</span></div>
-      <div class="sc-metric-value"><span class="sc-metric-num" id="sc-fm">—</span><span class="sc-metric-target">/ 2 target</span></div>
-      <div class="sc-bar"><div class="sc-bar-fill sc-bar-on" id="sc-fm-bar" style="width: 5%;"></div></div>
-    </div>
-    <div class="sc-metric">
-      <div class="sc-metric-head"><span class="sc-metric-label">First meetings (this month)</span><span class="sc-metric-status sc-status-tbd" id="sc-fm-month-status">loading…</span></div>
-      <div class="sc-metric-value"><span class="sc-metric-num" id="sc-fm-month">—</span><span class="sc-metric-target">/ 8 target</span></div>
-      <div class="sc-bar"><div class="sc-bar-fill sc-bar-on" id="sc-fm-month-bar" style="width: 5%;"></div></div>
-    </div>
-    <div class="sc-metric">
-      <div class="sc-metric-label" style="margin-bottom: 4px;">Trailing 8 weeks</div>
-      <div class="sc-spark" id="sc-spark"></div>
-      <div class="sc-metric-hint" id="sc-spark-hint">loading…</div>
-    </div>
-  </div>
-
-  <div class="sc-lane">
-    <span class="sc-tag sc-tag-value">Value</span>
-    <div class="sc-lane-sub">Is it worth it?</div>
-    <div class="sc-metric">
-      <div class="sc-metric-label" style="margin-bottom: 4px;">First meeting → opportunity</div>
-      <div class="sc-metric-value"><span class="sc-metric-num" id="sc-conv">—</span><span class="sc-metric-status sc-status-tbd" id="sc-conv-trend" style="font-weight: 400;">trailing 90 days</span></div>
-    </div>
-    <div class="sc-metric">
-      <div class="sc-metric-label" style="margin-bottom: 4px;">RP-influenced pipeline</div>
-      <div class="sc-metric-value"><span class="sc-metric-num" id="sc-pipeline">—</span><span class="sc-metric-target" id="sc-pipeline-hint">loading…</span></div>
-    </div>
-    <div class="sc-metric">
-      <div class="sc-metric-label" style="margin-bottom: 4px;">Closed-won attributable (YTD)</div>
-      <div class="sc-metric-value"><span class="sc-metric-num" id="sc-won">—</span><span class="sc-metric-target" id="sc-won-hint">loading…</span></div>
-    </div>
-  </div>
-</div>
-
-<div class="calc-card">
-  <h3 class="calc-title">Top 5 RPs by meetings (trailing 90 days)</h3>
-  <p class="calc-sub">Loading from HubSpot…</p>
-</div>
 
 <div class="kpis">
   <div class="kpi" data-drill="active-rps"><div class="kpi-label">Active RPs</div><div class="kpi-value" id="kpi-active-rps">—</div><div class="kpi-hint" id="kpi-rps-hint">of total</div></div>
@@ -467,34 +475,6 @@
 <div class="section-label">① RP lifecycle pipeline — click a card to open in HubSpot</div>
 <div class="card">
   <div id="rp-kanban" class="kanban"><div class="loading">Loading…</div></div>
-</div>
-
-<div class="section-label" style="margin-top: 24px;">② Lead funnel — RP-origin leads (going forward, new business)</div>
-<div class="card">
-  <h2>RP-sourced lead funnel <span class="h2-hint">— origin = Referral Partner · click a stage to view those leads</span><span class="xref-banner" id="xref-banner">Cross-reference: pending…</span></h2>
-  <div id="funnel" class="funnel"><div class="loading">Loading…</div></div>
-</div>
-
-<div class="section-label" style="margin-top: 24px;">③ Deal pipeline — RP-attributed deals (North Star · retroactive · contact-RP link)</div>
-<div class="card">
-  <h2>RP-attributed deal funnel — Brand (Direct) <span class="h2-hint">— every Brand Direct deal with a direct Deal → Referral Partner association · click a stage to view deals</span><span class="xref-banner" id="deal-banner">Deal walk: pending…</span></h2>
-  <div id="deal-funnel" class="funnel funnel-6"><div class="loading">Loading…</div></div>
-  <div id="bridge-note" style="margin-top: 12px; padding: 10px 12px; background: #f6f7f9; border-radius: 8px; font-size: 12px; color: #4a4a4a; display: none;"></div>
-</div>
-
-<div class="card">
-  <h2>Top performing RPs <span class="h2-hint">— click a row to view that RP's leads</span></h2>
-  <div id="top-rps"><div class="loading">Loading…</div></div>
-</div>
-
-<div class="card">
-  <h2>All referral partners</h2>
-  <div id="rp-table" class="table-scroll"><div class="loading">Loading partners…</div></div>
-</div>
-
-<div class="card">
-  <h2>RP-sourced leads</h2>
-  <div id="leads-table" class="table-scroll"><div class="loading">Loading leads…</div></div>
 </div>
 
 <div class="footer-note">
@@ -572,9 +552,7 @@
   </div>
 </div>
 
-
 </div>
-
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   window.appAuth.init(user => {
@@ -584,8 +562,308 @@ document.addEventListener('DOMContentLoaded', () => {
     initApp();
   });
 });
-
 function initApp() {
+/* ===== RP Weekly Scorecard — live from HubSpot, 8-week trend reconstructed from stage-entry dates ===== */
+(function(){
+  var TOOL="mcp__6b11666e-7029-4baf-a491-3791bd8d9175__hubspot_search_custom_objects";
+  var CFILTER="mcp__6b11666e-7029-4baf-a491-3791bd8d9175__hubspot_filter_contacts_by_property";
+  var MF=["hs_v2_date_entered_attempting_stage_id_745667965","hs_v2_date_entered_connected_stage_id_2058487257","hs_v2_date_entered_qualified_stage_id_233247981","hs_v2_date_entered_1009181988"];
+  var DAY=86400000, NOW=Date.now();
+  var PROS='920226201', RETIRED={'967596116':1,'1162158241':1};
+  var SIGNED_FIELD='hs_v2_date_entered_967596115';
+  var COMMS=3; // manual input — partner-wide comms sent in last 30d; update weekly
+  // ---- metric definitions (match the pace engine + build notes) ----
+  var STRIP_GOALS={g:{op:'>=',n:4,txt:'goal ≥ 4'}, y:{op:'<=',n:3,txt:'goal ≤ 3'}, r:{op:'<=',n:1,txt:'goal ≤ 1'}};
+  var N={g:'green',y:'yellow',r:'red'};
+  function monthStartOf(t){var d=new Date(t);return new Date(d.getFullYear(),d.getMonth(),1).getTime();}
+  function dayOfMonthOf(t){return new Date(t).getDate();}
+  function pd(s){if(!s)return null;var t=Date.parse(s);return isNaN(t)?null:t;}
+  function status(a,g){return (a==null||isNaN(a))?null:(a/g>=0.9?'g':a/g>=0.5?'y':'r');}
+  function el(id){return document.getElementById(id);}
+  function parse(r){var raw=(r&&r.structuredContent!=null)?r.structuredContent:JSON.parse(r.content[0].text);var p=(raw&&raw.result!=null)?raw.result:raw;if(typeof p==='string'){if(p.indexOf('authorization required')>-1)throw new Error('AUTH');p=JSON.parse(p);}return (p&&p.results)||[];}
+  function sleep(ms){return new Promise(function(res){setTimeout(res,ms);});}
+  async function callR(name,args){for(var i=0;i<4;i++){try{var r=await window.cowork.callMcpTool(name,args);if(r&&r.isError){await sleep(700*(i+1));continue;}return r;}catch(e){await sleep(700*(i+1));}}return null;}
+
+  // Compute every metric's raw value as-of an arbitrary timestamp T, from static date facts.
+  // byRp: {name:[firstMeetingTs,...]}  rpRecs:[{name,signed,active}]  cCommit/cReach: [ts|null] per contact
+  function snapshot(T, byRp, rpRecs, contacts){
+    var MS=monthStartOf(T), dom=dayOfMonthOf(T);
+    var prodMonth=0, onPace=0, prod3=0, fmMonth=0;
+    Object.keys(byRp).forEach(function(n){
+      var ts=byRp[n];
+      var cm=0, l30=0;
+      for(var i=0;i<ts.length;i++){var t=ts[i];if(t<=T){ if(t>=MS)cm++; if(t>=T-30*DAY)l30++; }}
+      if(cm>=1)prodMonth++;
+      if(cm*30/dom>=3)onPace++;
+      if(l30>=3)prod3++;
+      fmMonth+=cm;
+    });
+    var signedMonth=0, nhBase=0, nhProd=0;
+    rpRecs.forEach(function(r){
+      if(r.signed!=null && r.signed>=MS && r.signed<=T)signedMonth++;
+      if(r.active && r.signed!=null && r.signed<=T-30*DAY){
+        nhBase++;
+        var ts=byRp[r.name]||[];
+        for(var i=0;i<ts.length;i++){if(ts[i]<=T && ts[i]>=T-60*DAY){nhProd++;break;}}
+      }
+    });
+    // outreach: committed = contacts committed-or-reached by T; reached = contacts with outreach date by T
+    var committed=0, reached=0;
+    contacts.forEach(function(c){
+      var r=(c.reach!=null && c.reach<=T);
+      var cm=(c.commit!=null && c.commit<=T);
+      if(r)reached++;
+      if(r||cm)committed++;
+    });
+    return {
+      producing_month:prodMonth,
+      signed_month:signedMonth,
+      outreach:committed?reached/committed:null,
+      outreach_fmt:committed?(reached+' of '+committed):'—',
+      comms_touches:(T>=NOW-DAY?COMMS:null),
+      on_pace:onPace,
+      nh:nhBase?nhProd/nhBase:null,
+      nh_fmt:nhBase?Math.round(100*nhProd/nhBase)+'%':'—',
+      producing_3plus:prod3,
+      fm_month:fmMonth
+    };
+  }
+
+  var METRICS=[
+    {k:'producing_month',label:'Partners producing this month',goal:3,
+     desc:'Partners who put at least one first meeting on the calendar this month.'},
+    {k:'signed_month',label:'New partners signed this month',goal:3,
+     desc:'Referral partners who signed and entered Ramping Up this month.'},
+    {k:'outreach',label:'Committed outreach worked',goal:0.75,pct:true,
+     fmtKey:'outreach_fmt',
+     desc:'Of the prospects partners said they would contact, the share they have confirmed reaching out to.'},
+    {k:'comms_touches',label:'Partner comms touches (30 days)',goal:2,
+     desc:'Partner-wide communications we sent in the last 30 days (newsletter, program updates). Manual input.'},
+    {k:'on_pace',label:'Partners on pace for 3+ meetings',goal:3,
+     desc:'Partners whose meetings scheduled so far this month project to three or more over 30 days.'},
+    {k:'nh',label:'Network health (60 days)',goal:0.75,pct:true,fmtKey:'nh_fmt',
+     desc:'Share of active partners past their 30-day ramp who scheduled at least one meeting in the last 60 days.'},
+    {k:'producing_3plus',label:'Partners at 3+ meetings in 30 days',goal:3,
+     desc:'Partners who scheduled three or more first meetings in the trailing 30 days — the "actively producing" bar.'},
+    {k:'fm_month',label:'First meetings this month',goal:12,
+     desc:'RP-sourced first meetings scheduled this month, counted when the lead reaches First Meeting Scheduled.'},
+  ];
+  function vOf(m,snap){return snap[m.k];}
+  function fv(m,snap){if(m.fmtKey)return snap[m.fmtKey];var v=snap[m.k];return m.pct?(v==null?'—':Math.round(100*v)+'%'):v;}
+  function fg(m){return m.pct?Math.round(100*m.goal)+'%':m.goal;}
+
+  function render(snaps){
+    var now=snaps[snaps.length-1], prev=snaps[snaps.length-2];
+    el('ws-asof').textContent='As of '+new Date(NOW).toLocaleDateString('en-US',{month:'short',day:'numeric'})+' · live · 8 metrics';
+    var st=function(s){return METRICS.map(function(m){return status(vOf(m,s),m.goal);});};
+    var cnt=function(a,c){return a.filter(function(x){return x===c;}).length;};
+    var sNow=st(now), sPrev=prev?st(prev):[];
+    var strip=el('ws-strip'); strip.innerHTML='';
+    ['g','y','r'].forEach(function(c){
+      var n=cnt(sNow,c), p=prev?cnt(sPrev,c):null, G=STRIP_GOALS[c];
+      var met=G.op==='>='?n>=G.n:n<=G.n;
+      var delta=p==null?'':(n>p?'+'+(n-p):n<p?''+(n-p):'no change');
+      strip.insertAdjacentHTML('beforeend','<div class="ws-tile '+c+' '+(met?'met':'miss')+'"><div class="l"><span>'+N[c]+'</span><span class="goal">'+G.txt+'</span></div><div class="b">'+n+'</div><div class="c">last week <b>'+(p==null?'—':p)+'</b>'+(delta?' · '+delta:'')+'</div></div>');
+    });
+    var tb=el('ws-rows'); tb.innerHTML='';
+    var ord={g:0,y:1,r:2,undefined:3,'null':3};
+    METRICS.map(function(m,i){return {m:m,i:i};}).sort(function(a,b){return (ord[sNow[a.i]]==null?3:ord[sNow[a.i]])-(ord[sNow[b.i]]==null?3:ord[sNow[b.i]]);}).forEach(function(o){
+      var m=o.m, i=o.i, s=sNow[i], sp=sPrev[i];
+      var hist=snaps.map(function(snap){var c=status(vOf(m,snap),m.goal);var isNow=(snap===now);return '<span class="'+(c||'')+(isNow?' now':'')+'" title="'+fv(m,snap)+'"></span>';}).join('');
+      var chg='—', cls='flat';
+      if(prev){
+        var a=vOf(m,now), b=vOf(m,prev);
+        if(a==null||isNaN(a)||b==null||isNaN(b)){chg=(a!=null&&(b==null||isNaN(b)))?'new':'—';}
+        else if(a>b){chg='▲ '+(m.pct?Math.round(100*(a-b))+' pts':a-b);cls='up';}
+        else if(a<b){chg='▼ '+(m.pct?Math.round(100*(b-a))+' pts':b-a);cls='down';}
+        else chg='no change';
+      }
+      var moved=(sp&&s&&sp!==s)?'<div class="moved">'+N[sp]+' → '+N[s]+'</div>':'';
+      var pill=s?'<span class="dot '+s+'"></span><span class="pill '+s+'">'+{g:'On goal',y:'Halfway',r:'Off'}[s]+'</span>':'<span class="pill" style="background:#f3f4f6;color:#6b7280;">n/a</span>';
+      tb.insertAdjacentHTML('beforeend','<tr><td><div class="m">'+m.label+'</div><div class="d">'+m.desc+'</div></td><td class="n"><b>'+fv(m,now)+'</b></td><td class="n">'+fg(m)+'</td><td>'+pill+'</td><td><div class="hist">'+hist+'</div></td><td><div class="chg '+cls+'">'+chg+'</div>'+moved+'</td></tr>');
+    });
+  }
+
+  async function run(){
+    try{
+      var L=parse(await window.cowork.callMcpTool(TOOL,{object_type:"0-136",filters:'[{"property":"origin","operator":"EQ","value":"Referral Partner"}]',properties:"referral_partner,hs_pipeline_stage,hs_lead_name,hs_object_id,"+MF.join(","),limit:200}));
+      var R=parse(await window.cowork.callMcpTool(TOOL,{object_type:"2-37656252",properties:"referral_partner,rp_tier,hs_pipeline,hs_pipeline_stage,"+SIGNED_FIELD,limit:100}));
+      // outreach contacts: those with a committed date, and those with an outreach date (union by id)
+      var cm={};
+      var c1=await callR(CFILTER,{property_name:"rp_committed_to_outreach_date",operator:"HAS_PROPERTY",properties:"firstname,lastname,rp_committed_to_outreach_date,rp_outreach_date",max_results:1000,page_size:100});
+      var c2=await callR(CFILTER,{property_name:"rp_outreach_date",operator:"HAS_PROPERTY",properties:"firstname,lastname,rp_committed_to_outreach_date,rp_outreach_date",max_results:1000,page_size:100});
+      function ingest(res){ if(!res)return; var rows=[]; try{rows=parse(res);}catch(e){rows=[];}
+        rows.forEach(function(x){var id=x.hs_object_id||x.id||(x.properties&&x.properties.hs_object_id);var pr=x.properties||x; if(id==null)return;
+          cm[id]={id:id,name:((pr.firstname||'')+' '+(pr.lastname||'')).trim()||('Contact '+id),commit:pd(pr.rp_committed_to_outreach_date),reach:pd(pr.rp_outreach_date)};}); }
+      ingest(c1); ingest(c2);
+      var contacts=Object.keys(cm).map(function(k){return cm[k];});
+      try{window.__RPSC={leads:L,rps:R,contacts:contacts,now:NOW};}catch(e){}
+
+      // build per-RP first-meeting timestamp lists (earliest post-Top-A date per lead)
+      var byRp={};
+      L.forEach(function(l){
+        var best=null;
+        for(var i=0;i<MF.length;i++){var t=pd(l[MF[i]]); if(t!=null && (best==null||t<best))best=t;}
+        if(best==null)return;
+        var k=l.referral_partner||'(unattributed)';
+        (byRp[k]=byRp[k]||[]).push(best);
+      });
+      var rpRecs=R.map(function(r){
+        var active=!(r.rp_tier==='DNC') && !RETIRED[r.hs_pipeline_stage] && r.hs_pipeline!==PROS;
+        return {name:r.referral_partner||'(unnamed)', signed:pd(r[SIGNED_FIELD]), active:active};
+      });
+
+      // 8 weekly snapshots, 7 days apart, ending now
+      var snaps=[];
+      for(var k=7;k>=0;k--){ snaps.push(snapshot(NOW-k*7*DAY, byRp, rpRecs, contacts)); }
+      render(snaps);
+    }catch(e){
+      var s=el('ws-asof');
+      if(s)s.textContent=(e&&e.message==='AUTH')?'⚠ HubSpot needs reconnecting (Cowork settings → Connectors) — scorecard populates once authorized.':'Scorecard unavailable: '+((e&&e.message)||e);
+    }
+  }
+  run();
+})();
+/* ===== RP Metric Detail — drill-in cards per scorecard metric. Reads window.__RPSC (set by the top scorecard). No extra HubSpot calls. ===== */
+(function(){
+  var MF=["hs_v2_date_entered_attempting_stage_id_745667965","hs_v2_date_entered_connected_stage_id_2058487257","hs_v2_date_entered_qualified_stage_id_233247981","hs_v2_date_entered_1009181988"];
+  var DAY=86400000;
+  var PROS='920226201', RETIRED={'967596116':1,'1162158241':1};
+  var SIGNED_FIELD='hs_v2_date_entered_967596115';
+  var HUBLEAD='https://app.hubspot.com/contacts/21389996/record/0-136/';
+  var HUBRP='https://app.hubspot.com/contacts/21389996/record/2-37656252/';
+  var COMMS=3; // manual input — keep in sync with the top scorecard
+  function pd(s){if(s==null||s==='')return null;if(typeof s==='number')return s;var t=Date.parse(s);return isNaN(t)?null:t;}
+  function esc(s){return (s==null?'':String(s)).replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
+  function fmtD(t){if(t==null)return '—';var d=new Date(t);return (d.getMonth()+1)+'/'+d.getDate();}
+  function el(id){return document.getElementById(id);}
+  function stat(v,goal){return (v==null||isNaN(v))?null:(v/goal>=0.9?'g':v/goal>=0.5?'y':'r');}
+  var PILL={g:'On goal',y:'Halfway',r:'Off'};
+
+  function build(D){
+    var now=D.now||Date.now();
+    var md=new Date(now); var MS=new Date(md.getFullYear(),md.getMonth(),1).getTime(); var dom=md.getDate();
+    // per-RP first meetings + flat list
+    var leadsByRp={}, allFM=[];
+    (D.leads||[]).forEach(function(l){
+      var best=null; for(var i=0;i<MF.length;i++){var t=pd(l[MF[i]]); if(t!=null&&(best==null||t<best))best=t;}
+      if(best==null)return;
+      var k=l.referral_partner||'(unattributed)';
+      var o={name:l.hs_lead_name||'(no name)',id:l.hs_object_id||l.id,rp:k,fm:best};
+      (leadsByRp[k]=leadsByRp[k]||[]).push(o); allFM.push(o);
+    });
+    var rpRecs=(D.rps||[]).map(function(r){
+      return {name:r.referral_partner||'(unnamed)',id:r.hs_object_id||r.id,signed:pd(r[SIGNED_FIELD]),
+        active:!(r.rp_tier==='DNC')&&!RETIRED[r.hs_pipeline_stage]&&r.hs_pipeline!==PROS};
+    });
+    var contacts=D.contacts||[];
+    function recLine(txt,sub,href){return '<div class="rpd-rec"><span>'+txt+'</span><span class="rpd-sub">'+(sub||'')+(href?' · <a href="'+href+'" target="_blank" rel="noopener">HubSpot ↗</a>':'')+'</span></div>';}
+
+    var M=[];
+    // 1 — producing this month (>=1 first meeting this calendar month)
+    (function(){
+      var rps=Object.keys(leadsByRp).map(function(k){var ms=leadsByRp[k].filter(function(x){return x.fm>=MS;});return {k:k,ms:ms};}).filter(function(o){return o.ms.length>0;}).sort(function(a,b){return b.ms.length-a.ms.length;});
+      var recs=rps.map(function(o){return '<div class="rpd-rp"><div class="rpd-rp-h">'+esc(o.k)+' — '+o.ms.length+' this month</div>'+o.ms.sort(function(a,b){return a.fm-b.fm;}).map(function(m){return recLine('● '+esc(m.name),fmtD(m.fm),HUBLEAD+m.id);}).join('')+'</div>';}).join('');
+      M.push({label:'Partners producing this month',goal:3,value:rps.length,desc:'Partners who put at least one first meeting on the calendar this calendar month.',records:recs});
+    })();
+    // 2 — new partners signed this month
+    (function(){
+      var recs=rpRecs.filter(function(r){return r.signed!=null&&r.signed>=MS;}).sort(function(a,b){return b.signed-a.signed;});
+      var html=recs.map(function(r){return recLine('● '+esc(r.name),'signed '+fmtD(r.signed),HUBRP+r.id);}).join('');
+      M.push({label:'New partners signed this month',goal:3,value:recs.length,desc:'Referral partners that entered Ramping Up (Signed) this calendar month.',records:html});
+    })();
+    // 3 — committed outreach worked
+    (function(){
+      var reached=contacts.filter(function(c){return c.reach!=null&&c.reach<=now;});
+      var committed=contacts.filter(function(c){return (c.reach!=null&&c.reach<=now)||(c.commit!=null&&c.commit<=now);});
+      var notYet=committed.filter(function(c){return !(c.reach!=null&&c.reach<=now);});
+      var val=committed.length?reached.length/committed.length:null;
+      var rHtml='<div class="rpd-rp"><div class="rpd-rp-h">Reached ('+reached.length+')</div>'+(reached.length?reached.slice().sort(function(a,b){return b.reach-a.reach;}).slice(0,40).map(function(c){return recLine('✓ '+esc(c.name),fmtD(c.reach));}).join('')+(reached.length>40?'<div class="rpd-note">+'+(reached.length-40)+' more</div>':''):'<div class="rpd-empty">none</div>')+'</div>'+
+        '<div class="rpd-rp"><div class="rpd-rp-h">Committed, not yet reached ('+notYet.length+')</div>'+(notYet.length?notYet.slice(0,40).map(function(c){return recLine('○ '+esc(c.name),'committed '+fmtD(c.commit));}).join('')+(notYet.length>40?'<div class="rpd-note">+'+(notYet.length-40)+' more</div>':''):'<div class="rpd-empty">none</div>')+'</div>';
+      M.push({label:'Committed outreach worked',goal:0.75,pct:true,value:val,valueFmt:(committed.length?(reached.length+' of '+committed.length):'—'),desc:'Of prospects partners committed to contact, the share with a logged RP Outreach Date.',records:rHtml});
+    })();
+    // 4 — comms touches (manual)
+    M.push({label:'Partner comms touches (30 days)',goal:2,value:COMMS,desc:'Partner-wide communications sent in the last 30 days. Manual input — not in HubSpot.',records:'<div class="rpd-note">Manual input: <b>'+COMMS+'</b> comms in the last 30 days. Update the COMMS value in the scorecard widgets when this changes.</div>'});
+    // 5 — on pace for 3+ meetings
+    (function(){
+      var rows=Object.keys(leadsByRp).map(function(k){var cm=leadsByRp[k].filter(function(x){return x.fm>=MS;}).length;return {k:k,cm:cm,proj:cm*30/dom};}).filter(function(o){return o.proj>=3;}).sort(function(a,b){return b.proj-a.proj;});
+      var recs=rows.map(function(o){return recLine('● '+esc(o.k),o.cm+' this month → projects '+(Math.round(o.proj*10)/10)+'/mo');}).join('');
+      M.push({label:'Partners on pace for 3+ meetings',goal:3,value:rows.length,desc:'Partners whose month-to-date meetings project to 3+ over 30 days (count × 30 ÷ day-of-month).',records:recs});
+    })();
+    // 6 — network health (60 days)
+    (function(){
+      var base=rpRecs.filter(function(r){return r.active&&r.signed!=null&&r.signed<=now-30*DAY;});
+      var prod=0; var recs=base.map(function(r){
+        var ts=(leadsByRp[r.name]||[]).map(function(x){return x.fm;});
+        var last=ts.length?Math.max.apply(null,ts):null;
+        var ok=ts.some(function(t){return t>=now-60*DAY;}); if(ok)prod++;
+        return recLine((ok?'✓ ':'✕ ')+esc(r.name),ok?('last '+fmtD(last)):(last?('last '+fmtD(last)):'no meetings'),HUBRP+r.id);
+      }).join('');
+      var val=base.length?prod/base.length:null;
+      M.push({label:'Network health (60 days)',goal:0.75,pct:true,value:val,valueFmt:(base.length?Math.round(100*prod/base.length)+'%':'—'),desc:'Share of active partners past their 30-day ramp with a first meeting in the last 60 days ('+prod+' of '+base.length+').',records:recs||'<div class="rpd-empty">no partners past ramp</div>'});
+    })();
+    // 7 — partners at 3+ meetings in 30 days
+    (function(){
+      var rows=Object.keys(leadsByRp).map(function(k){var l30=leadsByRp[k].filter(function(x){return x.fm>=now-30*DAY;});return {k:k,l30:l30};}).filter(function(o){return o.l30.length>=3;}).sort(function(a,b){return b.l30.length-a.l30.length;});
+      var recs=rows.map(function(o){return '<div class="rpd-rp"><div class="rpd-rp-h">'+esc(o.k)+' — '+o.l30.length+' in 30 days</div>'+o.l30.sort(function(a,b){return b.fm-a.fm;}).map(function(m){return recLine('● '+esc(m.name),fmtD(m.fm),HUBLEAD+m.id);}).join('')+'</div>';}).join('');
+      M.push({label:'Partners at 3+ meetings in 30 days',goal:3,value:rows.length,desc:'Partners with 3 or more first meetings in the trailing 30 days — the "actively producing" bar.',records:recs});
+    })();
+    // 8 — first meetings this month
+    (function(){
+      var rows=allFM.filter(function(x){return x.fm>=MS;}).sort(function(a,b){return b.fm-a.fm;});
+      var recs=rows.map(function(m){return recLine('● '+esc(m.name)+' <span class="rpd-sub">('+esc(m.rp)+')</span>',fmtD(m.fm),HUBLEAD+m.id);}).join('');
+      M.push({label:'First meetings this month',goal:12,value:rows.length,desc:'RP-sourced leads that reached a first-meeting stage this calendar month.',records:recs});
+    })();
+    return M;
+  }
+
+  function render(M){
+    var grid=el('rpd-grid'); if(!grid)return; grid.innerHTML='';
+    M.forEach(function(m){
+      var s=stat(m.value,m.goal);
+      var val=m.valueFmt!=null?m.valueFmt:(m.pct?(m.value==null?'—':Math.round(100*m.value)+'%'):m.value);
+      var goalTxt='goal '+(m.pct?Math.round(100*m.goal)+'%':m.goal);
+      var nrec=(m.records&&m.records.indexOf('rpd-rec')>-1)?(m.records.match(/rpd-rec/g)||[]).length:0;
+      var card=document.createElement('div');
+      card.className='rpd-card'+(s?' '+s:'');
+      card.innerHTML='<div class="rpd-top"><span class="rpd-label">'+m.label+'</span><span class="rpd-goal">'+goalTxt+'</span></div>'+
+        '<div class="rpd-num">'+val+'</div>'+
+        '<div class="rpd-statusline"><span class="rpd-dot '+(s||'na')+'"></span><span class="rpd-pill '+(s||'')+'">'+(s?PILL[s]:'n/a')+'</span><span class="rpd-caret">▸ details</span></div>'+
+        '<div class="rpd-detail"><div class="rpd-desc">'+m.desc+'</div>'+(m.records||'<div class="rpd-empty">No records.</div>')+'</div>';
+      card.addEventListener('click',function(e){ if(e.target.closest('a'))return; var open=card.classList.toggle('open'); var c=card.querySelector('.rpd-caret'); if(c)c.textContent=open?'▾ hide':'▸ details'; });
+      grid.appendChild(card);
+    });
+  }
+
+  // ---- make the weekly Copy-update reflect green/yellow/red accurately ----
+  var DIVIDER='\n──────────\n';
+  function statusBlock(M){
+    var c={g:0,y:0,r:0}; M.forEach(function(m){var s=stat(m.value,m.goal); if(s)c[s]++;});
+    var lines=M.map(function(m){var s=stat(m.value,m.goal);var e=s==='g'?'🟢':s==='y'?'🟡':s==='r'?'🔴':'⚪';var val=m.valueFmt!=null?m.valueFmt:(m.pct?(m.value==null?'—':Math.round(100*m.value)+'%'):m.value);var goalTxt=m.pct?Math.round(100*m.goal)+'%':m.goal;return e+' '+m.label+': '+val+' / '+goalTxt;});
+    return 'RP Program Scorecard (live) — '+new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'})+'\n'+c.g+' green · '+c.y+' yellow · '+c.r+' red (goal: ≥4 green, ≤1 red)\n\n'+lines.join('\n');
+  }
+  function rebuildExec(M){
+    var pre=el('exec-update'); if(!pre)return;
+    var cur=pre.textContent||''; var i=cur.indexOf(DIVIDER); var base=i>=0?cur.slice(i+DIVIDER.length):cur;
+    if(base.indexOf('RP Program Scorecard (live)')===0){ base=''; } // guard: never nest
+    pre.textContent=statusBlock(M)+DIVIDER+base;
+  }
+  function wireCopy(getM){
+    var btn=el('exec-copy'); if(!btn||btn.dataset.rpdWired)return; btn.dataset.rpdWired='1';
+    btn.addEventListener('click',function(){ try{ rebuildExec(getM()); }catch(e){} }, true); // capture: refresh before the existing copy handler reads the text
+  }
+
+  var tries=0;
+  (function wait(){
+    if(window.__RPSC&&window.__RPSC.leads){
+      try{ var M=build(window.__RPSC); render(M); wireCopy(function(){return build(window.__RPSC);}); setTimeout(function(){try{rebuildExec(build(window.__RPSC));}catch(e){}},1500); }
+      catch(e){ var g=el('rpd-grid'); if(g)g.innerHTML='<div class="rpd-loading">Metric detail unavailable: '+((e&&e.message)||e)+'</div>'; }
+      return;
+    }
+    if(tries++>60){ var g=el('rpd-grid'); if(g)g.innerHTML='<div class="rpd-loading">Waiting on HubSpot data — refresh once the scorecard above loads.</div>'; return; }
+    setTimeout(wait,500);
+  })();
+})();
 /* ===== Opportunity Map tab — self-contained IIFE, no global leakage ===== */
 (function(){
   document.querySelectorAll('.rp-tabs button').forEach(function(b){
@@ -683,7 +961,6 @@ function initApp() {
   function renderTrig(){ var el=document.getElementById('omap-trigbody'); if(!el) return; el.innerHTML=TRIG.map(function(t){ var tc=t[2].indexOf("Launch")>-1?'launch':(t[2].indexOf("verify")>-1?'':'loe'); var cc=t[5]==="High"?'#0a6b4d':t[5]==="Med"?'#9a6800':'#b23838'; return '<tr><td><b>'+t[0]+'</b></td><td>'+t[1]+'</td><td>'+(tc?'<span class="tag '+tc+'">'+t[2]+'</span>':t[2])+'</td><td>'+t[3]+'</td><td style="font-size:12px;">'+t[4]+'</td><td style="color:'+cc+';font-weight:600;">'+t[5]+'</td></tr>'; }).join(""); }
   renderOpps(); renderReact(); renderTrig();
 })();
-
 const HUBSPOT_PORTAL = 21389996;
 
 // Live RP pipeline stage labels (from hubspot_list_pipelines on 2-37656252)
@@ -1071,7 +1348,6 @@ async function mapWithConcurrency(items, n, fn) {
   await Promise.all(Array(n).fill(0).map(() => worker()));
   return results;
 }
-
 // ---- Deal funnel: DEAL-SIDE walk — pull all Brand Direct deals, walk each → 2-37656252 ----
 // This direction works in the artifact context (RP→deals direction was failing).
 // Includes all 6 stages: Client committed → Closed Won, Closed Lost.
@@ -1452,7 +1728,6 @@ function updateScorecardLive() {
     el.style.color = "#1D9E75";
   });
 }
-
 function renderExecSummary(ctx) {
   const now = Date.now();
   const day = 86400000;
@@ -1945,97 +2220,6 @@ async function loadDashboard() {
       if (card) card.innerHTML = '<div style="padding: 18px; color: #A32D2D; font-size: 13px;">Scorecard render failed: ' + esc((e && e.message) || String(e)) + '. Check console for details.</div>';
     }
 
-    // ---- Top performers ----
-    const perRp = {};
-    LEADS.forEach(l => {
-      const key = nameKey(l.referral_partner);
-      if (!key) return;
-      if (!perRp[key]) perRp[key] = { name: l.referral_partner, leads: 0, qualified: 0, deals: 0, won: 0, open: 0 };
-      const p = perRp[key];
-      p.leads++;
-      if (l.hs_pipeline_stage_category_v2 === "QUALIFIED") p.qualified++;
-      p.deals += num(l.hs_lead_associated_deals_count);
-      p.won += num(l.hs_lead_closed_won_deals_amount);
-      p.open += num(l.hs_lead_pipeline_value);
-    });
-    const topPerformers = Object.entries(perRp)
-      .map(([key, v]) => ({ ...v, rp: RP_BY_KEY[key] }))
-      .sort((a, b) => (b.won + b.open) - (a.won + a.open) || b.leads - a.leads)
-      .slice(0, 15);
-    document.getElementById("top-rps").innerHTML = topPerformers.length === 0
-      ? '<div class="empty">No RP-attributed activity yet.</div>'
-      : `<table>
-          <thead><tr><th>Partner</th><th>Tier</th><th>Stage</th><th class="num">Leads</th><th class="num">Mid B+</th><th class="num">Deals</th><th class="num">Closed won</th><th class="num">Open pipeline</th></tr></thead>
-          <tbody>${topPerformers.map(p => {
-            const rp = p.rp;
-            const tier = rp && rp.rp_tier;
-            const tierHtml = tier ? `<span class="pill ${TIER_PILL[tier] || "pill-none"}">${esc(tier.replace(/^TIER (\d): /, "T$1: "))}</span>` : `<span class="pill pill-none">—</span>`;
-            const stageInfo = rp && rp.hs_pipeline_stage && RP_STAGE_MAP[rp.hs_pipeline_stage];
-            const stageHtml = stageInfo ? `<span class="pill ${stageInfo.cls}">${esc(stageInfo.label)}</span>` : `<span class="pill pill-none">—</span>`;
-            return `<tr class="clickable" data-rp="${esc(p.name)}">
-              <td>${esc(p.name)}</td>
-              <td>${tierHtml}</td>
-              <td>${stageHtml}</td>
-              <td class="num">${p.leads}</td>
-              <td class="num">${p.qualified}</td>
-              <td class="num">${p.deals}</td>
-              <td class="num">${fmtMoney(p.won)}</td>
-              <td class="num">${fmtMoney(p.open)}</td>
-            </tr>`;
-          }).join("")}</tbody>
-        </table>`;
-    document.querySelectorAll("tr.clickable[data-rp]").forEach(el => { el.addEventListener("click", () => drillRp(el.dataset.rp)); });
-
-    // ---- All RPs ----
-    const sortedRps = RPS.slice().sort((a, b) => {
-      const ta = a.rp_tier ? RP_TIERS.indexOf(a.rp_tier) : 99;
-      const tb = b.rp_tier ? RP_TIERS.indexOf(b.rp_tier) : 99;
-      if (ta !== tb) return ta - tb;
-      return num(b.count_of_sql) - num(a.count_of_sql);
-    });
-    document.getElementById("rp-table").innerHTML = `<table>
-      <thead><tr><th>Partner</th><th>Tier</th><th>Stage</th><th>Owner</th><th>City</th><th class="num">Contacts</th><th class="num">SQLs</th></tr></thead>
-      <tbody>${sortedRps.map(r => {
-        const tier = r.rp_tier;
-        const tierHtml = tier ? `<span class="pill ${TIER_PILL[tier] || "pill-none"}">${esc(tier.replace(/^TIER (\d): /, "T$1: "))}</span>` : `<span class="pill pill-none">—</span>`;
-        const stageInfo = r.hs_pipeline_stage && RP_STAGE_MAP[r.hs_pipeline_stage];
-        const stageHtml = stageInfo ? `<span class="pill ${stageInfo.cls}">${esc(stageInfo.label)}</span>` : `<span class="pill pill-none">—</span>`;
-        return `<tr class="clickable" data-rp="${esc(r.referral_partner || "")}">
-          <td><a href="${rpUrl(r.id)}" target="_blank" rel="noopener">${esc(r.referral_partner || "(unnamed)")}</a></td>
-          <td>${tierHtml}</td>
-          <td>${stageHtml}</td>
-          <td>${esc(ownerName(r.hubspot_owner_id))}</td>
-          <td>${esc(r.city_state || "")}</td>
-          <td class="num">${r.count_of_contacts || 0}</td>
-          <td class="num">${r.count_of_sql || 0}</td>
-        </tr>`;
-      }).join("")}</tbody>
-    </table>`;
-    document.querySelectorAll("#rp-table tr.clickable").forEach(el => { el.addEventListener("click", (e) => { if (e.target.closest("a")) return; drillRp(el.dataset.rp); }); });
-
-    // ---- Leads (sorted by stage funnel position + revenue) ----
-    const stageOrder = [...LEAD_FUNNEL, ...LEAD_DEADEND].map(s => s.id);
-    const sortedLeads = LEADS.slice().sort((a, b) => {
-      const pa = stageOrder.indexOf(a.hs_pipeline_stage); const pb = stageOrder.indexOf(b.hs_pipeline_stage);
-      if (pa !== pb) return (pa < 0 ? 99 : pa) - (pb < 0 ? 99 : pb);
-      return (num(b.hs_lead_closed_won_deals_amount) + num(b.hs_lead_pipeline_value)) - (num(a.hs_lead_closed_won_deals_amount) + num(a.hs_lead_pipeline_value));
-    });
-    document.getElementById("leads-table").innerHTML = sortedLeads.length === 0
-      ? '<div class="empty">No RP-sourced leads yet.</div>'
-      : `<table>
-          <thead><tr><th>Lead</th><th>Owner</th><th>Stage</th><th>Type</th><th>Referred by</th><th class="num">Closed won</th><th class="num">Pipeline</th></tr></thead>
-          <tbody>${sortedLeads.map(l => `
-            <tr>
-              <td><a href="${leadUrl(l.id)}" target="_blank" rel="noopener">${esc(l.hs_lead_name || "(no name)")}</a></td>
-              <td>${esc(ownerName(l.hubspot_owner_id))}</td>
-              <td>${esc(leadStageLabel(l))}</td>
-              <td>${esc(leadSourceLabel(l))}</td>
-              <td>${esc(l.referral_partner || "—")}</td>
-              <td class="num">${fmtMoney(l.hs_lead_closed_won_deals_amount)}</td>
-              <td class="num">${fmtMoney(l.hs_lead_pipeline_value)}</td>
-            </tr>`).join("")}</tbody>
-        </table>`;
-
     // KPI handlers
     document.querySelectorAll(".kpi[data-drill]").forEach(el => { el.addEventListener("click", () => drillKpi(el.dataset.drill)); });
 
@@ -2087,139 +2271,6 @@ function showLoadError(err) {
 }
 
 loadDashboard();
-
-/* ===== RP Health & Pipeline v3h — funnel grouped by RP: open leads + open deals ===== */
-(function(){
-  var TOOL="mcp__6b11666e-7029-4baf-a491-3791bd8d9175__hubspot_search_custom_objects";
-  var ASSOC="mcp__6b11666e-7029-4baf-a491-3791bd8d9175__hubspot_get_custom_object_associations";
-  var GET="mcp__6b11666e-7029-4baf-a491-3791bd8d9175__hubspot_get_custom_object";
-  var MF=["hs_v2_date_entered_attempting_stage_id_745667965","hs_v2_date_entered_connected_stage_id_2058487257","hs_v2_date_entered_qualified_stage_id_233247981","hs_v2_date_entered_1009181988"];
-  var DAY=86400000, NOW=Date.now(), MSTART=new Date(new Date().getFullYear(),new Date().getMonth(),1).getTime();
-  var PROS='920226201', RETIRED=['967596116','1162158241'];
-  var HUB='https://app.hubspot.com/contacts/21389996/record/0-136/', DHUB='https://app.hubspot.com/contacts/21389996/record/0-3/';
-  var STAGE={'new-stage-id':'Top A · pending 1st mtg','attempting-stage-id':'Top B · 1st mtg scheduled','connected-stage-id':'Mid A · 1st mtg complete','qualified-stage-id':'Mid B · opportunity','1009181988':'Hand-off'};
-  var OPEN_LEAD={'new-stage-id':1,'attempting-stage-id':1,'connected-stage-id':1};
-  var CLOSED_DEAL={'143017564':1,'143017565':1,'972641437':1};
-  var SIGNED_WORKING={'967596115':1,'1018771080':1,'1018771081':1,'1018771082':1,'1347878431':1,'1018743895':1};
-  var DSTAGE={'1341411420':'Client committed','143018394':'Proposal / RFP Delivered','1341581069':'Contract Negotiation','972397873':'Routing for Signature','143017564':'Closed Won','143017565':'Closed Lost','972641437':'On Hold','1363467602':'Did not respond','1340846889':'Rollover','1020571168':'Open for Demo','1020571173':'Demo Complete'};
-  function el(id){return document.getElementById(id);}
-  function esc(s){return (s==null?'':String(s)).replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
-  function stg(s){return STAGE[s]||'in funnel';}
-  function fmt(t){if(!t)return '—';var d=new Date(t);return (d.getMonth()+1)+'/'+d.getDate();}
-  function parse(r){var raw=(r&&r.structuredContent!=null)?r.structuredContent:JSON.parse(r.content[0].text);var p=(raw&&raw.result!=null)?raw.result:raw;if(typeof p==='string'){if(p.indexOf('authorization required')>-1)throw new Error('AUTH');p=JSON.parse(p);}return (p&&p.results)||[];}
-  function parseObj(r){try{var raw=(r&&r.structuredContent!=null)?r.structuredContent:JSON.parse(r.content[0].text);var p=(raw&&raw.result!=null)?raw.result:raw;if(typeof p==='string')p=JSON.parse(p);return p;}catch(e){return null;}}
-  function sleep(ms){return new Promise(function(res){setTimeout(res,ms);});}
-  async function callR(name,args){for(var i=0;i<4;i++){try{var r=await window.cowork.callMcpTool(name,args);if(r&&r.isError){await sleep(700*(i+1));continue;}return r;}catch(e){await sleep(700*(i+1));}}return null;}
-  function kpi(n,l,warn){return '<div class="pe-kpi"><div class="n'+(warn?' warn':'')+'">'+n+'</div><div class="l">'+l+'</div></div>';}
-  function paceOf(times){var m30=0,m14=0,m7=0;times.forEach(function(t){if(t>=NOW-30*DAY)m30++;if(t>=NOW-14*DAY)m14++;if(t>=NOW-7*DAY)m7++;});return Math.round(Math.max(m30,m14*30/14,m7*30/7)*10)/10;}
-  function statusOf(r){ if(r.countMonth>=3) return 'Producing'; if(r.pace>=3) return 'On pace'; return 'Building'; }
-  var FUNNEL={};
-  async function run(){
-    try{
-      var L=parse(await window.cowork.callMcpTool(TOOL,{object_type:"0-136",filters:'[{"property":"origin","operator":"EQ","value":"Referral Partner"}]',properties:"hs_lead_name,referral_partner,hs_pipeline_stage,hs_createdate,hs_lead_associated_deals_count,"+MF.join(","),limit:200}));
-      var R=parse(await window.cowork.callMcpTool(TOOL,{object_type:"2-37656252",properties:"referral_partner,rp_tier,hs_pipeline,hs_pipeline_stage,hs_v2_date_entered_967596115,hs_lastmodifieddate",limit:100}));
-      compute(L,R);
-    }catch(e){var s=el('pe-status');if(s){s.className='pe-note err';s.textContent=(e&&e.message==='AUTH')?'⚠ HubSpot needs reconnecting (Cowork settings → Connectors) — metrics populate once authorized.':'Could not load live data: '+((e&&e.message)||e);}}
-  }
-  function compute(L,R){
-    var byRp={};
-    L.forEach(function(l){
-      var ts=[],latest=null;
-      MF.forEach(function(f){var v=l[f];if(v){var t=Date.parse(v);if(!isNaN(t)){ts.push(t);if(latest==null||t>latest)latest=t;}}});
-      var fm=ts.length?Math.min.apply(null,ts):null;
-      var created=l.hs_createdate?Date.parse(l.hs_createdate):null;
-      var deals=parseInt(l.hs_lead_associated_deals_count,10)||0;
-      var k=l.referral_partner||'(unattributed)';
-      var mtgMonth=(fm!=null&&fm>=MSTART);
-      (byRp[k]=byRp[k]||[]).push({name:l.hs_lead_name||'(no name)',id:l.hs_object_id||l.id,stage:l.hs_pipeline_stage,fm:fm,created:created,latest:latest,deals:deals,mtgMonth:mtgMonth,pendMonth:(fm==null&&created!=null&&created>=MSTART),advMonth:(latest!=null&&latest>=MSTART)});
-    });
-    var names={}; R.forEach(function(r){names[r.referral_partner||'(unnamed)']=r;}); Object.keys(byRp).forEach(function(n){if(!(n in names))names[n]=null;});
-    var rows=Object.keys(names).map(function(n){
-      var r=names[n]||{}; var recs=byRp[n]||[];
-      var times=recs.filter(function(x){return x.fm!=null;}).map(function(x){return x.fm;});
-      var pace=paceOf(times);
-      var countMonth=recs.filter(function(x){return x.mtgMonth;}).length;
-      var pending=recs.filter(function(x){return x.pendMonth;}).length;
-      var lastAct=times.length?Math.max.apply(null,times):(r.hs_lastmodifieddate?Date.parse(r.hs_lastmodifieddate):null);
-      var stage=r.hs_pipeline_stage||'',pipe=r.hs_pipeline||'',b;
-      if(pipe===PROS)b='Pipeline';else if(r.rp_tier==='DNC'||RETIRED.indexOf(stage)>-1)b='Inactive';else if(countMonth>=3)b='Producing';else if(times.filter(function(t){return t>=NOW-30*DAY;}).length===0&&pipe&&pipe!==PROS)b='Stalled';else b='Active';
-      var o={name:n,recs:recs,times:times,pace:pace,countMonth:countMonth,pending:pending,lastAct:lastAct,lastDays:lastAct?Math.floor((NOW-lastAct)/DAY):null,bucket:b,rpId:(r&&r.hs_object_id)||null,rpStage:stage};
-      o.status=statusOf(o); return o;
-    });
-    var trk=rows.filter(function(r){return r.countMonth>0||r.pending>0;}).sort(function(a,b){return (b.countMonth-a.countMonth)||(b.pace-a.pace)||(b.pending-a.pending);});
-    var producing=trk.filter(function(r){return r.status==='Producing';});
-    var onPace=trk.filter(function(r){return r.status==='On pace';});
-    var stalled=rows.filter(function(r){return r.bucket==='Stalled';}).sort(function(a,b){return (b.lastDays||0)-(a.lastDays||0);});
-    var meetingsMonth=rows.reduce(function(s,r){return s+r.countMonth;},0);
-    var signedMonth=R.filter(function(r){var d=r.hs_v2_date_entered_967596115;return d&&Date.parse(d)>=MSTART;}).length;
-    var s=el('pe-status');if(s){s.className='pe-note';s.textContent='Live from HubSpot · '+R.length+' RP records · '+L.length+' RP-origin leads · '+new Date().toLocaleDateString();}
-    el('pe-kpis').innerHTML = kpi(producing.length+' / 4','Producing (3+ first mtgs THIS month)',producing.length<4)+kpi(onPace.length,'On pace for 3/mo (projection)',false)+kpi(meetingsMonth+' / 15','RP first meetings this month',meetingsMonth<15)+kpi(signedMonth+' / 3','New RPs signed this month',signedMonth<3);
-    var PILL={'Producing':'pe-b-prod','On pace':'pe-b-ramp','Building':'pe-b-stall'};
-    var legend='<div style="font-size:11px;color:#8fc7bd;margin-bottom:8px;">Producing = 3+ first mtgs this month · On pace = on track to 3/mo (projection) · Building = has activity, under 3/mo pace</div>';
-    el('pe-tracker').innerHTML = legend + (trk.length? trk.map(function(r){
-      var pill='<span class="pe-pill '+PILL[r.status]+'">'+r.status+'</span>';
-      var pct=Math.min(100,(r.countMonth/3)*100);
-      var suffix = r.pending>0? '<span style="color:#ffcf8f;">'+r.pending+' pending</span>' : '';
-      var relevant=r.recs.filter(function(m){return m.mtgMonth||m.pendMonth;}).sort(function(a,b){return (b.mtgMonth-a.mtgMonth)||((b.fm||b.created||0)-(a.fm||a.created||0));});
-      var det=relevant.map(function(m){
-        if(m.mtgMonth) return '<div class="pe-mtg"><span>● '+esc(m.name)+' — <span style="color:#8fc7bd;">'+stg(m.stage)+'</span></span><span>'+fmt(m.fm)+' · <a href="'+HUB+m.id+'" target="_blank" rel="noopener">HubSpot ↗</a></span></div>';
-        return '<div class="pe-mtg"><span>○ '+esc(m.name)+' — <span style="color:#8fc7bd;">'+stg(m.stage)+' · pending</span></span><span>created '+fmt(m.created)+' · <a href="'+HUB+m.id+'" target="_blank" rel="noopener">HubSpot ↗</a></span></div>';
-      }).join('');
-      return '<div class="pe-trk"><div class="hd"><span class="car">▸</span><span class="nm">'+esc(r.name)+'</span><span class="cnt" style="color:#fff;font-weight:700;">'+r.countMonth+'/3</span><span class="pe-bar"><i style="width:'+pct+'%"></i></span><span style="color:#8fc7bd;">pace '+r.pace+'/mo</span>'+pill+(suffix?'<span>'+suffix+'</span>':'')+'</div><div class="det">'+det+'</div></div>';
-    }).join('') : '<div class="pe-row" style="color:#8fc7bd;">No RP leads created or first-met this month yet.</div>');
-    el('pe-tracker').addEventListener('click',function(e){var hd=e.target.closest('.hd');if(!hd)return;if(e.target.closest('a'))return;hd.parentNode.classList.toggle('open');var c=hd.querySelector('.car');if(c)c.textContent=hd.parentNode.classList.contains('open')?'▾':'▸';});
-    // ---- Active in funnel, grouped by RP ----
-    FUNNEL={};
-    rows.forEach(function(r){ r.recs.forEach(function(m){ if(OPEN_LEAD[m.stage]){ (FUNNEL[r.name]=FUNNEL[r.name]||{leads:[],deals:[],rpId:r.rpId}); FUNNEL[r.name].leads.push(m); } }); if(r.rpId&&!FUNNEL[r.name]&&(SIGNED_WORKING[r.rpStage])){ /* candidate for deals even w/o open lead */ } });
-    renderFunnel(false);
-    resolveDeals(rows);
-    var push=trk.filter(function(r){return r.status!=='Producing';}).sort(function(a,b){return (b.countMonth-a.countMonth)||(b.pace-a.pace);});
-    el('pe-push').innerHTML = push.length? push.slice(0,6).map(function(r){return '<div class="pe-row"><b>'+esc(r.name)+'</b> — '+r.countMonth+'/3 this month · needs +'+(3-r.countMonth)+(r.pending>0?' · '+r.pending+' pending':'')+' · pace '+r.pace+'/mo · '+r.status+'</div>';}).join('') : '<div class="pe-row" style="color:#8fc7bd;">Nobody within reach of 3 this month yet.</div>';
-    el('pe-stalled').innerHTML = stalled.length? stalled.slice(0,8).map(function(r){return '<div class="pe-row"><b>'+esc(r.name)+'</b> — 0 mtgs/30d · last activity '+(r.lastDays!=null?r.lastDays+'d ago':'—')+' · <span class="flag">reassess / air cover from Stu?</span></div>';}).join('') : '<div class="pe-row" style="color:#8fc7bd;">No stalled signed RPs.</div>';
-    el('pe-rollup').innerHTML = '<div class="pe-row">Producing (3+ this month): <b>'+producing.length+'</b> / 4</div>'+'<div class="pe-row">On pace for 3/mo: <b>'+onPace.length+'</b></div>'+'<div class="pe-row">RP first meetings this month: <b>'+meetingsMonth+'</b> / 15</div>'+'<div class="pe-row">Signed this month: <b>'+signedMonth+'</b> / 3</div>'+'<div class="pe-row" style="color:#8fc7bd;">Net movement deltas — populated by the weekly snapshot job.</div>';
-    var prosStages={'1403742624':'Target Identified','1403742625':'Attempting','1403742626':'Stalled','1403742627':'Qualified → Demo','1403742628':'Disqualified'};
-    var pros=R.filter(function(r){return r.hs_pipeline===PROS;});
-    var pc={};Object.keys(prosStages).forEach(function(k){pc[k]=0;});pros.forEach(function(r){if(pc[r.hs_pipeline_stage]!=null)pc[r.hs_pipeline_stage]++;});
-    el('pe-pipeline').innerHTML = '<div class="pe-funnel">'+Object.keys(prosStages).map(function(k){return '<div class="pe-fstage"><span class="fn">'+pc[k]+'</span>'+prosStages[k]+'</div>';}).join('')+'</div><div style="text-align:center;color:#7fe3c8;font-size:11px;margin:6px 0;">▼ when Qualified → hands off to Demo Scheduled on the working RP pipeline (like leads → deals)</div><div style="font-size:11px;color:#8fc7bd;margin-top:6px;">'+signedMonth+' signed this month vs goal 3 · '+pros.length+' prospects in pipeline</div>';
-  }
-  function renderFunnel(done){
-    var list=Object.keys(FUNNEL).filter(function(n){var g=FUNNEL[n];return (g.leads&&g.leads.length)||(g.deals&&g.deals.length);});
-    list.sort(function(a,b){var A=FUNNEL[a],B=FUNNEL[b];return ((B.leads.length+(B.deals?B.deals.length:0))-(A.leads.length+(A.deals?A.deals.length:0)));});
-    el('pe-funnel-move').innerHTML = (list.length? list.map(function(n){
-      var g=FUNNEL[n];
-      var head='<div style="font-weight:700;color:#fff;font-size:12.5px;margin-bottom:4px;">'+esc(n)+' <span style="color:#8fc7bd;font-weight:400;">'+g.leads.length+' open lead'+(g.leads.length===1?'':'s')+' · '+((g.deals&&g.deals.length)||0)+' open deal'+(((g.deals&&g.deals.length)||0)===1?'':'s')+'</span></div>';
-      var leads=g.leads.slice().sort(function(a,b){return (b.latest||b.created||0)-(a.latest||a.created||0);}).map(function(m){return '<div class="pe-mtg"><span>◦ '+esc(m.name)+' — <span style="color:#8fc7bd;">'+stg(m.stage)+'</span>'+(m.advMonth?' <span style="color:#7fe3c8;">↑</span>':'')+'</span><span>'+fmt(m.latest||m.created)+' · <a href="'+HUB+m.id+'" target="_blank" rel="noopener">HubSpot ↗</a></span></div>';}).join('');
-      var deals=(g.deals||[]).map(function(d){return '<div class="pe-mtg"><span>💰 '+esc(d.name||'(deal)')+' — <span style="color:#8fc7bd;">'+(DSTAGE[d.stage]||'in pipeline')+'</span></span><span><a href="'+DHUB+d.id+'" target="_blank" rel="noopener">HubSpot ↗</a></span></div>';}).join('');
-      return '<div style="background:#0a2e2e;border:1px solid #1c5a54;border-radius:8px;padding:8px 11px;margin-bottom:6px;">'+head+leads+deals+'</div>';
-    }).join('') : '<div class="pe-row" style="color:#8fc7bd;">No RPs with an open lead or open deal.</div>') + (done?'':'<div style="color:#8fc7bd;font-size:11px;margin-top:4px;">loading open deals…</div>');
-  }
-  async function resolveDeals(rows){
-    try{
-      var dealMap={},after="";
-      for(var pg=0;pg<5;pg++){var args={object_type:"deals",filters:'[{"property":"pipeline","operator":"EQ","value":"74379150"}]',properties:"dealname,dealstage,pipeline",limit:100};if(after)args.after=after;var r=await callR(TOOL,args);var p=parseObj(r);if(!p||!p.results)break;p.results.forEach(function(d){dealMap[String(d.hs_object_id||d.id)]={name:d.dealname,stage:d.dealstage,pipe:d.pipeline};});after=(p.paging&&p.paging.next&&p.paging.next.after)||"";if(!after)break;await sleep(150);}
-      var cand={};
-      rows.forEach(function(r){ if(!r.rpId)return; if(r.rpStage&&(RETIRED.indexOf(r.rpStage)>-1))return; if(r.bucket==='Inactive')return; if(FUNNEL[r.name]||SIGNED_WORKING[r.rpStage]) cand[r.name]=r.rpId; });
-      var namesArr=Object.keys(cand).slice(0,60), fetched=0;
-      for(var i=0;i<namesArr.length;i++){
-        var nm=namesArr[i];
-        var ar=await callR(ASSOC,{object_type:"2-37656252",object_id:cand[nm],to_object_type:"deals",hydrate:false,limit:30});
-        var ap=parseObj(ar); var ids=(ap&&ap.results)?ap.results.map(function(x){return String(x.id);}):[];
-        for(var j=0;j<ids.length;j++){
-          var id=ids[j], d=dealMap[id];
-          if(!d && fetched<40){ var gr=await callR(GET,{object_type:"deals",object_id:id,properties:"dealname,dealstage,pipeline"}); var gp=parseObj(gr); fetched++; if(gp){ d={name:gp.dealname,stage:gp.dealstage,pipe:gp.pipeline}; dealMap[id]=d; } await sleep(120); }
-          if(!d) continue;
-          if(CLOSED_DEAL[d.stage]) continue;
-          FUNNEL[nm]=FUNNEL[nm]||{leads:[],deals:[]}; FUNNEL[nm].deals=FUNNEL[nm].deals||[];
-          if(!FUNNEL[nm].deals.some(function(x){return x.id===id;})) FUNNEL[nm].deals.push({id:id,name:d.name,stage:d.stage,pipe:d.pipe});
-        }
-        renderFunnel(false);
-        await sleep(120);
-      }
-      renderFunnel(true);
-    }catch(e){ renderFunnel(true); }
-  }
-  if(document.readyState==='complete'||document.readyState==='interactive')setTimeout(run,400);else document.addEventListener('DOMContentLoaded',function(){setTimeout(run,400);});
-})();
 }
 </script>
 </body>
