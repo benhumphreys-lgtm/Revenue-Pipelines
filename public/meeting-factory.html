@@ -141,7 +141,7 @@ const STAGE_LABELS={"new-stage-id":"Top A · Pending First Meeting","attempting-
 const TYPE_LABELS={NEW_BUSINESS:"New business",Expansion:"Existing (Expansion)",Rollover:"Existing (Rollover)",UPSELL:"Existing (Upsell)",Agency:"Agency","Agency RFP":"Agency RFP","Specialty Pharma":"Specialty Pharma","Win-Back":"Win-Back"};
 const OWNER_NAMES={"59730113":"Jeff Puckett","70730949":"Zena Nelson","78606761":"Anne Foelsch","79878581":"Michelle Bornstein","79911714":"Nick Vinson","79963911":"Bridget Lindley","84065570":"Pedro Matos","84140389":"Asa Curry","86308630":"Sheri Pruitt","90251481":"Ben Humphreys","90944377":"Alesia Coleman","92729253":"Tom O'Donnell","145352455":"Ryan Norris","148548425":"Jeremy Luetge","149547845":"John Harbison","153408573":"Daniel Cornwell","176792101":"John Robinson","314753596":"Kyle McCaig","359503422":"John Zarifis","402170399":"Pete Robinson","405718017":"Sebastian Beltran","425247274":"Brian DiGeronimo","445499469":"Yousif Malek","592250769":"Barbara Fine","636865340":"Brescia Gonzalez","637028764":"Shawn Moriarty","685203508":"Autumn Paige","1329000951":"Melinda Ried","1383399306":"Tina Ivankovic","1907981998":"Samantha Akhzar","96962499":"Richard Salazar"};
 const CORE_REPS=["Kyle McCaig","Anne Foelsch","Daniel Cornwell"];
-const REP_COL={"Anne Foelsch":"#ef8a6a","Daniel Cornwell":"#3dc0c7","Kyle McCaig":"#a78bdb","Other":"#c2ccd6"};
+const REP_COL={"Anne Foelsch":"#ef8a6a","Daniel Cornwell":"#3dc0c7","Kyle McCaig":"#a78bdb","Richard Salazar":"#3a9d6e"};
 const ORIGIN_COL={"Direct":"#3dc0c7","Referral Partner":"#a78bdb","Event":"#e0a83e","Marketing":"#3a9d6e","Inbound Form":"#2bb3a3","Agent":"#4a7fb5","Referral (non-RP)":"#d2607a","Unspecified":"#c2ccd6"};
 const TARGETS=[{m:"2026-04",label:"April",target:2},{m:"2026-05",label:"May",target:8},{m:"2026-06",label:"June",target:10},{m:"2026-07",label:"July",target:10},{m:"2026-08",label:"August",target:10},{m:"2026-09",label:"September",target:10}];
 // leads adoption started June 2026 — Apr/May held entered manually from the agency targets sheet
@@ -293,10 +293,10 @@ function updTextFrom(d){
 
 function drawFM(){
  const wk=genWeeks(12),lab=wk.map(wkL);
- weeklyStack('c_heldRep',LEADS,'midA','owner',['Anne Foelsch','Daniel Cornwell','Kyle McCaig','Other'],REP_COL,wk,lab,'Held','entered Mid A');
- weeklyStack('c_schRep',LEADS,'topB','owner',['Anne Foelsch','Daniel Cornwell','Kyle McCaig','Other'],REP_COL,wk,lab,'Scheduled','entered Top B',GOAL_SCHED_WK);
+ weeklyStack('c_heldRep',LEADS,'midA','owner',null,REP_COL,wk,lab,'Held','entered Mid A');
+ weeklyStack('c_schRep',LEADS,'topB','owner',null,REP_COL,wk,lab,'Scheduled','entered Top B',GOAL_SCHED_WK);
  weeklyStack('c_schOrigin',LEADS,'topB','origin',null,ORIGIN_COL,wk,lab,'Scheduled','entered Top B');
- weeklyStack('c_ldRep',LEADS,'created','owner',['Anne Foelsch','Daniel Cornwell','Kyle McCaig','Other'],REP_COL,wk,lab,'Leads Created','created');
+ weeklyStack('c_ldRep',LEADS,'created','owner',null,REP_COL,wk,lab,'Leads Created','created');
  dailyChart('c_daily',LEADS,14);
  monthlyChart('c_monthly',LEADS,MONTHLY_START,MONTHLY_GOAL);
  funnel('funnelAll',LEADS);
@@ -305,11 +305,12 @@ function drawFM(){
 
 function weeklyStack(id,leads,field,dim,order,colors,wk,lab,metric,dateLbl,goal){
  const win=new Set(wk);let cats,remap;
- if(order){const hasOther=order.indexOf('Other')>=0;cats=order.slice();const set=new Set(order);remap=v=>set.has(v)?v:(hasOther?'Other':v);}
- else{const tot={};leads.forEach(l=>{if(l[field]&&win.has(weekStart(l[field]))){const v=l[dim]||'(none)';tot[v]=(tot[v]||0)+1;}});cats=Object.keys(tot).sort((a,b)=>tot[b]-tot[a]);if(cats.length>6){const keep=cats.slice(0,5);const ks=new Set(keep);cats=keep.concat(['Other']);remap=v=>ks.has(v)?v:'Other';}else remap=v=>v;}
+ if(order){cats=order.slice();remap=v=>v;}
+ else{const tot={};leads.forEach(l=>{if(l[field]&&win.has(weekStart(l[field]))){const v=l[dim]||'(none)';tot[v]=(tot[v]||0)+1;}});cats=Object.keys(tot).sort((a,b)=>tot[b]-tot[a]);remap=v=>v;}
  const grid={};cats.forEach(c=>grid[c]={});
  leads.forEach(l=>{if(!l[field])return;const w=weekStart(l[field]);if(!win.has(w))return;let c=remap(l[dim]||'(none)');if(cats.indexOf(c)<0)return;grid[c][w]=(grid[c][w]||0)+1;});
- const ds=cats.map((c,i)=>({label:c,data:wk.map(w=>grid[c][w]||0),backgroundColor:colors[c]||CYCLE[i%CYCLE.length],stack:'s'}));
+ const cvals=Object.values(colors),used={};
+ const ds=cats.map((c,i)=>{let col=colors[c];if(!col){for(let k=0;k<CYCLE.length;k++){const cc=CYCLE[k];if(cvals.indexOf(cc)<0&&!used[cc]){col=cc;break;}}if(!col)col=CYCLE[i%CYCLE.length];}used[col]=1;return {label:c,data:wk.map(w=>grid[c][w]||0),backgroundColor:col,stack:'s'};});
  const ch=new Chart(document.getElementById(id),{type:'bar',data:{labels:lab,datasets:ds},plugins:[stackTotals,goalLine],
   options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},layout:{padding:{top:16}},
    onClick:(e,els)=>{if(!els.length)return;const i=els[0].index;const w=wk[i];const sub=leads.filter(l=>l[field]&&weekStart(l[field])===w);leadModal(metric+' · week of '+wkL(w)+' · all reps',sub,field,dateLbl);},

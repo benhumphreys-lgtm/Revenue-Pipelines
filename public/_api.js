@@ -239,6 +239,55 @@
     return data;
   }
 
+  // hubspot_filter_contacts_by_property — multi-page HubSpot contacts search
+  // by a single property filter. Mirrors the MCP tool the RP Dashboard uses.
+  // Input: { property_name, operator, value?, properties: csv, max_results, page_size }
+  // Output: MCP envelope with { results: [{id, properties}, ...] }, flattened like hubspotSearch.
+  async function hubspotFilterContactsByProperty(params) {
+    const p = params || {};
+    const propName = p.property_name;
+    const operator = p.operator || 'HAS_PROPERTY';
+    const value = p.value;
+    const propsCsv = p.properties || '';
+    const propsArr = propsCsv ? String(propsCsv).split(',').map(s => s.trim()).filter(Boolean) : [];
+    const pageSize = Math.min(Number(p.page_size) || 100, 100);
+    const maxResults = Number(p.max_results) || 1000;
+    const filter = { propertyName: propName, operator: operator };
+    if (value != null && operator !== 'HAS_PROPERTY' && operator !== 'NOT_HAS_PROPERTY') {
+      filter.value = value;
+    }
+    const base = {
+      objectType: 'contacts',
+      filterGroups: [{ filters: [filter] }],
+      properties: propsArr,
+      limit: pageSize
+    };
+    const combined = [];
+    let after = null;
+    let total = null;
+    for (let i = 0; i < 20 && combined.length < maxResults; i++) {
+      const call = Object.assign({}, base);
+      if (after) call.after = after;
+      const page = await hubspotSearch(call);
+      if (page && Array.isArray(page.results)) {
+        for (const r of page.results) {
+          if (combined.length >= maxResults) break;
+          combined.push(r);
+        }
+        if (total == null && page.total != null) total = page.total;
+        after = page.paging && page.paging.next && page.paging.next.after;
+        if (!after || page.results.length === 0) break;
+      } else {
+        break;
+      }
+    }
+    const data = { results: combined, total: total != null ? total : combined.length };
+    const envelopeText = JSON.stringify(data);
+    data.structuredContent = data;
+    data.content = [{ type: 'text', text: envelopeText }];
+    return data;
+  }
+
   // Compat shim: lets the Cowork artifact code work with minimal changes.
   window.cowork = {
     callMcpTool: function (toolName, params) {
@@ -277,6 +326,15 @@
       if (toolName.includes('gdrive_export_file')) {
         return gdriveExport(params);
       }
+      // hubspot_filter_contacts_by_property — used by the RP Dashboard's
+      // "Committed outreach worked" metric. Translates the MCP tool's param
+      // shape ({property_name, operator, value, properties CSV, max_results,
+      // page_size}) into the standard search payload and pages until it
+      // reaches max_results, then returns the combined result in the same
+      // MCP envelope the dashboard's parse() expects.
+      if (toolName.includes('hubspot_filter_contacts_by_property')) {
+        return hubspotFilterContactsByProperty(params);
+      }
       return Promise.reject(new Error('Unsupported MCP tool in Netlify build: ' + toolName));
     }
   };
@@ -286,6 +344,7 @@
   window.hubspotOwners = hubspotOwners;
   window.hubspotAssociations = hubspotAssociations;
   window.hubspotGetById = hubspotGetById;
+  window.hubspotFilterContactsByProperty = hubspotFilterContactsByProperty;
   window.gdriveExport = gdriveExport;
 
   // Auth helpers used by tab pages
