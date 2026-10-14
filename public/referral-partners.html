@@ -319,6 +319,7 @@
 </div>
 
 <div id="main-content" style="display:none">
+
 <h1>Referral partner dashboard</h1>
 <p class="sub">Three views of RP-driven pipeline momentum: <strong>① where partners sit</strong> in their relationship arc, <strong>② new-business leads</strong> with origin = Referral Partner (going-forward attribution), and <strong>③ deals in Brand Direct</strong> where any associated contact has an RP link (retroactive North Star — captures legacy, renewal, and win-back deals the lead system can't see).</p>
 
@@ -409,6 +410,101 @@
 </div>
 <!-- END RP METRIC DETAIL -->
 
+<!-- ============================================================
+     TIER 1 RP — FLOW + MEETING LEVEL (LIVE from HubSpot on each refresh)
+     Partners: RP object (2-37656252) where rp_tier = "TIER 1: ACTIVE PUSH" (from window.__RPSC).
+     Contacts: filter_contacts_by_property referral_partner_primary IN <tier1 names> → rp_status + dates.
+     Leads: window.__RPSC.leads (origin = Referral Partner) for first-meeting windows.
+     ============================================================ -->
+<section class="rpf">
+  <style>
+    .rpf{--rpf-bg:#fff;--rpf-ink:#17202e;--rpf-muted:#5d6878;--rpf-line:#e2e6ec;--rpf-head:#f4f6f9;
+      --rpf-l3:#0b6b43;--rpf-l3-bg:#dff5e9;--rpf-pace:#1d5fbf;--rpf-pace-bg:#e5effd;
+      --rpf-prod:#5c7a12;--rpf-prod-bg:#f0f7dc;--rpf-none:#a3341f;--rpf-none-bg:#fcebe7;
+      --rpf-idle:#4a5565;--rpf-idle-bg:#eef0f4;
+      font-family:inherit;color:var(--rpf-ink);background:var(--rpf-bg);
+      border:1px solid var(--rpf-line);border-radius:10px;padding:16px;margin:16px 0;
+      display:flex;flex-direction:column;gap:14px}
+    @media (prefers-color-scheme:dark){.rpf{--rpf-bg:#151b25;--rpf-ink:#e5e9f0;--rpf-muted:#97a2b3;
+      --rpf-line:#2a3240;--rpf-head:#1c2330;--rpf-l3:#5fd39b;--rpf-l3-bg:#12301f;--rpf-pace:#8fb4f5;
+      --rpf-pace-bg:#17284a;--rpf-prod:#b8d76a;--rpf-prod-bg:#253012;--rpf-none:#f29a88;
+      --rpf-none-bg:#3a1c16;--rpf-idle:#c3cad6;--rpf-idle-bg:#242c39}}
+    .rpf h3{margin:0;font-size:15px;font-weight:600}
+    .rpf .rpf-sub{margin:2px 0 0;font-size:12px;color:var(--rpf-muted)}
+    .rpf .rpf-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--rpf-muted);margin:0 0 6px}
+    .rpf .rpf-flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:6px}
+    .rpf .rpf-step{flex:1 1 110px;min-width:0;border:1px solid var(--rpf-line);border-radius:8px;padding:8px 10px;background:var(--rpf-head)}
+    .rpf .rpf-step b{display:block;font-size:20px;font-variant-numeric:tabular-nums}
+    .rpf .rpf-step span{font-size:11px;color:var(--rpf-muted)}
+    .rpf .rpf-arrow{align-self:center;color:var(--rpf-muted);font-size:14px}
+    .rpf .rpf-ladder{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
+    .rpf .rpf-rung{border-radius:8px;padding:10px 12px;min-width:0}
+    .rpf .rpf-rung b{font-size:20px;font-variant-numeric:tabular-nums;margin-right:6px}
+    .rpf .rpf-rung .t{font-size:12px;font-weight:700}
+    .rpf .rpf-rung .who{display:block;font-size:12px;margin-top:4px;line-height:1.4}
+    .rpf .lv-3{color:var(--rpf-l3);background:var(--rpf-l3-bg)}
+    .rpf .lv-pace{color:var(--rpf-pace);background:var(--rpf-pace-bg)}
+    .rpf .lv-prod{color:var(--rpf-prod);background:var(--rpf-prod-bg)}
+    .rpf .lv-none{color:var(--rpf-none);background:var(--rpf-none-bg)}
+    .rpf .lv-idle{color:var(--rpf-idle);background:var(--rpf-idle-bg)}
+    .rpf .rpf-wrap{overflow-x:auto}
+    .rpf table{width:100%;border-collapse:collapse;font-size:13px;min-width:760px}
+    .rpf th{background:var(--rpf-head);text-align:left;font-weight:600;font-size:11px;text-transform:uppercase;
+      letter-spacing:.03em;color:var(--rpf-muted);padding:7px 9px;border-bottom:1px solid var(--rpf-line);vertical-align:bottom}
+    .rpf th.grp{text-align:center;border-bottom:1px solid var(--rpf-line)}
+    .rpf td{padding:7px 9px;border-bottom:1px solid var(--rpf-line)}
+    .rpf td.n,.rpf th.n{text-align:right;font-variant-numeric:tabular-nums}
+    .rpf td.z{color:var(--rpf-muted)}
+    .rpf .sep{border-left:1px solid var(--rpf-line)}
+    .rpf tr.rpf-total td{font-weight:700;background:var(--rpf-head);border-bottom:0}
+    .rpf .pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap}
+    .rpf .rpf-note{margin:0;font-size:11px;color:var(--rpf-muted);line-height:1.5}
+  </style>
+
+  <div>
+    <h3>Tier 1 partners: flow and meeting level</h3>
+    <p class="rpf-sub" id="rpf-asof">Loading live from HubSpot…</p>
+  </div>
+
+  <div>
+    <p class="rpf-label">Contact flow (Tier 1 totals)</p>
+    <div class="rpf-flow" id="rpf-flow"></div>
+  </div>
+
+  <div>
+    <p class="rpf-label">Meeting level, trailing 30 days</p>
+    <div class="rpf-ladder" id="rpf-ladder"></div>
+  </div>
+
+  <div class="rpf-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th rowspan="2">Partner</th>
+          <th class="grp sep" colspan="5">Contacts by stage</th>
+          <th class="grp sep" colspan="2">Moving</th>
+          <th class="sep" rowspan="2">Meeting level</th>
+        </tr>
+        <tr>
+          <th class="n sep">Verified</th><th class="n">Committed</th><th class="n">Outreach sent</th>
+          <th class="n">Intro complete</th><th class="n">Expired</th>
+          <th class="n sep">Sent, 14 days</th><th class="n">Meetings, 30 days</th>
+        </tr>
+      </thead>
+      <tbody id="rpf-body"></tbody>
+    </table>
+  </div>
+
+  <p class="rpf-note">
+    Live from HubSpot on each refresh. Flow: Verified → Committed to Outreach → Outreach Sent → Intro Complete or Outreach Expired.
+    Each stage counts everyone who reached it or a later stage, so Committed includes contacts already sent or introduced (same basis as the scorecard's "Committed outreach worked").
+    Verified is the pool not yet committed. Intro Complete / Outreach Expired records without an RP outreach or committed date are legacy and left out.
+    Meetings = first meetings in the trailing window (earliest post-Top-A stage-entry date).
+    <b>3+ in 30 days</b>: three or more in the last 30 days. <b>On pace for 3+</b>: fewer than three, but two or more in the last 15 days.
+    <b>Producing</b>: at least one in the last 30 days. <b>Not producing</b>: none, but contacts loaded. <b>No network loaded</b>: no contacts in HubSpot.
+  </p>
+
+</section>
 <div class="section-label" style="margin-top: 24px;">② Lead funnel — RP-origin leads (going forward, new business)</div>
 <div class="card">
   <h2>RP-sourced lead funnel <span class="h2-hint">— origin = Referral Partner · click a stage to view those leads</span><span class="xref-banner" id="xref-banner">Cross-reference: pending…</span></h2>
@@ -552,7 +648,8 @@
   </div>
 </div>
 
-</div>
+</div><!-- /#main-content -->
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   window.appAuth.init(user => {
@@ -563,35 +660,49 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 function initApp() {
-/* ===== RP Weekly Scorecard — live from HubSpot, 8-week trend reconstructed from stage-entry dates ===== */
+/* ===== RP Weekly Scorecard — live. Reuses the main dashboard's leads+RP pull (window.LEADS/RPS) so it makes no duplicate search calls; publishes window.__RPSC for the drill-in + Tier 1 sections. Contacts (outreach metric only) are best-effort. ===== */
 (function(){
-  var TOOL="mcp__6b11666e-7029-4baf-a491-3791bd8d9175__hubspot_search_custom_objects";
   var CFILTER="mcp__6b11666e-7029-4baf-a491-3791bd8d9175__hubspot_filter_contacts_by_property";
   var MF=["hs_v2_date_entered_attempting_stage_id_745667965","hs_v2_date_entered_connected_stage_id_2058487257","hs_v2_date_entered_qualified_stage_id_233247981","hs_v2_date_entered_1009181988"];
   var DAY=86400000, NOW=Date.now();
   var PROS='920226201', RETIRED={'967596116':1,'1162158241':1};
   var SIGNED_FIELD='hs_v2_date_entered_967596115';
   var COMMS=3; // manual input — partner-wide comms sent in last 30d; update weekly
-  // ---- metric definitions (match the pace engine + build notes) ----
   var STRIP_GOALS={g:{op:'>=',n:4,txt:'goal ≥ 4'}, y:{op:'<=',n:3,txt:'goal ≤ 3'}, r:{op:'<=',n:1,txt:'goal ≤ 1'}};
   var N={g:'green',y:'yellow',r:'red'};
   function monthStartOf(t){var d=new Date(t);return new Date(d.getFullYear(),d.getMonth(),1).getTime();}
   function dayOfMonthOf(t){return new Date(t).getDate();}
-  function pd(s){if(!s)return null;var t=Date.parse(s);return isNaN(t)?null:t;}
+  function pd(s){if(s==null||s==='')return null;if(typeof s==='number')return s;var t=Date.parse(s);return isNaN(t)?null:t;}
   function status(a,g){return (a==null||isNaN(a))?null:(a/g>=0.9?'g':a/g>=0.5?'y':'r');}
   function el(id){return document.getElementById(id);}
-  function parse(r){var raw=(r&&r.structuredContent!=null)?r.structuredContent:JSON.parse(r.content[0].text);var p=(raw&&raw.result!=null)?raw.result:raw;if(typeof p==='string'){if(p.indexOf('authorization required')>-1)throw new Error('AUTH');p=JSON.parse(p);}return (p&&p.results)||[];}
   function sleep(ms){return new Promise(function(res){setTimeout(res,ms);});}
-  async function callR(name,args){for(var i=0;i<4;i++){try{var r=await window.cowork.callMcpTool(name,args);if(r&&r.isError){await sleep(700*(i+1));continue;}return r;}catch(e){await sleep(700*(i+1));}}return null;}
+  var RETRY_RE=/rate limit|try again|not currently shown|too many|429/i;
+  function parse(r){
+    if(!r) throw new Error('RETRY');
+    var raw=null;
+    if(r.structuredContent!=null){ raw=r.structuredContent; }
+    else if(r.content&&r.content[0]&&r.content[0].text!=null){
+      var txt=r.content[0].text;
+      try{ raw=JSON.parse(txt); }
+      catch(e){ if(RETRY_RE.test(txt))throw new Error('RETRY'); if(/authorization required/i.test(txt))throw new Error('AUTH'); throw e; }
+    } else { throw new Error('RETRY'); }
+    var p=(raw&&raw.result!=null)?raw.result:raw;
+    if(typeof p==='string'){ if(/authorization required/i.test(p))throw new Error('AUTH'); if(RETRY_RE.test(p))throw new Error('RETRY'); p=JSON.parse(p); }
+    return (p&&p.results)||[];
+  }
+  async function getContacts(prop){
+    for(var i=0;i<6;i++){
+      try{ return parse(await window.cowork.callMcpTool(CFILTER,{property_name:prop,operator:"HAS_PROPERTY",properties:"firstname,lastname,rp_committed_to_outreach_date,rp_outreach_date",max_results:1000,page_size:100})); }
+      catch(e){ if(e&&e.message==='AUTH')throw e; await sleep(Math.min(9000,900*(i+1))); }
+    }
+    return [];
+  }
 
-  // Compute every metric's raw value as-of an arbitrary timestamp T, from static date facts.
-  // byRp: {name:[firstMeetingTs,...]}  rpRecs:[{name,signed,active}]  cCommit/cReach: [ts|null] per contact
   function snapshot(T, byRp, rpRecs, contacts){
     var MS=monthStartOf(T), dom=dayOfMonthOf(T);
     var prodMonth=0, onPace=0, prod3=0, fmMonth=0;
     Object.keys(byRp).forEach(function(n){
-      var ts=byRp[n];
-      var cm=0, l30=0;
+      var ts=byRp[n]; var cm=0, l30=0;
       for(var i=0;i<ts.length;i++){var t=ts[i];if(t<=T){ if(t>=MS)cm++; if(t>=T-30*DAY)l30++; }}
       if(cm>=1)prodMonth++;
       if(cm*30/dom>=3)onPace++;
@@ -607,46 +718,31 @@ function initApp() {
         for(var i=0;i<ts.length;i++){if(ts[i]<=T && ts[i]>=T-60*DAY){nhProd++;break;}}
       }
     });
-    // outreach: committed = contacts committed-or-reached by T; reached = contacts with outreach date by T
-    var committed=0, reached=0;
-    contacts.forEach(function(c){
+    var committed=0, reached=0, hasContacts=contacts&&contacts.length;
+    (contacts||[]).forEach(function(c){
       var r=(c.reach!=null && c.reach<=T);
       var cm=(c.commit!=null && c.commit<=T);
       if(r)reached++;
       if(r||cm)committed++;
     });
     return {
-      producing_month:prodMonth,
-      signed_month:signedMonth,
-      outreach:committed?reached/committed:null,
-      outreach_fmt:committed?(reached+' of '+committed):'—',
+      producing_month:prodMonth, signed_month:signedMonth,
+      outreach:(hasContacts&&committed)?reached/committed:null, outreach_fmt:(hasContacts&&committed)?(reached+' of '+committed):'—',
       comms_touches:(T>=NOW-DAY?COMMS:null),
-      on_pace:onPace,
-      nh:nhBase?nhProd/nhBase:null,
-      nh_fmt:nhBase?Math.round(100*nhProd/nhBase)+'%':'—',
-      producing_3plus:prod3,
-      fm_month:fmMonth
+      on_pace:onPace, nh:nhBase?nhProd/nhBase:null, nh_fmt:nhBase?Math.round(100*nhProd/nhBase)+'%':'—',
+      producing_3plus:prod3, fm_month:fmMonth
     };
   }
 
   var METRICS=[
-    {k:'producing_month',label:'Partners producing this month',goal:3,
-     desc:'Partners who put at least one first meeting on the calendar this month.'},
-    {k:'signed_month',label:'New partners signed this month',goal:3,
-     desc:'Referral partners who signed and entered Ramping Up this month.'},
-    {k:'outreach',label:'Committed outreach worked',goal:0.75,pct:true,
-     fmtKey:'outreach_fmt',
-     desc:'Of the prospects partners said they would contact, the share they have confirmed reaching out to.'},
-    {k:'comms_touches',label:'Partner comms touches (30 days)',goal:2,
-     desc:'Partner-wide communications we sent in the last 30 days (newsletter, program updates). Manual input.'},
-    {k:'on_pace',label:'Partners on pace for 3+ meetings',goal:3,
-     desc:'Partners whose meetings scheduled so far this month project to three or more over 30 days.'},
-    {k:'nh',label:'Network health (60 days)',goal:0.75,pct:true,fmtKey:'nh_fmt',
-     desc:'Share of active partners past their 30-day ramp who scheduled at least one meeting in the last 60 days.'},
-    {k:'producing_3plus',label:'Partners at 3+ meetings in 30 days',goal:3,
-     desc:'Partners who scheduled three or more first meetings in the trailing 30 days — the "actively producing" bar.'},
-    {k:'fm_month',label:'First meetings this month',goal:12,
-     desc:'RP-sourced first meetings scheduled this month, counted when the lead reaches First Meeting Scheduled.'},
+    {k:'producing_month',label:'Partners producing this month',goal:3,desc:'Partners who put at least one first meeting on the calendar this month.'},
+    {k:'signed_month',label:'New partners signed this month',goal:3,desc:'Referral partners who signed and entered Ramping Up this month.'},
+    {k:'outreach',label:'Committed outreach worked',goal:0.75,pct:true,fmtKey:'outreach_fmt',desc:'Of the prospects partners said they would contact, the share they have confirmed reaching out to.'},
+    {k:'comms_touches',label:'Partner comms touches (30 days)',goal:2,desc:'Partner-wide communications we sent in the last 30 days (newsletter, program updates). Manual input.'},
+    {k:'on_pace',label:'Partners on pace for 3+ meetings',goal:3,desc:'Partners whose meetings scheduled so far this month project to three or more over 30 days.'},
+    {k:'nh',label:'Network health (60 days)',goal:0.75,pct:true,fmtKey:'nh_fmt',desc:'Share of active partners past their 30-day ramp who scheduled at least one meeting in the last 60 days.'},
+    {k:'producing_3plus',label:'Partners at 3+ meetings in 30 days',goal:3,desc:'Partners who scheduled three or more first meetings in the trailing 30 days — the "actively producing" bar.'},
+    {k:'fm_month',label:'First meetings this month',goal:12,desc:'RP-sourced first meetings scheduled this month, counted when the lead reaches First Meeting Scheduled.'},
   ];
   function vOf(m,snap){return snap[m.k];}
   function fv(m,snap){if(m.fmtKey)return snap[m.fmtKey];var v=snap[m.k];return m.pct?(v==null?'—':Math.round(100*v)+'%'):v;}
@@ -666,7 +762,7 @@ function initApp() {
       strip.insertAdjacentHTML('beforeend','<div class="ws-tile '+c+' '+(met?'met':'miss')+'"><div class="l"><span>'+N[c]+'</span><span class="goal">'+G.txt+'</span></div><div class="b">'+n+'</div><div class="c">last week <b>'+(p==null?'—':p)+'</b>'+(delta?' · '+delta:'')+'</div></div>');
     });
     var tb=el('ws-rows'); tb.innerHTML='';
-    var ord={g:0,y:1,r:2,undefined:3,'null':3};
+    var ord={g:0,y:1,r:2};
     METRICS.map(function(m,i){return {m:m,i:i};}).sort(function(a,b){return (ord[sNow[a.i]]==null?3:ord[sNow[a.i]])-(ord[sNow[b.i]]==null?3:ord[sNow[b.i]]);}).forEach(function(o){
       var m=o.m, i=o.i, s=sNow[i], sp=sPrev[i];
       var hist=snaps.map(function(snap){var c=status(vOf(m,snap),m.goal);var isNow=(snap===now);return '<span class="'+(c||'')+(isNow?' now':'')+'" title="'+fv(m,snap)+'"></span>';}).join('');
@@ -686,40 +782,29 @@ function initApp() {
 
   async function run(){
     try{
-      var L=parse(await window.cowork.callMcpTool(TOOL,{object_type:"0-136",filters:'[{"property":"origin","operator":"EQ","value":"Referral Partner"}]',properties:"referral_partner,hs_pipeline_stage,hs_lead_name,hs_object_id,"+MF.join(","),limit:200}));
-      var R=parse(await window.cowork.callMcpTool(TOOL,{object_type:"2-37656252",properties:"referral_partner,rp_tier,hs_pipeline,hs_pipeline_stage,"+SIGNED_FIELD,limit:100}));
-      // outreach contacts: those with a committed date, and those with an outreach date (union by id)
-      var cm={};
-      var c1=await callR(CFILTER,{property_name:"rp_committed_to_outreach_date",operator:"HAS_PROPERTY",properties:"firstname,lastname,rp_committed_to_outreach_date,rp_outreach_date",max_results:1000,page_size:100});
-      var c2=await callR(CFILTER,{property_name:"rp_outreach_date",operator:"HAS_PROPERTY",properties:"firstname,lastname,rp_committed_to_outreach_date,rp_outreach_date",max_results:1000,page_size:100});
-      function ingest(res){ if(!res)return; var rows=[]; try{rows=parse(res);}catch(e){rows=[];}
-        rows.forEach(function(x){var id=x.hs_object_id||x.id||(x.properties&&x.properties.hs_object_id);var pr=x.properties||x; if(id==null)return;
-          cm[id]={id:id,name:((pr.firstname||'')+' '+(pr.lastname||'')).trim()||('Contact '+id),commit:pd(pr.rp_committed_to_outreach_date),reach:pd(pr.rp_outreach_date)};}); }
-      ingest(c1); ingest(c2);
-      var contacts=Object.keys(cm).map(function(k){return cm[k];});
-      try{window.__RPSC={leads:L,rps:R,contacts:contacts,now:NOW};}catch(e){}
-
-      // build per-RP first-meeting timestamp lists (earliest post-Top-A date per lead)
+      // reuse the main dashboard's already-fetched data — no duplicate search calls
+      var L=null,R=null;
+      for(var t=0;t<120;t++){
+        if(Array.isArray(window.LEADS)&&Array.isArray(window.RPS)&&window.LEADS.length>0&&window.RPS.length>0){ L=window.LEADS; R=window.RPS; break; }
+        await sleep(1000);
+      }
+      if(!L||!R) throw new Error('NODATA');
+      try{window.__RPSC={leads:L,rps:R,contacts:[],now:NOW};}catch(e){}
       var byRp={};
-      L.forEach(function(l){
-        var best=null;
-        for(var i=0;i<MF.length;i++){var t=pd(l[MF[i]]); if(t!=null && (best==null||t<best))best=t;}
-        if(best==null)return;
-        var k=l.referral_partner||'(unattributed)';
-        (byRp[k]=byRp[k]||[]).push(best);
-      });
-      var rpRecs=R.map(function(r){
-        var active=!(r.rp_tier==='DNC') && !RETIRED[r.hs_pipeline_stage] && r.hs_pipeline!==PROS;
-        return {name:r.referral_partner||'(unnamed)', signed:pd(r[SIGNED_FIELD]), active:active};
-      });
-
-      // 8 weekly snapshots, 7 days apart, ending now
-      var snaps=[];
-      for(var k=7;k>=0;k--){ snaps.push(snapshot(NOW-k*7*DAY, byRp, rpRecs, contacts)); }
-      render(snaps);
+      L.forEach(function(l){ var best=null; for(var i=0;i<MF.length;i++){var t=pd(l[MF[i]]); if(t!=null&&(best==null||t<best))best=t;} if(best==null)return; var k=l.referral_partner||'(unattributed)'; (byRp[k]=byRp[k]||[]).push(best); });
+      var rpRecs=R.map(function(r){ var active=!(r.rp_tier==='DNC') && !RETIRED[r.hs_pipeline_stage] && r.hs_pipeline!==PROS; return {name:r.referral_partner||'(unnamed)', signed:pd(r[SIGNED_FIELD]), active:active}; });
+      function renderWith(contacts){ var snaps=[]; for(var k=7;k>=0;k--){ snaps.push(snapshot(NOW-k*7*DAY, byRp, rpRecs, contacts)); } render(snaps); }
+      renderWith([]); // 7 of 8 metrics need no contacts — show immediately
+      // outreach metric only: pull contacts best-effort, then re-render + republish
+      var cm={};
+      function ingest(rows){ (rows||[]).forEach(function(x){var pr=x.properties||x;var id=pr.hs_object_id||x.id;if(id==null)return;cm[id]={id:id,name:((pr.firstname||'')+' '+(pr.lastname||'')).trim()||('Contact '+id),commit:pd(pr.rp_committed_to_outreach_date),reach:pd(pr.rp_outreach_date)};}); }
+      try{ ingest(await getContacts("rp_committed_to_outreach_date")); }catch(e){}
+      try{ ingest(await getContacts("rp_outreach_date")); }catch(e){}
+      var contacts=Object.keys(cm).map(function(k){return cm[k];});
+      if(contacts.length){ try{window.__RPSC={leads:L,rps:R,contacts:contacts,now:NOW};}catch(e){} renderWith(contacts); }
     }catch(e){
       var s=el('ws-asof');
-      if(s)s.textContent=(e&&e.message==='AUTH')?'⚠ HubSpot needs reconnecting (Cowork settings → Connectors) — scorecard populates once authorized.':'Scorecard unavailable: '+((e&&e.message)||e);
+      if(s)s.textContent=(e&&e.message==='AUTH')?'⚠ HubSpot needs reconnecting (Cowork settings → Connectors) — scorecard populates once authorized.':'Scorecard couldn’t load — press Reload.';
     }
   }
   run();
@@ -864,6 +949,126 @@ function initApp() {
     setTimeout(wait,500);
   })();
 })();
+  /* ===== Tier 1 RP flow — LIVE. Reads window.__RPSC (leads + rps); pulls Tier-1 contacts once. ===== */
+  (function(){
+    var CFILTER="mcp__6b11666e-7029-4baf-a491-3791bd8d9175__hubspot_filter_contacts_by_property";
+    var MF=["hs_v2_date_entered_attempting_stage_id_745667965","hs_v2_date_entered_connected_stage_id_2058487257","hs_v2_date_entered_qualified_stage_id_233247981","hs_v2_date_entered_1009181988"];
+    var DAY=86400000;
+    var TIER1="TIER 1: ACTIVE PUSH";
+    function pd(s){if(s==null||s==='')return null;if(typeof s==='number')return s;var t=Date.parse(s);return isNaN(t)?null:t;}
+    function esc(t){return String(t==null?'':t).replace(/[&<>"]/g,function(ch){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch];});}
+    function el(id){return document.getElementById(id);}
+    function sleep(ms){return new Promise(function(r){setTimeout(r,ms);});}
+    function parse(r){var raw=(r&&r.structuredContent!=null)?r.structuredContent:JSON.parse(r.content[0].text);var p=(raw&&raw.result!=null)?raw.result:raw;if(typeof p==='string'){if(p.indexOf('authorization required')>-1)throw new Error('AUTH');p=JSON.parse(p);}return (p&&p.results)||[];}
+    async function callR(name,args){for(var i=0;i<4;i++){try{var r=await window.cowork.callMcpTool(name,args);if(r&&r.isError){await sleep(800*(i+1));continue;}return r;}catch(e){await sleep(800*(i+1));}}return null;}
+
+    var LEVELS=[
+      {k:"3",name:"3+ in 30 days",cls:"lv-3"},
+      {k:"pace",name:"On pace for 3+",cls:"lv-pace"},
+      {k:"prod",name:"Producing",cls:"lv-prod"},
+      {k:"none",name:"Not producing",cls:"lv-none"},
+      {k:"idle",name:"No network loaded",cls:"lv-idle"}
+    ];
+    function level(r){ if(r.m30>=3)return "3"; if(r.m15>=2)return "pace"; if(r.m30>=1)return "prod"; return (r.v+r.c+r.s+r.i+r.x)>0?"none":"idle"; }
+    var rank={}; LEVELS.forEach(function(l,i){rank[l.k]=i;}); var byK={}; LEVELS.forEach(function(l){byK[l.k]=l;});
+
+    function render(RPF_DATA, asof){
+      var rows=RPF_DATA.map(function(r){return Object.assign({lv:level(r)},r);});
+      rows.sort(function(a,b){return rank[a.lv]-rank[b.lv] || b.m30-a.m30 || (b.c+b.s)-(a.c+a.s) || b.v-a.v || a.p.localeCompare(b.p);});
+      var T={v:0,c:0,s:0,i:0,x:0,s14:0,m30:0};
+      function cell(n,extra){return "<td class='n"+(extra?" "+extra:"")+(n===0?" z":"")+"'>"+n+"</td>";}
+      var html=rows.map(function(r){
+        Object.keys(T).forEach(function(k){T[k]+=r[k];});
+        var L=byK[r.lv];
+        return "<tr><td>"+esc(r.p)+"</td>"+cell(r.v,"sep")+cell(r.c)+cell(r.s)+cell(r.i)+cell(r.x)+
+               cell(r.s14,"sep")+cell(r.m30)+"<td class='sep'><span class='pill "+L.cls+"'>"+L.name+"</span></td></tr>";
+      }).join("");
+      html+="<tr class='rpf-total'><td>Tier 1 total ("+rows.length+")</td><td class='n sep'>"+T.v+"</td><td class='n'>"+T.c+
+            "</td><td class='n'>"+T.s+"</td><td class='n'>"+T.i+"</td><td class='n'>"+T.x+"</td><td class='n sep'>"+T.s14+
+            "</td><td class='n'>"+T.m30+"</td><td class='sep'></td></tr>";
+      el("rpf-body").innerHTML=html;
+
+      var worked=T.c?Math.round(T.s/T.c*100):0;
+      var steps=[[T.v,"Verified, not yet committed"],[T.c,"Committed to outreach"],[T.s,"Outreach sent · "+worked+"% of commitments ("+(T.c-T.s)+" still waiting)"],[T.i,"Intro complete"],[T.x,"Outreach expired"]];
+      el("rpf-flow").innerHTML=steps.map(function(s,i){
+        return (i?"<span class='rpf-arrow' aria-hidden='true'>"+(i===4?"|":"→")+"</span>":"")+
+               "<div class='rpf-step'><b>"+s[0]+"</b><span>"+s[1]+"</span></div>";
+      }).join("");
+
+      el("rpf-ladder").innerHTML=LEVELS.map(function(L){
+        var who=rows.filter(function(r){return r.lv===L.k;});
+        var names=(L.k==="idle"||L.k==="none")
+          ? (who.length?who.map(function(r){return esc(r.p.split(" ")[0]);}).join(", "):"None")
+          : (who.length?who.map(function(r){return esc(r.p)+" ("+r.m30+")";}).join(", "):"None yet");
+        return "<div class='rpf-rung "+L.cls+"'><b>"+who.length+"</b><span class='t'>"+L.name+"</span><span class='who'>"+names+"</span></div>";
+      }).join("");
+
+      el("rpf-asof").textContent="Who's moving contacts through the flow, and who's turning them into meetings · live from HubSpot · "+asof;
+    }
+
+    function compute(D, contacts){
+      var now=D.now||Date.now();
+      // Tier 1 partners from RP object
+      var partners=(D.rps||[]).filter(function(r){return (r.rp_tier||'')===TIER1;}).map(function(r){return (r.referral_partner||'').trim();}).filter(Boolean);
+      var seen={}; partners=partners.filter(function(n){var k=n.toLowerCase();if(seen[k])return false;seen[k]=1;return true;});
+      // first-meeting times per RP (earliest post-Top-A date per lead)
+      var fmByRp={};
+      (D.leads||[]).forEach(function(l){
+        var best=null; for(var j=0;j<MF.length;j++){var t=pd(l[MF[j]]); if(t!=null&&(best==null||t<best))best=t;}
+        if(best==null)return; var k=(l.referral_partner||'').trim(); if(!k)return;
+        (fmByRp[k]=fmByRp[k]||[]).push(best);
+      });
+      // contact stage tallies per RP name
+      var acc={}; function A(n){var k=n.trim(); return acc[k]||(acc[k]={v:0,com:0,sent:0,i:0,x:0,s14:0});}
+      (contacts||[]).forEach(function(c){
+        var name=(c.referral_partner_primary||'').trim(); if(!name)return;
+        var st=(c.rp_status||'').trim();
+        var cd=pd(c.rp_committed_to_outreach_date), od=pd(c.rp_outreach_date);
+        var hasDate=(cd!=null)||(od!=null);
+        var a=A(name);
+        if(st==="Verified"){a.v++;}
+        else if(st==="Committed to Outreach"){a.com++;}
+        else if(st==="Outreach Sent"){a.sent++; if(od!=null&&od>=now-14*DAY)a.s14++;}
+        else if(st==="Intro Complete"){ if(hasDate){a.i++;} }
+        else if(st==="Outreach Expired"){ if(hasDate){a.x++;} }
+        // Unverified / dead / blank → not part of the flow
+      });
+      var data=partners.map(function(name){
+        var a=acc[name]||{v:0,com:0,sent:0,i:0,x:0,s14:0};
+        var s=a.sent+a.i+a.x;       // Outreach Sent or beyond
+        var c=a.com+s;              // Committed or beyond
+        var ts=fmByRp[name]||[];
+        var m30=ts.filter(function(t){return t>=now-30*DAY;}).length;
+        var m15=ts.filter(function(t){return t>=now-15*DAY;}).length;
+        return {p:name,v:a.v,c:c,s:s,i:a.i,x:a.x,s14:a.s14,m30:m30,m15:m15};
+      });
+      return data;
+    }
+
+    async function run(){
+      try{
+        var D=window.__RPSC;
+        var partners=(D.rps||[]).filter(function(r){return (r.rp_tier||'')===TIER1;}).map(function(r){return (r.referral_partner||'').trim();}).filter(Boolean);
+        var uniq={}; partners.forEach(function(n){uniq[n]=1;}); var names=Object.keys(uniq);
+        var contacts=[];
+        if(names.length){
+          var res=await callR(CFILTER,{property_name:"referral_partner_primary",operator:"IN",value:names.join(","),properties:"referral_partner_primary,rp_status,rp_committed_to_outreach_date,rp_outreach_date",max_results:4000,page_size:100});
+          if(res){ try{ contacts=parse(res).map(function(x){var pr=x.properties||x;return {referral_partner_primary:pr.referral_partner_primary,rp_status:pr.rp_status,rp_committed_to_outreach_date:pr.rp_committed_to_outreach_date,rp_outreach_date:pr.rp_outreach_date};}); }catch(e){contacts=[];} }
+        }
+        var data=compute(D, contacts);
+        render(data, new Date(D.now||Date.now()).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}));
+      }catch(e){
+        var a=el('rpf-asof'); if(a)a.textContent=(e&&e.message==='AUTH')?'⚠ HubSpot needs reconnecting (Cowork settings → Connectors) — this section populates once authorized.':'Tier 1 flow unavailable: '+((e&&e.message)||e);
+      }
+    }
+
+    var tries=0;
+    (function wait(){
+      if(window.__RPSC&&window.__RPSC.rps){ run(); return; }
+      if(tries++>60){ var a=el('rpf-asof'); if(a)a.textContent='Waiting on HubSpot data — refresh once the scorecard above loads.'; return; }
+      setTimeout(wait,500);
+    })();
+  })();
 /* ===== Opportunity Map tab — self-contained IIFE, no global leakage ===== */
 (function(){
   document.querySelectorAll('.rp-tabs button').forEach(function(b){
@@ -1348,6 +1553,7 @@ async function mapWithConcurrency(items, n, fn) {
   await Promise.all(Array(n).fill(0).map(() => worker()));
   return results;
 }
+
 // ---- Deal funnel: DEAL-SIDE walk — pull all Brand Direct deals, walk each → 2-37656252 ----
 // This direction works in the artifact context (RP→deals direction was failing).
 // Includes all 6 stages: Client committed → Closed Won, Closed Lost.
@@ -1728,6 +1934,7 @@ function updateScorecardLive() {
     el.style.color = "#1D9E75";
   });
 }
+
 function renderExecSummary(ctx) {
   const now = Date.now();
   const day = 86400000;
@@ -2150,7 +2357,7 @@ async function loadDashboard() {
     const [rpsData, leadsData, ownersData] = await Promise.all([
       callMcp("mcp__6b11666e-7029-4baf-a491-3791bd8d9175__hubspot_search_custom_objects", {
         object_type: "2-37656252",
-        properties: "referral_partner,rp_email_primary,rp_status,rp_tier,rp_agreement_type,mlm,city_state,count_of_contacts,count_of_rpql2,count_of_sql,hs_pipeline_stage,next_step_date,hubspot_owner_id,hs_createdate",
+        properties: "referral_partner,rp_email_primary,rp_status,rp_tier,rp_agreement_type,mlm,city_state,count_of_contacts,count_of_rpql2,count_of_sql,hs_pipeline_stage,hs_v2_date_entered_967596115,hs_pipeline,next_step_date,hubspot_owner_id,hs_createdate",
         limit: 100,
         sorts: '[{"propertyName": "hs_lastmodifieddate", "direction": "DESCENDING"}]'
       }),
@@ -2171,6 +2378,7 @@ async function loadDashboard() {
     RP_BY_ID = {};
     RP_BY_KEY = {};
     RPS.forEach(r => { RP_BY_ID[String(r.id)] = r; if (r.referral_partner) RP_BY_KEY[nameKey(r.referral_partner)] = r; });
+    try { window.LEADS = LEADS; window.RPS = RPS; } catch (e) {}
     XREF = {};
     LEADS.forEach(l => { XREF[l.id] = { status: "checking" }; });
 
