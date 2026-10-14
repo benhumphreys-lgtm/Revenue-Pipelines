@@ -254,7 +254,15 @@
     const maxResults = Number(p.max_results) || 1000;
     const filter = { propertyName: propName, operator: operator };
     if (value != null && operator !== 'HAS_PROPERTY' && operator !== 'NOT_HAS_PROPERTY') {
-      filter.value = value;
+      // HubSpot's IN / NOT_IN operators require a `values` array, not a scalar.
+      // The MCP tool shape passes a CSV string here; split and use `values`.
+      if (operator === 'IN' || operator === 'NOT_IN') {
+        filter.values = Array.isArray(value)
+          ? value.map(String)
+          : String(value).split(',').map(s => s.trim()).filter(Boolean);
+      } else {
+        filter.value = value;
+      }
     }
     const base = {
       objectType: 'contacts',
