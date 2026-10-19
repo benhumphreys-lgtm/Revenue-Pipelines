@@ -430,11 +430,6 @@
     <div class="rpf-flow" id="rpf-flow"></div>
   </div>
 
-  <div>
-    <p class="rpf-label">Meeting level, trailing 30 days</p>
-    <div class="rpf-ladder" id="rpf-ladder"></div>
-  </div>
-
   <div class="rpf-wrap">
     <table>
       <thead>
@@ -455,10 +450,10 @@
   </div>
 
   <p class="rpf-note">
-    Live from HubSpot on each refresh. Flow: Verified → Committed to Outreach → Outreach Sent → Intro Complete or Outreach Expired.
+    Live from HubSpot on each refresh. Flow: Verified → Committed to Outreach → Outreach Sent → Intro Complete, with first meetings in the trailing 30 days shown at the end.
     Each stage counts everyone who reached it or a later stage, so Committed includes contacts already sent or introduced (same basis as the scorecard's "Committed outreach worked").
-    Verified is the pool not yet committed. Intro Complete / Outreach Expired records without an RP outreach or committed date are legacy and left out.
-    Meetings = first meetings in the trailing window (earliest post-Top-A stage-entry date).
+    Verified is the pool not yet committed. Intro Complete records without an RP outreach or committed date are legacy and left out. Outreach Expired records are still shown in the per-partner table but excluded from the flow strip.
+    First meetings = earliest post-Top-A stage-entry date per lead; the trailing 30-day count on the flow strip matches the sum of the Meetings, 30 days column.
     <b>3+ in 30 days</b>: three or more in the last 30 days. <b>On pace for 3+</b>: fewer than three, but two or more in the last 15 days.
     <b>Producing</b>: at least one in the last 30 days. <b>Not producing</b>: none, but contacts loaded. <b>No network loaded</b>: no contacts in HubSpot.
   </p>
@@ -903,18 +898,10 @@ function initApp() {
       el("rpf-body").innerHTML=html;
 
       var worked=T.c?Math.round(T.s/T.c*100):0;
-      var steps=[[T.v,"Verified, not yet committed"],[T.c,"Committed to outreach"],[T.s,"Outreach sent · "+worked+"% of commitments ("+(T.c-T.s)+" still waiting)"],[T.i,"Intro complete"],[T.x,"Outreach expired"]];
+      var steps=[[T.v,"Verified, not yet committed"],[T.c,"Committed to outreach"],[T.s,"Outreach sent · "+worked+"% of commitments ("+(T.c-T.s)+" still waiting)"],[T.i,"Intro complete"],[T.m30,"First meetings, trailing 30 days"]];
       el("rpf-flow").innerHTML=steps.map(function(s,i){
-        return (i?"<span class='rpf-arrow' aria-hidden='true'>"+(i===4?"|":"→")+"</span>":"")+
+        return (i?"<span class='rpf-arrow' aria-hidden='true'>→</span>":"")+
                "<div class='rpf-step'><b>"+s[0]+"</b><span>"+s[1]+"</span></div>";
-      }).join("");
-
-      el("rpf-ladder").innerHTML=LEVELS.map(function(L){
-        var who=rows.filter(function(r){return r.lv===L.k;});
-        var names=(L.k==="idle"||L.k==="none")
-          ? (who.length?who.map(function(r){return esc(r.p.split(" ")[0]);}).join(", "):"None")
-          : (who.length?who.map(function(r){return esc(r.p)+" ("+r.m30+")";}).join(", "):"None yet");
-        return "<div class='rpf-rung "+L.cls+"'><b>"+who.length+"</b><span class='t'>"+L.name+"</span><span class='who'>"+names+"</span></div>";
       }).join("");
 
       el("rpf-asof").textContent="Who's moving contacts through the flow, and who's turning them into meetings · live from HubSpot · "+asof;
