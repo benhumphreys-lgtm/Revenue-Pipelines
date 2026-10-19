@@ -646,7 +646,7 @@ function initApp() {
     {k:'on_pace',label:'Partners on pace for 3+ meetings',goal:3,desc:'Partners whose meetings scheduled so far this month project to three or more over 30 days.'},
     {k:'nh',label:'Network health (60 days)',goal:0.75,pct:true,fmtKey:'nh_fmt',desc:'Share of active partners past their 30-day ramp who scheduled at least one meeting in the last 60 days.'},
     {k:'producing_3plus',label:'Partners at 3+ meetings in 30 days',goal:3,desc:'Partners who scheduled three or more first meetings in the trailing 30 days — the "actively producing" bar.'},
-    {k:'fm_month',label:'First meetings this month',goal:12,desc:'RP-sourced first meetings scheduled this month, counted when the lead reaches First Meeting Scheduled.'},
+    {k:'fm_month',label:'First meetings this month',goal:8,desc:'RP-sourced first meetings scheduled this month, counted when the lead reaches First Meeting Scheduled.'},
   ];
   function vOf(m,snap){return snap[m.k];}
   function fv(m,snap){if(m.fmtKey)return snap[m.fmtKey];var v=snap[m.k];return m.pct?(v==null?'—':Math.round(100*v)+'%'):v;}
@@ -801,14 +801,24 @@ function initApp() {
     (function(){
       var rows=allFM.filter(function(x){return x.fm>=MS;}).sort(function(a,b){return b.fm-a.fm;});
       var recs=rows.map(function(m){return recLine('● '+esc(m.name)+' <span class="rpd-sub">('+esc(m.rp)+')</span>',fmtD(m.fm),HUBLEAD+m.id);}).join('');
-      M.push({label:'First meetings this month',goal:12,value:rows.length,desc:'RP-sourced leads that reached a first-meeting stage this calendar month.',records:recs});
+      M.push({label:'First meetings this month',goal:8,value:rows.length,desc:'RP-sourced leads that reached a first-meeting stage this calendar month.',records:recs});
     })();
     return M;
   }
 
   function render(M){
     var grid=el('rpd-grid'); if(!grid)return; grid.innerHTML='';
-    M.forEach(function(m){
+    // Sort cards by status to match the top scorecard table: green → yellow → red → n/a.
+    // Stable sort via an index tiebreaker so same-status cards keep their defined order.
+    var statOrd={g:0,y:1,r:2};
+    var sorted=M.map(function(m,i){return {m:m,i:i,s:stat(m.value,m.goal)};})
+      .sort(function(a,b){
+        var oa=(a.s!=null && statOrd[a.s]!=null)?statOrd[a.s]:3;
+        var ob=(b.s!=null && statOrd[b.s]!=null)?statOrd[b.s]:3;
+        return oa===ob ? a.i-b.i : oa-ob;
+      })
+      .map(function(x){return x.m;});
+    sorted.forEach(function(m){
       var s=stat(m.value,m.goal);
       var val=m.valueFmt!=null?m.valueFmt:(m.pct?(m.value==null?'—':Math.round(100*m.value)+'%'):m.value);
       var goalTxt='goal '+(m.pct?Math.round(100*m.goal)+'%':m.goal);
