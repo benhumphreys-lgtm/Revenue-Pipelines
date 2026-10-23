@@ -22,10 +22,10 @@
 </div>
 
 <div id="main-content" style="display:none">
-
 <nav class="rp-subview">
   <a href="/referral-partners.html"><span class="emoji">📊</span> Dashboard</a>
   <a href="/partner-target-map.html" class="active"><span class="emoji">🎯</span> Target Map</a>
+  <a href="/accountability.html"><span class="emoji">✓</span> Accountability</a>
 </nav>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -240,7 +240,7 @@ h1 span{color:var(--accent)}
 </style>
 
 <div class="wrap">
-  <div class="draft"><span><b>Draft v5:</b> Kyle's target list. Brand teams and above-brand groups are off limits when a partner is Verified, Committed, Outreach Sent or Intro Complete in HubSpot, or a claim is waiting on review.</span><span class="src" id="src"><i></i><span>HubSpot snapshot</span></span></div>
+  <div class="draft"><span><b>Live:</b> Kyle's target list. Brand teams and above-brand groups are off limits when a partner is Verified, Committed, Outreach Sent or Intro Complete in HubSpot, or a claim is waiting on review.</span><span class="src" id="src"><i></i><span>HubSpot snapshot</span></span></div>
   <header class="top">
     <div>
       <h1>Partner <span>Target Map</span></h1>
@@ -271,7 +271,6 @@ h1 span{color:var(--accent)}
 
 
 <div class="modal" id="modal" hidden role="dialog" aria-modal="true"><div class="mbody"></div></div>
-</div>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   window.appAuth.init(user => {
@@ -306,7 +305,8 @@ const slug=s=>String(s).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/
 const MS={}; T.brands.forEach(b=>MS[slug(b.m)]=b.m);
 const QTR=(()=>{const d=new Date();return "Q"+(Math.floor(d.getMonth()/3)+1)+" "+d.getFullYear();})();
 
-let mode=ls.get("ptm.mode","partner");
+const WEB=!(window.claude&&typeof window.claude.use==="function"), API="/.netlify/functions";
+let mode=WEB?"partner":ls.get("ptm.mode","partner");
 let rpName=ls.get("ptm.me",""), rpEmail=ls.get("ptm.email","");
 let drafts=[]; try{drafts=JSON.parse(ls.get("ptm.drafts5","[]"))||[];}catch(e){drafts=[];}
 let F={open:false,w1:false,launch:false,team:"both"}; try{Object.assign(F,JSON.parse(ls.get("ptm.f5","{}")));}catch(e){}
@@ -345,6 +345,7 @@ function statusOf(bucket){
     if(c.dec==="approved") return {s:"partner",mine,why:mine?"Your claim was approved. It's yours.":mode==="team"?`Claim approved for ${c.rp||"a partner"}.`:`Another partner has this ${grp}.`};
     return {s:"pending",mine,why:mine?"You claimed this. We're reviewing it.":mode==="team"?`${c.rp||"A partner"} requested this${c.cname?" (intro to "+c.cname+")":""}. Waiting on review.`:`Another partner requested this ${grp}. It's waiting on review.`};}
   if(!x.isM&&(x.team==="pa"?x.b.motion:x.b.aaMotion)) return {s:"motion",why:mode==="team"?(x.b.motionWhy||"Manufacturer-level access discussion in HubSpot."):"PrescriberPoint is already talking to this team. Check with us before reaching out."};
+  if(x.isM){const mm=MMOT[slug(x.m)];if(mm&&mm[x.team].length) return {s:"motion",why:mode==="team"?mm[x.team].join("; "):`PrescriberPoint is already talking to ${x.m} here. Check with us first.`};}
   if(x.isM&&x.team==="aa"&&x.brands.some(b=>b.aaMotion)) return {s:"motion",why:mode==="team"?"Manufacturer-level access discussion in HubSpot.":`PrescriberPoint is already talking to ${x.m}'s access team. Check with us first.`};
   return {s:"open",why:""};
 }
@@ -368,6 +369,61 @@ const fitWord=n=>n==null?"—":n>=70?"High":n>=55?"Medium":"Low";
 function laneScores(bs){return {pa:avg(bs.map(b=>b.pa).filter(x=>x!=null)),aa:avg(bs.map(b=>b.aa).filter(x=>x!=null)),n:bs.length};}
 function laneHtml(bs,label){const s=laneScores(bs);
   return `<div class="lanes"><div class="lane" style="--bar:var(--accent)"><span>Brand-team opportunity</span><b>${fitWord(s.pa)}</b><small>avg ${s.pa??"—"} across ${s.n} brand${s.n>1?"s":""}</small></div><div class="lane" style="--bar:var(--teal)"><span>Access-team opportunity</span><b>${fitWord(s.aa)}</b><small>avg ${s.aa??"—"} across ${s.n} brand${s.n>1?"s":""}</small></div>${label?`<div class="lane"><span>${esc(label[0])}</span><b>${esc(label[1])}</b><small>${esc(label[2]||"")}</small></div>`:""}</div>`;}
+
+/* ---------- live feed: HubSpot deals + leads + Slack mentions ---------- */
+const OPEN_STAGES={"1341411420":"Proposal meeting pending","143018394":"Proposal / RFP delivered","1341581069":"Contract negotiation","972397873":"Routing for signature","972641437":"On hold","1438247837":"Manufacturer identified","1438247838":"Brand identified","1438247839":"RFP received","1438247840":"RFP submitted, awaiting notification","1438247843":"On hold"};
+const WON_STAGES={"143017564":"Closed won","1340846889":"Rollover","1438247841":"Closed won"};
+const BASE=Object.fromEntries(T.brands.map(b=>[b.k,{motion:b.motion,aaMotion:b.aaMotion,motionWhy:b.motionWhy,cust:b.cust}]));
+T.people.forEach(p=>{p.lead0=p.lead;});
+const MMOT={}; let FEED=null;
+const tokn=s=>" "+String(s||"").toLowerCase().replace(/[^a-z0-9&]+/g," ").trim()+" ";
+const BTOK=T.brands.map(b=>({b,t:b.b.split("/")[0].toLowerCase().replace(/[^a-z0-9]+/g," ").trim().split(" ")[0]})).filter(x=>x.t.length>3);
+const MFR_T=[...new Set(T.brands.map(b=>b.m))];
+const MALIAS={"AbbVie":["abbvie"],"J&J":["j&j","jnj","janssen","johnson & johnson"],"BMS":["bms","bristol"],"Eli Lilly":["lilly"],"Novo Nordisk":["novo"],"GSK":["gsk"],"AstraZeneca":["astrazeneca","az"],"Boehringer Ingelheim":["boehringer"],"Sun Pharma":["sun pharma"]};
+const mfrToks=m=>(MALIAS[m]||[m.toLowerCase().split(/\s+/)[0]]);
+const AA_RE=/patient services|\bps\b|access|\bhub\b|reimburs|\bprior auth|\bbts\b|leakage/i;
+const PLACEHOLDER=/pharma co\.? ?\d/i;
+function matchBrands(text){const n=tokn(text);return BTOK.filter(x=>n.includes(" "+x.t+" ")).map(x=>x.b);}
+function matchMfr(text){const n=tokn(text);return MFR_T.find(m=>mfrToks(m).some(t=>n.includes(" "+t+" ")))||null;}
+function applyFeed(f){
+  if(!f||!Array.isArray(f.deals)) return; FEED=f;
+  T.brands.forEach(b=>{b.motion=false;b.aaMotion=false;b.motionWhy="";b.cust=BASE[b.k].cust;b.live=[];});
+  Object.keys(MMOT).forEach(k=>delete MMOT[k]);
+  const add=(b,team,why,item)=>{if(team==="pa")b.motion=true;else b.aaMotion=true;b.motionWhy=b.motionWhy?b.motionWhy+"; "+why:why;b.live.push(item);};
+  for(const d of f.deals){
+    const won=d.state==="won", team=AA_RE.test(d.name)?"aa":"pa";
+    const why=`${d.name} · ${d.stage||""}${d.owner?" · "+d.owner:""}${d.modified?" · "+String(d.modified).slice(0,10):""}`;
+    const bs=matchBrands(d.name);
+    if(bs.length){bs.forEach(b=>{if(won){if(team==="pa")b.cust=true;b.live.push({kind:"won",text:why});}else add(b,team,why,{kind:"deal",text:why});});continue;}
+    if(won||PLACEHOLDER.test(d.name)) continue;
+    const m=matchMfr(d.name); if(!m) continue;
+    const sl=slug(m);(MMOT[sl]=MMOT[sl]||{pa:[],aa:[]})[team].push(why);
+    if(team==="aa") T.brands.filter(b=>b.m===m).forEach(b=>add(b,"aa",why,{kind:"deal",text:why}));
+  }
+  if(Array.isArray(f.leads)){T.people.forEach(p=>{p.lead="";});
+    for(const l of f.leads){if(l.state==="closed")continue;const n=tokn(l.name);matchBrands(l.name).forEach(b=>{if(!b.cust&&!b.motion)add(b,"pa",`Lead: ${l.name} · ${l.stage||""}${l.owner?" · "+l.owner:""}`,{kind:"deal",text:`Lead: ${l.name} · ${l.stage||""}`});});const p=T.people.find(q=>n.includes(tokn(q.n)));if(p)p.lead=l.stage||"Open lead";}}
+  const cutoff=Date.now()-14*864e5;
+  for(const s of (f.slack||[])){if((s.at||0)<cutoff)continue;
+    const bs=matchBrands(s.text); const team=AA_RE.test(s.text)?"aa":"pa";
+    const why=`Discussed in #${s.channel||"slack"} by ${s.author||"the team"} on ${new Date(s.at).toLocaleDateString(undefined,{month:"short",day:"numeric"})}`;
+    bs.forEach(b=>{b.live.push({kind:"slack",text:why+": "+String(s.text||"").slice(0,160),url:s.url});if(!b.cust&&!(team==="pa"?b.motion:b.aaMotion))add(b,team,why,{kind:"note",text:why});});}
+}
+function applyFlags(mo){ // public build: flags only, no deal names
+  if(!mo||!mo.b) return; FEED={at:mo.at||Date.now(),flags:true};
+  T.brands.forEach(b=>{const f=mo.b[b.k]||{};b.motion=!!f.pa;b.aaMotion=!!f.aa;b.cust=BASE[b.k].cust||!!f.cust;b.motionWhy="";});
+  Object.keys(MMOT).forEach(k=>delete MMOT[k]);
+  for(const [sl,f] of Object.entries(mo.m||{})) MMOT[sl]={pa:f.pa?["active"]:[],aa:f.aa?["active"]:[]};
+}
+async function liveDeals(){ // owner/editors with HubSpot connected: read deals directly
+  const props=["dealname","dealstage","pipeline","hs_lastmodifieddate","hubspot_owner_id"];
+  const q=async stages=>{const r=await mcp.callTool("HubSpot","search_crm_objects",{objectType:"DEAL",filterGroups:[{filters:[{propertyName:"dealstage",operator:"IN",values:stages}]}],properties:props,limit:200,chatInsights:{userIntent:"Refresh partner target map deal status",satisfaction:"NEUTRAL"}},{cache:{staleTime:5*60*1000}});
+    let pl=r.payload??r.structuredContent; if(!pl){const t=(r.content||[]).find(x=>x.type==="text");pl=t?JSON.parse(t.text):null;} return (pl&&pl.results)||[];};
+  const open=await q(Object.keys(OPEN_STAGES)), won=await q(Object.keys(WON_STAGES));
+  const yr=Date.now()-365*864e5;
+  const deals=open.map(o=>({name:o.properties.dealname,stage:OPEN_STAGES[o.properties.dealstage],state:"open",modified:o.properties.hs_lastmodifieddate}))
+    .concat(won.filter(o=>Date.parse(o.properties.hs_lastmodifieddate||0)>yr).map(o=>({name:o.properties.dealname,stage:WON_STAGES[o.properties.dealstage],state:"won",modified:o.properties.hs_lastmodifieddate})));
+  applyFeed({...(FEED&&!FEED.flags?FEED:{}),deals,at:Date.now()});
+}
 
 /* ---------- level 1 ---------- */
 function laneLine(ta){const l=LANES[slug(ta)]; if(!l||!l.partner) return "";
@@ -447,7 +503,7 @@ function viewBrand(ta,k){
      <div class="abst">${["pa","aa"].map(tm=>{const s=statusOf(mkey(b.m,tm));return `<span class="cs s-${s.s}"><i class="dot"></i>${tm==="pa"?"Marketing & media":"Access & PS"}: ${s.mine?"Yours":LBL[s.s]}</span>`;}).join("")}</div><span class="go">See leaders →</span></button>`:"";
   return `<div class="bhead"><h2>${esc(b.b)}<small>${esc(b.m)} · ${esc(b.ta)} · Wave ${b.wave}${b.launch?" · new launch":""}</small></h2><div class="facts">${facts.join("")}</div>
      ${laneHtml([b],null)}
-     ${mode==="team"&&b.internal.length?`<div class="internal">${esc(b.internal.join(" · "))}</div>`:""}
+     ${mode==="team"&&b.live&&b.live.length?`<div class="internal"><b>Live activity</b><br>${b.live.map(l=>(l.kind==="won"?"Won: ":l.kind==="slack"?"Slack: ":"")+esc(l.text)+(l.url?` · <a href="${esc(l.url)}" target="_blank" rel="noopener">open</a>`:"")).join("<br>")}</div>`:(mode==="team"&&b.internal.length?`<div class="internal">${esc(b.internal.join(" · "))}</div>`:"")}
      <div class="sibs"><button class="sib hot" data-askb="${esc(b.k)}">Ask Prescriber.AI if someone here is a fit</button><button class="sib" data-onepager="brand:${esc(b.k)}">Request a one-pager</button></div>
      ${sibs.length?`<div class="sibs">Also at ${esc(b.m)} in ${esc(b.ta)}: ${sibs.map(x=>`<button class="sib" data-brand="${esc(x.k)}">${esc(x.b)}</button>`).join("")}</div>`:""}</div>
    <div class="teams">${teamPanel(bkey(b.k,"pa"))}${teamPanel(bkey(b.k,"aa"))}</div>${abBox}`;
@@ -554,7 +610,8 @@ function openOnePager(ctx){
     const focus={pa:"Brand / marketing pitch",aa:"Access / patient services pitch",both:"Brand and access"}[f.focus.value];
     const item={what:describeOP(f.what.value),key:f.what.value,focus,need:f.need.value||"",notes:f.notes.value.trim().slice(0,400),email:rpEmail,at:Date.now()};
     let saved=false;
-    if(db&&myId&&canWrite!==false){try{const ref=db.doc("requests/"+myId);const cur=await ref.get();const log=((cur.exists&&cur.data&&cur.data.log)||[]).slice(-24);log.push(item);await ref.set({rpName,email:rpEmail,log,updated:Date.now()});saved=true;}catch(e){canWrite=false;}}
+    if(WEB) saved=await netlifyForm("onepager-request",{partner:rpName,email:rpEmail,what:item.what,focus,need:item.need,notes:item.notes});
+    else if(db&&myId&&canWrite!==false){try{const ref=db.doc("requests/"+myId);const cur=await ref.get();const log=((cur.exists&&cur.data&&cur.data.log)||[]).slice(-24);log.push(item);await ref.set({rpName,email:rpEmail,log,updated:Date.now()});saved=true;}catch(e){canWrite=false;}}
     const body=`${rpName} (${rpEmail}) requested a one-pager.\n\nFor: ${item.what}\nFocus: ${focus}${item.need?"\nNeeded by: "+item.need:""}${item.notes?"\nNotes: "+item.notes:""}\n\nSent from the Partner Target Map.`;
     doneModal(saved,`One-pager request: ${item.what} (from ${rpName})`,body,"One-pager requested");};
 }
@@ -565,12 +622,106 @@ function doneModal(saved,subject,body,title){
   const c=$("#cpmail"); if(c) c.onclick=()=>copyText("To: "+BEN+"\nSubject: "+subject+"\n\n"+body,c);
 }
 
+/* ---------- web mode (GitHub/Netlify): Netlify Functions + Forms instead of claude.ai capabilities ---------- */
+async function netlifyForm(name,fields){
+  try{const r=await fetch("/",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({"form-name":name,...fields}).toString()});return r.ok;}catch(e){return false;}}
+async function apiJSON(path,opts){const r=await fetch(API+path,opts);if(!r.ok){const e=new Error("http "+r.status);e.status=r.status;throw e;}return r.json();}
+async function webLoadClaims(){try{const d=await apiJSON("/claims");CLAIMS={};DEC={};
+    (d.claims||[]).forEach(c=>{const uid=c.uid||"web";(CLAIMS[uid]=CLAIMS[uid]||{rpName:"",asks:[]}).asks.push({bucket:c.bucket,cid:c.cid||"",cname:c.cname||"",at:c.at,label:c.label||""});if(c.status&&c.status!=="pending")DEC[uid+"__"+c.bucket]={decision:c.status};});
+    drafts=drafts.filter(dr=>isOpen(dr.bucket));saveDrafts();render();}catch(e){}}
+async function webLoadCoverage(){try{const d=await apiJSON("/coverage");if(d.motion)applyFlags(d.motion);if(!d.rows){showSrc();render();return;}
+    for(const [id,r] of Object.entries(d.rows)){const p=PID[id];if(!p)continue;p.rp=r[1]?"partner":"";p.rs=r[0]||"";if(r[2])p.lt=new Date().toISOString().slice(0,10);p.deals=r[3]?1:0;}
+    live=true;liveAt=d.at||Date.now();setSrc(true,`Live from HubSpot · ${clock(liveAt)}`);render();}catch(e){}}
+async function webSendClaims(ok){
+  let held=null;
+  try{held=await apiJSON("/claims",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({uid:myId,rpName,email:rpEmail,asks:ok})});}catch(e){held=null;}
+  const details=ok.map((o,i)=>`${i+1}. ${o.label}${o.cname?" · intro to "+o.cname:""} | How they know them: ${o.path} | Reach out by: ${o.by||"—"}`).join("\n");
+  const mailed=await netlifyForm("claim-request",{partner:rpName,email:rpEmail,details});
+  if(held) await webLoadClaims();
+  return {saved:!!(held||mailed),taken:(held&&held.taken)||[]};
+}
+async function webWithdraw(bucket){try{await apiJSON("/claims",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({uid:myId,withdraw:bucket})});await webLoadClaims();toast("Withdrawn. The spot is open again.");}catch(e){toast("Couldn't withdraw.");}}
+async function askWeb(hist,ai){
+  const msgs=hist.map(m=>({role:m.role,content:m.content})); let text="";
+  for(let round=0;round<4;round++){
+    const data=await apiJSON("/ask",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:msgs,context:ctxLine()})});
+    const blocks=data.content||[]; const t=blocks.filter(b=>b.type==="text").map(b=>b.text).join("\n").trim();
+    if(t){text=t;ai.content=t;ai.work="";drawThread();}
+    const uses=blocks.filter(b=>b.type==="tool_use");
+    if(data.stop_reason!=="tool_use"||!uses.length) return text;
+    msgs.push({role:"assistant",content:blocks});
+    const results=[];
+    for(const u of uses){ai.work="Checking "+(Object.values(u.input||{}).filter(Boolean).join(", ")||"the map")+"…";drawThread();
+      let out; try{out=await research(u.input||{});}catch(e){out={error:"lookup failed"};}
+      results.push({type:"tool_result",tool_use_id:u.id,content:JSON.stringify(out).slice(0,12000)});}
+    msgs.push({role:"user",content:results});
+  }
+  return text;
+}
+/* Offline answer: works with no AI at all, from the same research() lookup */
+function extractQuery(q){
+  const n=" "+norm(q)+" ", a={};
+  const person=T.people.find(p=>n.includes(" "+norm(p.n)+" "))||T.people.find(p=>{const parts=norm(p.n).split(" ");const last=parts[parts.length-1];return last.length>3&&n.includes(" "+last+" ")&&n.includes(norm(p.m).split(" ")[0]);});
+  if(person) a.person_name=person.n;
+  else{const m=q.match(/(?:[Ii]s|[Ww]ould|[Cc]ould|[Dd]oes|[Aa]bout|[Kk]now)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z'.-]+){1,2})/);if(m)a.person_name=m[1];}
+  const brand=UB.filter(u=>norm(u.b).length>2&&n.includes(" "+norm(u.b).split(" ")[0]+" ")).sort((x,y)=>(BK[y.k]?1:0)-(BK[x.k]?1:0))[0]; if(brand) a.brand=brand.b;
+  const m=MFRS.find(x=>norm(x).length>2&&n.includes(" "+norm(x)+" "))||Object.keys(MFR_ALIAS).filter(k=>n.includes(k)).map(k=>MFR_ALIAS[k])[0]; if(m) a.company=m;
+  const ta=T.tas.find(t=>n.includes(norm(t.ta).split(" ")[0])&&norm(t.ta).split(" ")[0].length>4); if(ta) a.therapeutic_area=ta.ta;
+  const tm=q.match(/,\s*([^,?]*(?:director|manager|head|vp|vice president|lead|officer|chief|president)[^,?]*?)(?:\s+(?:at|for|with)\s+[A-Z][^,?]*)?(?:[,?]|$)/i)||q.match(/\b((?:senior |sr\.? |associate |executive |group )?(?:director|manager|head|vp|vice president|lead)[^,?]*?)(?:\s+(?:at|for)\s|[,?]|$)/i);
+  if(tm) a.title=tm[1].trim();
+  return a;}
+function localAnswer(q){
+  const a=extractQuery(q); return research(a).then(res=>{
+    const L=[],why=[],lead=[]; let verdict="", next="";
+    const pp=Array.isArray(res.people_on_our_list)?res.people_on_our_list[0]:null;
+    const bf=res.brand, mf=res.manufacturer&&typeof res.manufacturer==="object"?res.manufacturer:null;
+    if(pp){
+      const opts=pp.above_brand?[{name:pp.group,ok:pp.claimable,st:pp.group_status}]:(pp.brands||[]).map(b=>({name:b.brand,ok:b.claimable,st:b.team_status}));
+      const open=opts.filter(o=>o.ok);
+      if(pp.may_have_left){verdict=`Check with PrescriberPoint first — ${pp.name} may have left ${pp.company}.`;}
+      else if(open.length){verdict=`${/director|head|vp|vice|chief|lead|executive/i.test(pp.title)?"Strong fit":"Possible fit"} — ${pp.name} is on our target list and ${open.map(o=>o.name).join(", ")} is open.`;}
+      else verdict=`Check with PrescriberPoint first — ${pp.name} is on our list, but ${opts.map(o=>`${o.name} (${o.st})`).join(", ")} is not open.`;
+      why.push(`${pp.name}, ${pp.title} at ${pp.company} · ${pp.above_brand?"above brand, covers "+pp.covers.slice(0,4).join(", "):pp.team}.`);
+      next=open.length?"Add it to My asks with the button below and send a claim request.":"Look for an open team at another brand in the same area.";
+    } else if(a.person_name&&mf){
+      const r=res.role; const grp=r&&r.teamKey!=="other"?(r.likely_above_brand?mf.above_brand_groups&&(r.teamKey==="pa"?mf.above_brand_groups.marketing_and_media:mf.above_brand_groups.access_and_patient_services):null):null;
+      verdict=r&&r.teamKey==="other"?`Not a fit — the role doesn't look like a brand or access buyer.`:`Possible fit — ${a.person_name} isn't on our list yet, but ${mf.name} is a target company.`;
+      if(r&&r.teamKey!=="other") why.push(`Role reads as ${r.team}${r.decision_maker?", decision-maker level":""}${r.likely_above_brand?", likely above brand":""}.`);
+      if(grp) why.push(`${mf.name}'s above-brand ${r.teamKey==="pa"?"marketing & media":"access"} group: ${grp}.`);
+      mf.target_brands.filter(b=>(r&&r.teamKey==="aa"?b.access_team:b.brand_team)==="Open").slice(0,2).forEach(b=>why.push(`${b.brand} (${b.area}) ${r&&r.teamKey==="aa"?"access":"brand"} team is open.`));
+      next="Claim the matching team below and tell us how you know them.";
+    } else if(mf&&!bf){
+      const open=mf.target_brands.filter(b=>b.brand_team==="Open"||b.access_team==="Open");
+      verdict=open.length?`Possible fit — ${mf.name} has ${open.length} target brand${open.length>1?"s":""} with open teams.`:`Check with PrescriberPoint first — ${mf.name}'s target teams are taken.`;
+      open.slice(0,3).forEach(b=>why.push(`${b.brand} (${b.area}): brand team ${b.brand_team}, access team ${b.access_team}.`));
+      next="Open a brand below to see who's on our list.";
+    } else if(res.area&&!bf){
+      const open=res.area.target_brands.filter(b=>b.brand_team==="Open"||b.access_team==="Open").slice(0,3);
+      verdict=`Best open targets in ${res.area.name}: ${open.map(b=>b.brand).join(", ")||"none open right now"}.`;
+      if(res.area.already_on_prescriberpoint.length) why.push(`Already on PrescriberPoint: ${res.area.already_on_prescriberpoint.slice(0,3).join(", ")}.`);
+      open.forEach(b=>why.push(`${b.brand} (${b.manufacturer}): ${fmtN(b.prescribers)} prescribers, ${b.commercial_unfilled||"—"} of commercial scripts unfilled.`));
+      next="Open one of those brands to claim a team.";
+    }
+    if(bf){
+      if(!verdict){const ok=bf.brand_team&&(bf.brand_team.claimable||bf.access_team.claimable);verdict=bf.on_target_list.startsWith("Yes")?(ok?`Strong fit — ${bf.brand} is a Wave target with an open team.`:`Check with PrescriberPoint first — ${bf.brand}'s teams are taken.`):`Possible fit — ${bf.brand} isn't on this cycle's list, but here's the data.`;next=ok?"Open the brand and claim a team.":"Ask us about another brand.";}
+      if(bf.same_class_brands_on_prescriberpoint&&bf.same_class_brands_on_prescriberpoint.length){why.push(`Same class already on PrescriberPoint: ${bf.same_class_brands_on_prescriberpoint.join(", ")}.`);lead.push(`"${bf.same_class_brands_on_prescriberpoint[0]} already works with PrescriberPoint to reach prescribers at the moment they look up a drug."`);}
+      why.push(`${fmtN(bf.prescribers_last_12mo)} prescribers wrote ${bf.brand} in the last 12 months${bf.commercial_scripts_unfilled?`; ${bf.commercial_scripts_unfilled} of commercial scripts go unfilled (${bf.unfilled_value_at_list_price}/yr at list)`:""}.`);
+      if(bf.commercial_scripts_unfilled) lead.push(`"About ${bf.commercial_scripts_unfilled} of commercial ${bf.brand} scripts go unfilled — PrescriberPoint finds those prescribers and fixes the access friction."`);
+    }
+    if(!verdict) return "I couldn't match that to our targets. Try a person's name with their title and company, a brand, or a therapeutic area — for example \"Would Jane Smith, Director of Market Access at Pfizer, be a fit?\"";
+    L.push(`**Verdict:** ${verdict}`); if(why.length){L.push("**Why:**");why.slice(0,4).forEach(w=>L.push("- "+w));}
+    if(lead.length&&!/^(Check|Not a fit)/.test(verdict)){L.push("**Lead with:**");lead.slice(0,2).forEach(w=>L.push("- "+w));}
+    if(next) L.push(`**Next step:** ${next}`);
+    return L.join("\n");
+  });}
+
 /* ---------- db writes ---------- */
 async function sendClaims(items){
   const ok=[],skipped=[];
   for(const it of items){if(!isOpen(it.bucket)){skipped.push(B(it.bucket).label);continue;} ok.push(it);}
   let saved=false;
-  if(ok.length&&db&&myId&&canWrite!==false){busy=true;
+  if(WEB&&ok.length){busy=true;const r=await webSendClaims(ok);saved=r.saved;r.taken.forEach(b=>{const i=ok.findIndex(o=>o.bucket===b);if(i>=0){skipped.push(ok[i].label);ok.splice(i,1);}});busy=false;}
+  else if(ok.length&&db&&myId&&canWrite!==false){busy=true;
     try{const ref=db.doc("claims/"+myId);const cur=await ref.get();const prev=(cur.exists&&cur.data&&cur.data.asks)||[];
       await ref.set({rpName,email:rpEmail,asks:[...prev.filter(a=>!ok.some(o=>o.bucket===a.bucket)),...ok],updated:Date.now()});saved=true;}
     catch(e){canWrite=false;}
@@ -581,6 +732,7 @@ async function sendClaims(items){
   doneModal(saved,`Claim request from ${rpName}: ${ok.map(o=>o.label).join("; ")}`.slice(0,180),body,saved?`Claim request sent${skipped.length?" (some spots were taken)":""}`:"Almost done");
 }
 async function withdraw(bucket){
+  if(WEB) return webWithdraw(bucket);
   try{const ref=db.doc("claims/"+myId);const cur=await ref.get();const asks=((cur.exists&&cur.data.asks)||[]).filter(a=>a.bucket!==bucket);
     await ref.set({rpName:(cur.data&&cur.data.rpName)||rpName,email:(cur.data&&cur.data.email)||rpEmail,asks,updated:Date.now()});toast("Withdrawn. The spot is open again.");}catch(e){toast("Couldn't withdraw.");}
 }
@@ -615,13 +767,13 @@ async function liveHubSpot(){
 async function pushSync(){if(!db||!canEdit) return; try{await db.doc("sync/hubspot").set({at:Date.now(),rows:rowsNow()});}catch(e){}}
 async function refreshLive(){
   if(!mcp) return; setSrc(false,"Reading HubSpot…");
-  try{const n=await liveHubSpot(); live=true; liveAt=Date.now(); setSrc(true,`Live from HubSpot · ${n} contacts · ${clock(liveAt)}`); render();
+  try{try{await liveDeals();}catch(e){} const n=await liveHubSpot(); live=true; liveAt=Date.now(); setSrc(true,`Live from HubSpot · ${n} contacts · ${clock(liveAt)}`); render();
     if(canEdit&&(!SYNC||Date.now()-SYNC.at>5*60*1000)) pushSync();}
   catch(e){mcp=(e&&["server_not_connected","needs_reauth","not_granted","consent_required"].includes(e.code))?null:mcp; showSrc();}
 }
 const clock=t=>new Date(t).toLocaleString(undefined,{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});
 function setSrc(isLive,text){const el=$("#src");el.className="src"+(isLive?" live":"");el.innerHTML=`<i></i><span>${esc(text)}</span>${mcp?' <button id="rf">Refresh</button>':""}`;const b=$("#rf");if(b)b.onclick=refreshLive;}
-function showSrc(){if(live)setSrc(true,`Live from HubSpot · ${clock(liveAt)}`);else if(SYNC)setSrc(true,`HubSpot synced ${clock(SYNC.at)}`);else setSrc(false,`HubSpot snapshot ${T.asof}`);}
+function showSrc(){if(FEED&&FEED.at&&!live){setSrc(true,`Live · HubSpot${FEED.slackAt?" + Slack":""} synced ${clock(FEED.at)}`);return;}if(live)setSrc(true,`Live from HubSpot · ${clock(liveAt)}`);else if(SYNC)setSrc(true,`HubSpot synced ${clock(SYNC.at)}`);else setSrc(false,`HubSpot snapshot ${T.asof}`);}
 
 /* ---------- Ask Prescriber.AI ---------- */
 let chat=[], asking=false, lastClaims=[];
@@ -644,7 +796,7 @@ function brandFacts(u){const sb=BK[u.k]||T.brands.find(b=>norm(b.b)===norm(u.b))
   else o.on_target_list="No, not on this cycle's Wave 1-2 list";
   return o;}
 function personFacts(p){const o={name:p.n,title:p.t2||p.t,company:p.m,team:TEAM[p.team],priority:p.p||undefined,may_have_left:p.left||undefined};
-  if(p.ab){const bk=mkey(p.m,p.team),ps=personStatus(p,bk);Object.assign(o,{above_brand:true,level:p.lvl,covers:p.cov,group:`${p.m} above brand · ${TS[p.team]}`,person_status:ps.l,group_status:LBL[statusOf(bk).s],claimable:ps.s==="open"&&isOpen(bk)});}
+  if(p.ab){const bk=mkey(p.m,p.team),ps=personStatus(p,bk);Object.assign(o,{above_brand:true,level:p.lvl,covers:p.cov,group:`${p.m} above brand (${MTS[p.team]})`,person_status:ps.l,group_status:LBL[statusOf(bk).s],claimable:ps.s==="open"&&isOpen(bk)});}
   else o.brands=p.b.map(bn=>{const b=T.brands.find(x=>x.b===bn);if(!b)return {brand:bn};const bk=bkey(b.k,p.team),ps=personStatus(p,bk);return {brand:bn,person_status:ps.l,team_status:LBL[statusOf(bk).s],claimable:ps.s==="open"&&isOpen(bk)};});
   if(mode==="team")Object.assign(o,{referral_partner:p.rp||"none",rp_status:p.rs||"",owner:p.o||"",last_touch:p.lt||"",lead:p.lead||"",research_note:p.ev||""});
   return o;}
@@ -685,6 +837,7 @@ async function research(a){
   lastClaims=lastClaims.slice(0,3);
   return res;
 }
+function ctxLine(){const r=route();return r.b&&r.b[0]==="@"&&MS[r.b.slice(1)]?`The user is looking at ${MS[r.b.slice(1)]}'s above-brand leaders.`:r.b&&BK[r.b]?`The user is looking at ${BK[r.b].b} (${BK[r.b].m}, ${BK[r.b].ta}); assume that brand unless they name another.`:r.ta?`The user is browsing ${r.ta}.`:"";}
 function sysText(){const r=route();const ctx=r.b&&r.b[0]==="@"&&MS[r.b.slice(1)]?`\nThe user is looking at ${MS[r.b.slice(1)]}'s above-brand leaders.`:r.b&&BK[r.b]?`\nThe user is looking at ${BK[r.b].b} (${BK[r.b].m}, ${BK[r.b].ta}); assume that brand unless they name another.`:r.ta?`\nThe user is browsing ${r.ta}.`:"";
   return `You are Prescriber.AI, PrescriberPoint's targeting assistant, talking to ${mode==="team"?"PrescriberPoint staff":"a referral partner (an outside consultant who makes warm introductions to pharma brand and access teams)"}.
 What PrescriberPoint sells: (1) to brand/marketing teams, reach to 350-500K HCPs a month at the moment they look up a drug; (2) to market access/patient services teams, claims data that finds the prescribers whose scripts go unfilled, plus fixes for coverage and prior-auth friction where they prescribe.
@@ -704,7 +857,7 @@ const RESEARCH_TOOL=ai=>({name:"research",description:"Look up PrescriberPoint's
   inputSchema:{type:"object",properties:{person_name:{type:"string"},title:{type:"string"},company:{type:"string"},brand:{type:"string"},therapeutic_area:{type:"string"}}},
   execute:async(input)=>{ai.work="Checking "+(Object.values(input||{}).filter(Boolean).join(", ")||"the map")+"…";drawThread();return await research(input);}});
 function md(t){const lines=esc(t).split(/\n/);let h="",inList=false;
-  for(const l of lines){const b=l.replace(/\*\*(.+?)\*\*/g,"<b>$1</b>");
+  for(const l of lines){const b=l.replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/^_(.+)_$/,"<i class=\"small\">$1</i>");
     if(/^\s*[-•]\s+/.test(l)){if(!inList){h+="<ul>";inList=true;}h+="<li>"+b.replace(/^\s*[-•]\s+/,"")+"</li>";}
     else{if(inList){h+="</ul>";inList=false;} if(l.trim())h+="<p>"+b+"</p>";}}
   return h+(inList?"</ul>":"");}
@@ -724,12 +877,17 @@ function drawThread(){
 }
 async function ask(q){
   q=String(q||"").trim(); if(!q||asking) return;
-  if(!sample){chat.push({role:"user",content:q},{role:"assistant",content:"Asking needs this page open in claude.ai with Claude allowed for it."});drawThread();return;}
   asking=true; $("#askin").value=""; $("#asksend").disabled=true;
   const ai={role:"assistant",content:"",work:"Thinking…",acts:[]}; chat.push({role:"user",content:q},ai); drawThread();
   const hist=chat.filter(m=>m!==ai&&m.content).slice(-8).map(m=>({role:m.role,content:m.content}));
   while(hist.length&&hist[0].role!=="user") hist.shift();
   hist[0]={role:"user",content:sysText()+"\n\n---\n"+hist[0].content};
+  if(!sample){
+    try{ai.content=await askWeb(hist,ai)||"";}catch(e){ai.content="";}
+    if(!ai.content){ai.work="";ai.content=await localAnswer(q)+"\n\n_Quick answer from the map (AI assistant offline)._";}
+    ai.work=""; ai.acts=lastClaims.filter(c=>isOpen(c.bucket));
+    asking=false; $("#asksend").disabled=false; drawThread(); return;
+  }
   try{
     const r=await sample(hist,{tools:[RESEARCH_TOOL(ai)],modelTier:"default",cache:false,onText:({text})=>{ai.content=text;ai.work="";drawThread();}});
     ai.content=r.text||ai.content; ai.work=""; ai.acts=lastClaims.filter(c=>isOpen(c.bucket));
@@ -787,7 +945,9 @@ function wire(){
 $$(".mode button").forEach(b=>b.onclick=()=>{mode=b.dataset.mode;ls.set("ptm.mode",mode);render();});
 if(!location.hash) history.replaceState(null,"","#/"+encodeURIComponent((T.tas.find(t=>t.ta==="Migraine")||T.tas[0]).ta));
 drafts=drafts.filter(d=>B(d.bucket));
+if(WEB){const mm=$(".mode");if(mm)mm.hidden=true;myId=ls.get("ptm.uid",null);if(!myId){myId="w"+Math.random().toString(36).slice(2,12);ls.set("ptm.uid",myId);}}
 showSrc(); render();
+if(WEB){webLoadCoverage();webLoadClaims();setInterval(webLoadClaims,60000);}
 
 /* ---------- capabilities ---------- */
 async function resolveNames(){if(!user||!user.profiles)return;const ids=[...new Set([...Object.keys(CLAIMS),...Object.keys(QLOG),...Object.keys(REQS)])].filter(id=>!names[id]);if(!ids.length)return;
@@ -805,6 +965,7 @@ if(cl&&cl.use){
     const sub=(col,set,after)=>d.collection(col).onSnapshot(async s=>{const o={};s.docs.forEach(x=>{const v=x.data();if(v)o[x.id]=v;});set(o);await resolveNames();if(after)after();render();},()=>{});
     sub("claims",o=>CLAIMS=o,()=>{drafts=drafts.filter(dr=>isOpen(dr.bucket));saveDrafts();});
     sub("decisions",o=>DEC=o); sub("lanes",o=>LANES=o); sub("requests",o=>REQS=o); sub("questions",o=>QLOG=o);
+    d.doc("sync/feed").onSnapshot(s=>{const v=s.exists&&s.data;if(!v||!v.at)return;applyFeed(v);if(v.rows&&v.at>liveAt)applyRows(v.rows);showSrc();render();},()=>{});
     d.doc("sync/hubspot").onSnapshot(s=>{const v=s.exists&&s.data; if(!v||!v.at) return; SYNC=v; if(v.at>liveAt) applyRows(v.rows); showSrc(); render();},()=>{});
     render();});
   cl.use("mcp").then(m=>{mcp=m; if(m) refreshLive();});
@@ -814,3 +975,5 @@ if(cl&&cl.use){
 
 }
 </script>
+</div>
+</body></html>

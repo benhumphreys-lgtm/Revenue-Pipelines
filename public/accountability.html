@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="/_shared.css">
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script src="/_api.js" defer></script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RP Accountability — Revenue Pipeline</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg:#f6f8f8; --card:#ffffff; --ink:#1a2b2b; --muted:#5a6b7f; --line:#e3e8ee;
+    --teal:#0d6e6e; --teal-soft:#dcefee; --teal-dark:#0a5050;
+    --green:#1f8a4e; --green-soft:#e2f4ea;
+    --yellow:#b57b00; --yellow-soft:#fff3dc;
+    --red:#b22a2a; --red-soft:#fbe5e5;
+    --purple:#5b4bb8; --purple-soft:#eceaf7;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--ink); font-size:14px; line-height:1.5; }
+  .wrap { max-width:1420px; margin:0 auto; padding:24px 28px 60px; }
+
+  h1 { margin:0 0 4px; font-size:26px; letter-spacing:-.01em; }
+  .sub { color:var(--muted); font-size:13.5px; margin:0 0 20px; max-width:900px; }
+  .sync-status { color:var(--muted); font-size:11.5px; margin-top:4px; display:inline-flex; align-items:center; gap:6px; }
+  .sync-status .dot { width:7px; height:7px; border-radius:50%; background:var(--muted); display:inline-block; }
+  .sync-status.ok .dot { background:var(--green); }
+  .sync-status.syncing .dot { background:var(--yellow); animation:pulse 1.2s infinite; }
+  @keyframes pulse { 50% { opacity:.3; } }
+
+  .sec { margin:0 0 32px; }
+  .sec h2 { font-size:16px; text-transform:uppercase; letter-spacing:.06em; color:var(--teal); margin:0 0 4px; }
+  .sec .seclbl { color:var(--muted); font-size:12.5px; margin:0 0 14px; }
+
+  .ribbon { background:linear-gradient(90deg,var(--teal),var(--teal-dark)); color:#fff; padding:16px 20px; border-radius:14px; margin:0 0 20px; display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap; }
+  .ribbon .r-left b { display:block; font-size:17px; margin-bottom:2px; }
+  .ribbon .r-left span { font-size:13px; opacity:.9; }
+  .ribbon .r-right { font-size:12.5px; opacity:.95; text-align:right; }
+
+  .baseline { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 20px; margin:0 0 20px; }
+  .baseline .b-lbl { font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin-bottom:10px; }
+  .baseline .b-row { display:flex; gap:28px; flex-wrap:wrap; }
+  .b-stat { display:flex; flex-direction:column; }
+  .b-stat .v { font-size:30px; font-weight:700; line-height:1; }
+  .b-stat .l { font-size:12px; color:var(--muted); margin-top:4px; }
+  .b-stat .sub2 { font-size:11px; color:var(--muted); margin-top:2px; }
+
+  .chips { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 16px; }
+  .chip { display:inline-flex; align-items:center; gap:6px; padding:7px 13px; background:var(--card); border:1px solid var(--line); border-radius:999px; font-size:12.5px; font-weight:600; color:var(--muted); cursor:pointer; transition:all .15s; }
+  .chip:hover { border-color:var(--teal); color:var(--teal-dark); }
+  .chip.active { background:var(--teal); color:#fff; border-color:var(--teal); }
+  .chip .count { padding:1px 7px; background:rgba(255,255,255,.3); border-radius:999px; font-size:11px; }
+  .chip:not(.active) .count { background:#eef2f6; color:var(--muted); }
+
+  .queue { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr)); gap:14px; }
+  .q-card { background:var(--card); border:1px solid var(--line); border-left:5px solid var(--teal); border-radius:12px; padding:16px 18px; transition:box-shadow .15s; }
+  .q-card:hover { box-shadow:0 4px 12px rgba(13,110,110,.08); }
+  .q-card.sunset { border-left-color:var(--red); }
+  .q-card.diagnose { border-left-color:var(--yellow); }
+  .q-card.invest { border-left-color:var(--green); }
+  .q-card.done { opacity:.5; }
+  .q-card.done .q-actions { display:none; }
+  .q-card h3 { margin:0 0 2px; font-size:16px; display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .q-card .q-why { font-size:12.5px; color:var(--muted); margin:4px 0 10px; }
+  .q-card .q-ev { background:#f6f8f8; border-radius:8px; padding:9px 11px; font-size:12.5px; margin:0 0 10px; color:var(--ink); border:1px solid var(--line); }
+  .q-card .q-ev b { color:var(--teal-dark); }
+  .q-card .q-next { font-size:13px; margin:0 0 10px; padding:9px 11px; background:#eefaf5; border-left:3px solid var(--green); border-radius:4px; }
+  .q-card .q-next b { color:var(--green); display:block; margin-bottom:2px; font-size:11px; text-transform:uppercase; letter-spacing:.05em; }
+  .q-card .q-actions { display:flex; gap:6px; flex-wrap:wrap; margin:10px 0 0; padding-top:12px; border-top:1px solid var(--line); }
+  .q-card .q-actions button { flex:1; min-width:90px; padding:8px 10px; font-size:12.5px; font-weight:700; background:#fff; border:1.5px solid var(--line); color:var(--muted); border-radius:8px; cursor:pointer; transition:all .15s; }
+  .q-card .q-actions button:hover { background:#f6f8f8; }
+  .q-card .q-actions button:disabled { opacity:.5; cursor:wait; }
+  .q-card .q-actions button[data-tier="invest"]:hover:not(:disabled) { border-color:var(--green); color:var(--green); background:var(--green-soft); }
+  .q-card .q-actions button[data-tier="validate"]:hover:not(:disabled) { border-color:var(--yellow); color:var(--yellow); background:var(--yellow-soft); }
+  .q-card .q-actions button[data-tier="sunset"]:hover:not(:disabled) { border-color:var(--red); color:var(--red); background:var(--red-soft); }
+  .q-card .q-actions button[data-tier="dismiss"]:hover { border-color:var(--muted); color:var(--ink); background:#eef2f6; }
+  .q-card .q-foot { font-size:11.5px; color:var(--muted); margin-top:8px; display:flex; gap:10px; flex-wrap:wrap; }
+
+  .pill { display:inline-block; padding:2px 9px; border-radius:999px; font-size:11px; font-weight:700; letter-spacing:.03em; text-transform:uppercase; }
+  .pill.sunset { background:var(--red-soft); color:var(--red); }
+  .pill.validate { background:var(--yellow-soft); color:var(--yellow); }
+  .pill.invest { background:var(--green-soft); color:var(--green); }
+  .pill.ramp { background:#eef2f6; color:#4a5a6a; }
+  .pill.unknown { background:var(--purple-soft); color:var(--purple); }
+
+  .health { display:inline-block; padding:3px 10px; border-radius:999px; font-size:11.5px; font-weight:700; letter-spacing:.03em; text-transform:uppercase; }
+  .health.green { background:var(--green-soft); color:var(--green); }
+  .health.yellow { background:var(--yellow-soft); color:var(--yellow); }
+  .health.red { background:var(--red-soft); color:var(--red); }
+  .health.ramp { background:var(--purple-soft); color:var(--purple); }
+
+  .score-wrap { background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  table.score { width:100%; border-collapse:collapse; font-size:13px; }
+  table.score th { background:#f1f6f6; text-align:left; padding:10px 12px; font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--teal-dark); border-bottom:1px solid var(--line); white-space:nowrap; cursor:pointer; user-select:none; }
+  table.score th:hover { background:#e2eded; }
+  table.score th .arrow { opacity:.4; margin-left:3px; }
+  table.score th.sort-asc .arrow, table.score th.sort-desc .arrow { opacity:1; color:var(--teal); }
+  table.score td { padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:middle; }
+  table.score tr:last-child td { border-bottom:none; }
+  table.score .n { text-align:right; font-variant-numeric:tabular-nums; }
+  table.score tbody tr { cursor:pointer; transition:background .15s; }
+  table.score tbody tr:hover td { background:#fbfdfd; }
+  .partner-name { font-weight:600; }
+  .partner-name .caret { color:var(--muted); font-size:10px; margin-left:4px; }
+  .partner-name a { color:inherit; text-decoration:none; }
+  .partner-name a:hover { text-decoration:underline; }
+  .partner-name .sunset-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--red); margin-right:5px; vertical-align:middle; }
+  .overdue-badge { display:inline-block; padding:1px 7px; border-radius:5px; font-size:11px; font-weight:700; background:#ffe5d3; color:#a04418; }
+  .muted { color:var(--muted); font-size:11.5px; }
+
+  .drill { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-top:14px; display:none; }
+  .drill.open { display:block; }
+  .drill .d-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; gap:10px; }
+  .drill .d-head h3 { margin:0; font-size:16px; }
+  .drill .d-head .d-sub { color:var(--muted); font-size:12.5px; margin-top:2px; }
+  .drill .d-close { background:none; border:none; font-size:22px; color:var(--muted); cursor:pointer; line-height:1; padding:0 4px; }
+  .drill .d-close:hover { color:var(--ink); }
+  .drill .d-tier { display:flex; gap:6px; flex-wrap:wrap; margin:0 0 14px; padding:10px 12px; background:#f6f8f8; border-radius:8px; align-items:center; }
+  .drill .d-tier .lbl { font-size:12px; color:var(--muted); margin-right:6px; }
+  .drill .d-tier button { padding:6px 12px; font-size:12.5px; font-weight:700; background:#fff; border:1.5px solid var(--line); color:var(--muted); border-radius:6px; cursor:pointer; }
+  .drill .d-tier button:hover { background:#eef2f6; }
+  .drill .d-tier button:disabled { opacity:.5; cursor:wait; }
+  .drill .d-tier button[data-tier="invest"]:hover:not(:disabled) { border-color:var(--green); color:var(--green); background:var(--green-soft); }
+  .drill .d-tier button[data-tier="validate"]:hover:not(:disabled) { border-color:var(--yellow); color:var(--yellow); background:var(--yellow-soft); }
+  .drill .d-tier button[data-tier="sunset"]:hover:not(:disabled) { border-color:var(--red); color:var(--red); background:var(--red-soft); }
+  .drill .d-tier button.current { border-color:var(--teal); color:var(--teal-dark); background:var(--teal-soft); cursor:default; }
+  .drill table { width:100%; border-collapse:collapse; font-size:12.5px; margin-top:4px; }
+  .drill th { background:#f6f8f8; padding:7px 10px; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--teal-dark); border-bottom:1px solid var(--line); }
+  .drill td { padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  .drill tr:last-child td { border-bottom:none; }
+  .contact-name { font-weight:600; }
+  .priority-pill { display:inline-block; padding:1px 6px; border-radius:5px; font-size:10.5px; font-weight:700; letter-spacing:.03em; text-transform:uppercase; margin-left:4px; }
+  .priority-pill.tier-a { background:#fef2cf; color:#8a6500; }
+  .priority-pill.tier-b { background:#e4eefc; color:#1f5bb5; }
+  .priority-pill.not-now { background:#eef2f6; color:var(--muted); }
+
+  .signals { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr)); gap:12px; }
+  .sig-card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 14px; font-size:12.5px; }
+  .sig-card b { color:var(--teal-dark); font-size:13px; display:block; margin-bottom:4px; }
+  .sig-card .trigger { color:var(--muted); font-size:11.5px; margin-top:6px; font-style:italic; }
+
+  #toast { position:fixed; bottom:20px; right:20px; z-index:100; display:flex; flex-direction:column; gap:8px; max-width:400px; }
+  .toast-msg { background:var(--teal-dark); color:#fff; padding:12px 16px; border-radius:10px; box-shadow:0 4px 20px rgba(0,0,0,.15); font-size:13px; animation:slideIn .25s ease-out; }
+  .toast-msg.ok { background:var(--green); }
+  .toast-msg.err { background:var(--red); }
+  .toast-msg b { display:block; margin-bottom:2px; font-size:12px; opacity:.9; }
+  @keyframes slideIn { from { transform:translateX(100%); opacity:0; } to { transform:translateX(0); opacity:1; } }
+
+  .log { background:#fff; border:1px solid var(--line); border-radius:10px; padding:14px 16px; font-size:12.5px; max-height:260px; overflow-y:auto; }
+  .log-empty { color:var(--muted); font-style:italic; }
+  .log-row { padding:6px 0; border-bottom:1px solid var(--line); }
+  .log-row:last-child { border:none; }
+  .log-row .t { color:var(--muted); font-size:11px; margin-right:8px; }
+
+  .loading { padding:60px; text-align:center; color:var(--muted); font-size:14px; }
+  .loading .sp { width:24px; height:24px; border:3px solid #d9e2ec; border-top-color:var(--teal); border-radius:50%; animation:spin .8s linear infinite; margin:0 auto 10px; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .err-band { background:#fdeaea; border:1px solid #e9b3b3; color:#8a1f1f; border-radius:10px; padding:12px 16px; font-size:13px; margin:0 0 16px; }
+
+  footer { color:var(--muted); font-size:12px; margin-top:40px; padding-top:16px; border-top:1px solid var(--line); }
+  .two-col { display:grid; grid-template-columns:1.3fr 1fr; gap:20px; }
+  @media (max-width:960px) { .two-col { grid-template-columns:1fr; } }
+  code { background:#eef2f6; padding:1px 5px; border-radius:4px; font-size:12px; }
+</style>
+</head><body>
+
+<nav class="topnav">
+  <div class="brand">Revenue Pipeline</div>
+  <div class="tabs">
+    <a class="tab" href="/unified-pipeline.html">Unified Pipeline</a>
+    <a class="tab" href="/pipeline.html">Pipeline Confidence</a>
+    <a class="tab" href="/brand-direct.html">Brand Direct</a>
+    <a class="tab" href="/meeting-factory.html">Meeting Factory</a>
+    <a class="tab active" href="/referral-partners.html">Referral Partners</a>
+    <a class="tab" href="/marketing-attribution.html">Marketing Revenue Accountability</a>
+    <a class="tab" href="/funnel-by-source.html">Funnel by Source</a>
+  </div>
+  <div class="userbox">
+    <span id="user-email">—</span>
+    <button onclick="window.appAuth.logout()">Log out</button>
+  </div>
+</nav>
+
+<div id="auth-loading" class="auth-gate">
+  <h1>Loading…</h1>
+  <p>Checking authentication.</p>
+</div>
+
+<div id="main-content" style="display:none">
+  <nav class="rp-subview">
+    <a href="/referral-partners.html"><span class="emoji">📊</span> Dashboard</a>
+    <a href="/partner-target-map.html"><span class="emoji">🎯</span> Target Map</a>
+    <a href="/accountability.html" class="active"><span class="emoji">✓</span> Accountability</a>
+  </nav>
+
+<div class="wrap">
+
+  <h1>RP Accountability</h1>
+  <p class="sub">Live from HubSpot. On every open: pulls RPs + contacts + leads, computes rollups, writes <code>rp_30d_committed</code>, <code>rp_30d_sent</code>, <code>rp_30d_overdue</code>, <code>rp_30d_meeting_count</code>, <code>rp_health_status</code>, <code>rp_sunset_candidate</code> back to each RP record so HubSpot filters and reports stay in sync. Tier buttons PATCH <code>rp_operating_tier</code>, <code>rp_tier</code>, and stamp <code>rp_tier_last_reviewed_date</code>.</p>
+  <div class="sync-status" id="sync-status"><span class="dot"></span><span id="sync-status-text">Not yet synced</span></div>
+
+  <div class="ribbon" style="margin-top:16px;">
+    <div class="r-left">
+      <b id="hero-head">Loading pending decisions…</b>
+      <span id="hero-sub">Pulling live RPs + contacts + meetings</span>
+    </div>
+    <div class="r-right">
+      <span id="asof">Loading…</span><br>
+      Owned by Ben · Monday review
+    </div>
+  </div>
+
+  <div class="baseline">
+    <div class="b-lbl">30-Day Network Baseline · live</div>
+    <div class="b-row">
+      <div class="b-stat"><span class="v" id="bs-committed">—</span><span class="l">Open commitments</span><span class="sub2">rp_committed_to_outreach_date set</span></div>
+      <div class="b-stat"><span class="v" id="bs-sent">—</span><span class="l">Outreach sent</span><span class="sub2">rp_outreach_date set</span></div>
+      <div class="b-stat"><span class="v" id="bs-exec">—</span><span class="l">Execution rate</span><span class="sub2">Sent ÷ Committed · target ≥80%</span></div>
+      <div class="b-stat"><span class="v" id="bs-overdue">—</span><span class="l">Overdue</span><span class="sub2">Committed &gt;7d, not sent</span></div>
+      <div class="b-stat"><span class="v" id="bs-mtg30">—</span><span class="l">RP first meetings</span><span class="sub2">Last 30 days</span></div>
+      <div class="b-stat"><span class="v" id="bs-conv">—</span><span class="l">Meeting conversion</span><span class="sub2">Mtgs ÷ Sent · target ≥15%</span></div>
+    </div>
+  </div>
+
+  <div id="err-box"></div>
+
+  <div class="chips" id="chips">
+    <button class="chip active" data-filter="all">All <span class="count" id="c-all">—</span></button>
+    <button class="chip" data-filter="health-red">Red <span class="count" id="c-red">—</span></button>
+    <button class="chip" data-filter="health-yellow">Yellow <span class="count" id="c-yellow">—</span></button>
+    <button class="chip" data-filter="health-green">Green <span class="count" id="c-green">—</span></button>
+    <button class="chip" data-filter="sunset-candidate">Sunset candidates <span class="count" id="c-sunset-cand">—</span></button>
+    <button class="chip" data-filter="has-overdue">Has overdue <span class="count" id="c-overdue-flag">—</span></button>
+    <button class="chip" data-filter="stale-review">Stale review (>14d) <span class="count" id="c-stale">—</span></button>
+  </div>
+
+  <div class="sec">
+    <h2>① Decision queue — this week</h2>
+    <p class="seclbl">RPs the system flagged by health status + sunset candidate. Tier buttons write both operating + legacy tier and stamp the review date.</p>
+    <div id="queue"><div class="loading"><div class="sp"></div>Loading…</div></div>
+  </div>
+
+  <div class="sec">
+    <h2>② Partner scorecard · <span id="rp-count">—</span> active</h2>
+    <p class="seclbl">Click any row to drill into their contacts (overdue + priority flagged). Click column headers to sort.</p>
+    <div class="score-wrap">
+      <table class="score" id="score-table">
+        <thead>
+          <tr>
+            <th data-sort="name">Partner <span class="arrow">↕</span></th>
+            <th data-sort="opTier">Operating tier <span class="arrow">↕</span></th>
+            <th data-sort="health">Health <span class="arrow">↕</span></th>
+            <th data-sort="committed" class="n">Committed <span class="arrow">↕</span></th>
+            <th data-sort="sent" class="n">Sent <span class="arrow">↕</span></th>
+            <th data-sort="exec" class="n">Exec % <span class="arrow">↕</span></th>
+            <th data-sort="overdue" class="n">Overdue <span class="arrow">↕</span></th>
+            <th data-sort="mtg30" class="n sort-desc">Mtgs 30d <span class="arrow">↓</span></th>
+            <th data-sort="daysSinceReview" class="n">Last review <span class="arrow">↕</span></th>
+            <th data-sort="daysSince1on1" class="n">Last 1:1 <span class="arrow">↕</span></th>
+          </tr>
+        </thead>
+        <tbody id="score-body"><tr><td colspan="10"><div class="loading">Loading…</div></td></tr></tbody>
+      </table>
+    </div>
+    <div class="drill" id="drill"></div>
+  </div>
+
+  <div class="two-col">
+    <div class="sec">
+      <h2>③ This session's decisions</h2>
+      <p class="seclbl">Each row = one HubSpot write (both operating tier + legacy tier + review-date stamp).</p>
+      <div class="log" id="log"><div class="log-empty">No tier changes yet this session.</div></div>
+    </div>
+    <div class="sec">
+      <h2>④ Automated signals</h2>
+      <p class="seclbl">Every flag on this page is one of these rules — written to HubSpot every open.</p>
+      <div class="signals">
+        <div class="sig-card"><b>Red health</b>rp_30d_overdue ≥ 3 OR (exec% &lt; 20% AND committed ≥ 5)<div class="trigger">Primary sunset signal.</div></div>
+        <div class="sig-card"><b>Yellow health</b>rp_30d_sent ≥ 5 AND rp_30d_meeting_count = 0<div class="trigger">Zero conversion. Diagnose + coach.</div></div>
+        <div class="sig-card"><b>Green health</b>rp_30d_meeting_count ≥ 1<div class="trigger">Protect their time. Feed targets.</div></div>
+        <div class="sig-card"><b>Sunset candidate</b>Red for 30+ days AND rp_30d_meeting_count = 0<div class="trigger">Auto-stamped. One Slack digest/wk.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p><b>Tier mapping (writes to HubSpot):</b> Invest → <code>rp_operating_tier = Invest</code> AND <code>rp_tier = TIER 1: ACTIVE PUSH</code> · Validate → <code>Validate</code> + <code>TIER 2: STAY WARM</code> · Sunset → <code>Sunset</code> + <code>DNC</code>. Each write stamps <code>rp_tier_last_reviewed_date</code> = today.</p>
+    <p><b>Rollup writes:</b> On every open, computes <code>rp_30d_committed</code>, <code>rp_30d_sent</code>, <code>rp_30d_overdue</code>, <code>rp_30d_meeting_count</code>, <code>rp_health_status</code>, <code>rp_sunset_candidate</code> per RP and PATCHes any changed field. Non-blocking — happens after render.</p>
+  </footer>
+
+</div>
+
+<div id="toast"></div>
+
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  window.appAuth.init(user => {
+    document.getElementById('auth-loading').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+    document.getElementById('user-email').textContent = user.email;
+    initApp();
+  });
+});
+function initApp() {
+  'use strict';
+  'use strict';
+
+  const RP_OBJ = '2-37656252';
+  const LEADS_OBJ = '0-136';
+  const HUBSPOT_PORTAL = 21389996;
+  const HUBRP = `https://app.hubspot.com/contacts/${HUBSPOT_PORTAL}/record/${RP_OBJ}/`;
+  const DAY = 86400000;
+  const NOW = Date.now();
+  const OVERDUE_DAYS = 7;
+  const STALE_REVIEW_DAYS = 14;
+
+  const SEARCH = 'mcp__6b11666e-7029-4baf-a491-3791bd8d9175__hubspot_search_custom_objects';
+  const CFILTER = 'mcp__6b11666e-7029-4baf-a491-3791bd8d9175__hubspot_filter_contacts_by_property';
+  // Our managerial tier labels ↔ HubSpot picklist values
+  const TIER_RP = {   // legacy rp_tier
+    invest:   'TIER 1: ACTIVE PUSH',
+    validate: 'TIER 2: STAY WARM',
+    sunset:   'DNC',
+    ramp:     'TIER 2: STAY WARM'
+  };
+  const TIER_OP = {   // new rp_operating_tier (the managerial decision)
+    invest:   'Invest',
+    validate: 'Validate',
+    sunset:   'Sunset',
+    ramp:     'Ramp'
+  };
+  const OP_TO_TIER = {
+    'Invest':   'invest',
+    'Validate': 'validate',
+    'Sunset':   'sunset',
+    'Ramp':     'ramp'
+  };
+  // Fallback: if rp_operating_tier isn't set yet, infer from rp_tier
+  const HS_TO_TIER = {
+    'TIER 1: ACTIVE PUSH': 'invest',
+    'TIER 2: STAY WARM':   'validate',
+    'TIER 3: LIGHT DRIP':  'ramp',
+    'DNC':                 'sunset'
+  };
+  const TIER_LABEL = { invest:'Invest', validate:'Validate', sunset:'Sunset', ramp:'Ramp', unknown:'Unknown' };
+
+  // Health status (what we compute AND write to HubSpot's rp_health_status)
+  const HEALTH_LABEL = { green:'Green', yellow:'Yellow', red:'Red', ramp:'Ramp' };
+  const HEALTH_HS = { green:'Green', yellow:'Yellow', red:'Red', ramp:'Ramp' };
+
+  // Lead first-meeting detection
+  const MF = [
+    'date_entered_fy25_lead_pipeline_lead_scheduled_',
+    'date_entered_fy25_lead_pipeline_lead_meeting_held_'
+  ];
+
+  const PRIORITY_LABEL = { 'Tier A':'tier-a', 'Tier B':'tier-b', 'Not now':'not-now' };
+
+  // ----- State -----
+  let PARTNERS = [];
+  let decisionLog = [];
+  let filter = 'all';
+  let sortCol = 'mtg30', sortDir = 'desc';
+  let openPartnerId = null;
+
+  // ----- Helpers -----
+  const $ = (q, root=document) => root.querySelector(q);
+  const $$ = (q, root=document) => Array.from(root.querySelectorAll(q));
+  const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const pd = s => { if(s==null||s==='')return null; if(typeof s==='number')return s; const t=Date.parse(s); return isNaN(t)?null:t; };
+  const fmtPct = (n,d) => d===0 ? '—' : Math.round(n/d*100)+'%';
+  const fmtDate = ts => ts ? new Date(ts).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '—';
+  const fmtAgo = ts => ts ? Math.max(0, Math.floor((NOW - ts)/DAY)) + 'd' : '—';
+  const fmtTime = () => new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  const todayISO = () => new Date().toISOString().slice(0,10);
+
+  function parse(r) {
+    const raw = (r && r.structuredContent != null) ? r.structuredContent : JSON.parse(r.content[0].text);
+    let p = (raw && raw.result != null) ? raw.result : raw;
+    if (typeof p === 'string') { if (p.indexOf('authorization')>-1) throw new Error('AUTH'); p = JSON.parse(p); }
+    return (p && p.results) || [];
+  }
+
+  async function call(name, args) {
+    for (let i = 0; i < 4; i++) {
+      try {
+        const r = await window.cowork.callMcpTool(name, args);
+        if (r && r.isError) { await sleep(700*(i+1)); continue; }
+        return r;
+      } catch (e) { await sleep(700*(i+1)); }
+    }
+    return null;
+  }
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  function toast(msg, kind='ok') {
+    const t = document.createElement('div');
+    t.className = 'toast-msg ' + kind;
+    t.innerHTML = msg;
+    $('#toast').appendChild(t);
+    setTimeout(() => t.remove(), kind === 'err' ? 7000 : 4000);
+  }
+
+  function setSyncStatus(state, text) {
+    const el = $('#sync-status');
+    el.className = 'sync-status ' + state;
+    $('#sync-status-text').textContent = text;
+  }
+
+  function showError(msg) {
+    $('#err-box').innerHTML = `<div class="err-band">${esc(msg)}</div>`;
+  }
+
+  // ----- Load data -----
+  async function loadAll() {
+    const errs = [];
+
+    const propsRP = [
+      'referral_partner','rp_tier','hs_pipeline_stage','hs_createdate',
+      'rp_operating_tier','rp_health_status','rp_sunset_candidate',
+      'rp_30d_committed','rp_30d_sent','rp_30d_overdue','rp_30d_meeting_count',
+      'rp_tier_last_reviewed_date','rp_last_1on1_date'
+    ].join(',');
+
+    let rpResp = null;
+    try {
+      rpResp = await call(SEARCH, {
+        object_type: RP_OBJ,
+        filters: JSON.stringify([{ property: 'rp_tier', operator: 'HAS_PROPERTY' }]),
+        properties: propsRP,
+        limit: 100
+      });
+    } catch (e) { errs.push('RPs: ' + e.message); }
+
+    const propsContact = 'firstname,lastname,referral_partner_primary,rp_status,rp_committed_to_outreach_date,rp_outreach_date,rp_contact_priority,rp_outreach_due_date,rp_follow_up_attempts,rp_outreach_outcome';
+
+    let c1 = null;
+    try {
+      c1 = await call(CFILTER, {
+        property_name: 'rp_committed_to_outreach_date',
+        operator: 'HAS_PROPERTY',
+        properties: propsContact,
+        max_results: 2000,
+        page_size: 100
+      });
+    } catch (e) { errs.push('Committed: ' + e.message); }
+
+    let c2 = null;
+    try {
+      c2 = await call(CFILTER, {
+        property_name: 'rp_outreach_date',
+        operator: 'HAS_PROPERTY',
+        properties: propsContact,
+        max_results: 2000,
+        page_size: 100
+      });
+    } catch (e) { errs.push('Sent: ' + e.message); }
+
+    let leadsResp = null;
+    try {
+      leadsResp = await call(SEARCH, {
+        object_type: LEADS_OBJ,
+        filters: JSON.stringify([{ property: 'origin', operator: 'EQ', value: 'Referral Partner' }]),
+        properties: 'hs_lead_name,hs_pipeline_stage,referral_partner,' + MF.join(','),
+        limit: 200
+      });
+    } catch (e) { errs.push('Leads: ' + e.message); }
+
+    if (errs.length === 4) {
+      showError('Could not reach HubSpot. ' + errs.join(' · '));
+      return;
+    }
+
+    const rps = rpResp ? parse(rpResp) : [];
+    const contactsCommitted = c1 ? parse(c1) : [];
+    const contactsSent = c2 ? parse(c2) : [];
+    const leads = leadsResp ? parse(leadsResp) : [];
+
+    buildPartners(rps, contactsCommitted, contactsSent, leads);
+    renderAll();
+
+    // Fire-and-forget: write rollups back to HubSpot
+    syncRollupsToHubSpot();
+  }
+
+  function computeHealthStatus(p) {
+    // Red: 3+ overdue OR (<20% exec with 5+ committed)
+    if (p.committed >= 5 && (p.sent / p.committed) < 0.2) return 'red';
+    if (p.overdue >= 3) return 'red';
+    // Green: at least 1 meeting in last 30 days
+    if (p.mtg30 >= 1) return 'green';
+    // Yellow: executing but not converting
+    if (p.sent >= 5 && p.mtg30 === 0) return 'yellow';
+    // Ramp: no committed activity yet (new signup, nothing to judge)
+    if (p.committed === 0 && p.sent === 0) return 'ramp';
+    // Default: yellow (something's happening but no meeting)
+    return p.sent > 0 ? 'yellow' : 'ramp';
+  }
+
+  function computeSunsetCandidate(p) {
+    // Red health + no meetings + not in a ramp window (we don't have ramp signal here,
+    // so proxy via: has sent 5+ or committed 5+ to prove they've had chances)
+    if (p.health === 'red' && p.mtg30 === 0 && (p.sent >= 5 || p.committed >= 5)) return true;
+    return false;
+  }
+
+  function buildPartners(rps, c1, c2, leads) {
+    const contactMap = {};
+    [...c1, ...c2].forEach(x => {
+      const pr = x.properties || x;
+      const id = pr.hs_object_id || x.id;
+      if (id == null) return;
+      contactMap[id] = {
+        id,
+        name: ((pr.firstname||'') + ' ' + (pr.lastname||'')).trim() || ('Contact '+id),
+        rp: (pr.referral_partner_primary || '').trim(),
+        status: pr.rp_status || '',
+        priority: pr.rp_contact_priority || '',
+        outcome: pr.rp_outreach_outcome || '',
+        attempts: Number(pr.rp_follow_up_attempts) || 0,
+        commit: pd(pr.rp_committed_to_outreach_date),
+        sent: pd(pr.rp_outreach_date),
+        due: pd(pr.rp_outreach_due_date)
+      };
+    });
+    const contacts = Object.values(contactMap).filter(c => c.rp);
+
+    const mtgByRp = {};
+    leads.forEach(l => {
+      const pr = l.properties || l;
+      let best = null;
+      for (const f of MF) { const t = pd(pr[f]); if (t != null && (best == null || t < best)) best = t; }
+      if (best == null) return;
+      const k = (pr.referral_partner || '').trim();
+      if (!k) return;
+      (mtgByRp[k] = mtgByRp[k] || []).push(best);
+    });
+
+    PARTNERS = rps.map(r => {
+      const pr = r.properties || r;
+      const name = (pr.referral_partner || '').trim();
+      const hsTier = pr.rp_tier || '';
+      const hsOpTier = pr.rp_operating_tier || '';
+      // Prefer rp_operating_tier; fall back to rp_tier mapping
+      const tier = OP_TO_TIER[hsOpTier] || HS_TO_TIER[hsTier] || 'unknown';
+
+      const myContacts = contacts.filter(c => c.rp === name);
+      const committed = myContacts.length;
+      const sent = myContacts.filter(c => c.sent != null).length;
+      const overdue = myContacts.filter(c => c.commit != null && c.sent == null && (NOW - c.commit) > OVERDUE_DAYS * DAY).length;
+      const ts = mtgByRp[name] || [];
+      const mtg30 = ts.filter(t => t >= NOW - 30 * DAY).length;
+
+      const base = { committed, sent, overdue, mtg30 };
+      const health = computeHealthStatus(base);
+      const sunsetCandidate = computeSunsetCandidate({ ...base, health });
+
+      // HubSpot stored values (what's currently on the record)
+      const hs_30d_committed = Number(pr.rp_30d_committed);
+      const hs_30d_sent = Number(pr.rp_30d_sent);
+      const hs_30d_overdue = Number(pr.rp_30d_overdue);
+      const hs_30d_meeting_count = Number(pr.rp_30d_meeting_count);
+      const hs_health_status = pr.rp_health_status || '';
+      const hs_sunset_candidate_raw = pr.rp_sunset_candidate;
+      const hs_sunset_candidate = (hs_sunset_candidate_raw === 'true' || hs_sunset_candidate_raw === true);
+
+      const lastReviewed = pd(pr.rp_tier_last_reviewed_date);
+      const last1on1 = pd(pr.rp_last_1on1_date);
+
+      return {
+        id: r.id || pr.hs_object_id,
+        name,
+        hsTier,
+        hsOpTier,
+        tier,
+        committed, sent, overdue, mtg30,
+        health,
+        sunsetCandidate,
+        hs_30d_committed, hs_30d_sent, hs_30d_overdue, hs_30d_meeting_count, hs_health_status, hs_sunset_candidate,
+        lastReviewed,
+        last1on1,
+        daysSinceReview: lastReviewed ? Math.floor((NOW - lastReviewed)/DAY) : 999,
+        daysSince1on1: last1on1 ? Math.floor((NOW - last1on1)/DAY) : 999,
+        contacts: myContacts
+      };
+    }).filter(p => p.name);
+
+    PARTNERS.sort((a, b) => b.mtg30 - a.mtg30 || b.sent - a.sent || a.name.localeCompare(b.name));
+  }
+
+  // ----- Background sync: write rollups back to HubSpot -----
+  async function syncRollupsToHubSpot() {
+    setSyncStatus('syncing', 'Syncing rollups to HubSpot…');
+    let synced = 0, skipped = 0, failed = 0;
+    for (const p of PARTNERS) {
+      const changes = {};
+      if (p.hs_30d_committed !== p.committed) changes.rp_30d_committed = String(p.committed);
+      if (p.hs_30d_sent !== p.sent) changes.rp_30d_sent = String(p.sent);
+      if (p.hs_30d_overdue !== p.overdue) changes.rp_30d_overdue = String(p.overdue);
+      if (p.hs_30d_meeting_count !== p.mtg30) changes.rp_30d_meeting_count = String(p.mtg30);
+      if (p.hs_health_status !== HEALTH_HS[p.health]) changes.rp_health_status = HEALTH_HS[p.health];
+      if (p.hs_sunset_candidate !== p.sunsetCandidate) changes.rp_sunset_candidate = p.sunsetCandidate ? 'true' : 'false';
+
+      if (Object.keys(changes).length === 0) { skipped++; continue; }
+
+      try {
+        const r = await window.cowork.callMcpTool('hubspot_update_custom_object', {
+              object_type: RP_OBJ,
+              object_id: String(p.id),
+              properties: changes
+            });
+        if (r && r.isError) throw new Error((r.content && r.content[0] && r.content[0].text) || 'patch failed');
+        synced++;
+      } catch (e) {
+        failed++;
+        console.warn('Rollup sync failed for', p.name, e);
+      }
+      // small pacing to avoid rate limits
+      await sleep(100);
+    }
+    const asofStr = new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    if (failed > 0) {
+      setSyncStatus('err', `Synced ${synced} · ${skipped} unchanged · ${failed} failed at ${asofStr}`);
+    } else {
+      setSyncStatus('ok', `Synced ${synced} RP${synced===1?'':'s'} · ${skipped} already current · ${asofStr}`);
+    }
+  }
+
+  // ----- Render -----
+  function renderAll() {
+    renderBaseline();
+    renderQueue();
+    renderScore();
+    renderCounts();
+    if (openPartnerId) openDrill(openPartnerId);
+    const asofStr = new Date().toLocaleString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
+    $('#asof').textContent = 'Live · ' + asofStr;
+  }
+
+  function renderBaseline() {
+    const committed = PARTNERS.reduce((s,p) => s + p.committed, 0);
+    const sent = PARTNERS.reduce((s,p) => s + p.sent, 0);
+    const overdue = PARTNERS.reduce((s,p) => s + p.overdue, 0);
+    const mtg30 = PARTNERS.reduce((s,p) => s + p.mtg30, 0);
+    $('#bs-committed').textContent = committed;
+    $('#bs-sent').textContent = sent;
+    $('#bs-exec').textContent = fmtPct(sent, committed);
+    $('#bs-overdue').textContent = overdue;
+    $('#bs-mtg30').textContent = mtg30;
+    $('#bs-conv').textContent = fmtPct(mtg30, sent);
+  }
+
+  function renderCounts() {
+    $('#c-all').textContent = PARTNERS.length;
+    $('#c-red').textContent = PARTNERS.filter(p => p.health === 'red').length;
+    $('#c-yellow').textContent = PARTNERS.filter(p => p.health === 'yellow').length;
+    $('#c-green').textContent = PARTNERS.filter(p => p.health === 'green').length;
+    $('#c-sunset-cand').textContent = PARTNERS.filter(p => p.sunsetCandidate).length;
+    $('#c-overdue-flag').textContent = PARTNERS.filter(p => p.overdue > 0).length;
+    $('#c-stale').textContent = PARTNERS.filter(p => p.daysSinceReview > STALE_REVIEW_DAYS).length;
+    $('#rp-count').textContent = PARTNERS.length;
+  }
+
+  function buildCards() {
+    const cards = [];
+
+    // Sunset candidates — most urgent
+    PARTNERS.filter(p => p.sunsetCandidate && p.tier !== 'sunset').forEach(p => {
+      cards.push({
+        id: 'card-sunset-' + p.id,
+        type: 'sunset',
+        pill: 'Sunset review',
+        title: p.name,
+        partnerId: p.id,
+        why: `Red health. ${p.committed} committed, only ${p.sent} sent (${fmtPct(p.sent,p.committed)}). Zero meetings in 30d.`,
+        evidence: `${p.overdue > 0 ? p.overdue + ' overdue · ' : ''}Last reviewed ${p.lastReviewed ? fmtAgo(p.lastReviewed) + ' ago' : 'never'}${p.last1on1 ? ' · last 1:1 ' + fmtAgo(p.last1on1) + ' ago' : ''}`,
+        next: 'End the relationship, OR one direct performance conversation this week. Default: Sunset.'
+      });
+    });
+
+    // Red health that aren't yet sunset candidates — "diagnose or decide" cards
+    PARTNERS.filter(p => p.health === 'red' && !p.sunsetCandidate && p.tier !== 'sunset').forEach(p => {
+      cards.push({
+        id: 'card-red-' + p.id,
+        type: 'sunset',
+        pill: 'Low execution',
+        title: p.name,
+        partnerId: p.id,
+        why: `${fmtPct(p.sent, p.committed)} execution. ${p.overdue} overdue commitments.`,
+        evidence: `${p.committed} committed · ${p.sent} sent · ${p.mtg30} meetings 30d`,
+        next: 'Chaser workflow is already nudging. If no movement in 7 days → Sunset.'
+      });
+    });
+
+    // Yellow health — zero conversion cluster
+    const stalled = PARTNERS.filter(p => p.health === 'yellow' && p.sent >= 5 && p.mtg30 === 0);
+    if (stalled.length) {
+      cards.push({
+        id: 'card-diagnose',
+        type: 'diagnose',
+        pill: 'Diagnose & coach',
+        title: stalled.map(p => p.name).join(' · '),
+        partnerIds: stalled.map(p => p.id),
+        why: `${stalled.reduce((s,p)=>s+p.sent,0)} sent, 0 meetings between them. The 57→5 problem.`,
+        evidence: stalled.map(p => `${p.name}: ${p.sent} sent / 0 meetings`).join(' · '),
+        next: 'Deep 1:1 with each. Per-contact: "What did you send? When? What else could we try?"'
+      });
+    }
+
+    // Protect top producers
+    const hot = PARTNERS.filter(p => p.health === 'green' && p.mtg30 >= 2);
+    if (hot.length) {
+      cards.push({
+        id: 'card-protect',
+        type: 'invest',
+        pill: 'Protect',
+        title: hot.map(p => p.name).join(' · '),
+        partnerIds: hot.map(p => p.id),
+        why: `${hot.reduce((s,p)=>s+p.mtg30,0)} first meetings in last 30 days.`,
+        evidence: hot.map(p => `${p.name}: ${p.mtg30} meetings / ${p.sent} sent`).join(' · '),
+        next: 'Protect their time. Feed more targets. Confirm set to Invest.'
+      });
+    }
+
+    // Stale reviews
+    const stale = PARTNERS.filter(p => p.daysSinceReview > 30 && p.health !== 'green');
+    if (stale.length) {
+      cards.push({
+        id: 'card-stale',
+        type: 'diagnose',
+        pill: 'Stale review',
+        title: 'RPs not reviewed in 30+ days',
+        partnerIds: stale.map(p => p.id),
+        why: `${stale.length} RPs haven't had a tier decision in 30+ days.`,
+        evidence: stale.slice(0,5).map(p => `${p.name}: ${p.daysSinceReview}d`).join(' · ') + (stale.length > 5 ? ` · +${stale.length - 5} more` : ''),
+        next: 'Walk the list. Any still worth investing in? Downgrade or confirm tier.'
+      });
+    }
+
+    return cards;
+  }
+
+  function renderQueue() {
+    const cards = buildCards();
+    $('#hero-head').innerHTML = cards.length ? `This week · <b>${cards.length}</b> decision${cards.length===1?'':'s'} pending` : 'All clear — no exceptions this week';
+    $('#hero-sub').textContent = `${PARTNERS.length} active RPs · ${PARTNERS.filter(p=>p.health==='red').length} red · ${PARTNERS.filter(p=>p.sunsetCandidate).length} sunset candidates · ${PARTNERS.reduce((s,p)=>s+p.overdue,0)} overdue commitments`;
+
+    const q = $('#queue');
+    if (!cards.length) {
+      q.innerHTML = '<div class="loading" style="padding:20px;">No decisions needed this week. The network is operating within thresholds.</div>';
+      return;
+    }
+
+    q.innerHTML = cards.map(c => {
+      const ids = c.partnerIds || (c.partnerId ? [c.partnerId] : []);
+      const idsAttr = JSON.stringify(ids).replace(/"/g, '&quot;');
+      const btns = ids.length ? `
+        <button data-tier="invest"   onclick='bulkTier(&quot;${c.id}&quot;,${idsAttr},"invest")'>→ Invest</button>
+        <button data-tier="validate" onclick='bulkTier(&quot;${c.id}&quot;,${idsAttr},"validate")'>→ Validate</button>
+        <button data-tier="sunset"   onclick='bulkTier(&quot;${c.id}&quot;,${idsAttr},"sunset")'>→ Sunset</button>
+      ` : '';
+      return `
+        <div class="q-card ${c.type}" id="${c.id}">
+          <h3>${esc(c.title)} <span class="pill ${c.type==='diagnose'?'validate':c.type}">${c.pill}</span></h3>
+          <p class="q-why">${esc(c.why)}</p>
+          <div class="q-ev"><b>Evidence:</b> ${esc(c.evidence)}</div>
+          <div class="q-next"><b>Recommended</b>${esc(c.next)}</div>
+          <div class="q-actions">
+            ${btns}
+            <button data-tier="dismiss" onclick='dismissCard("${c.id}")'>${ids.length ? 'Dismiss' : 'Mark done'}</button>
+          </div>
+          <div class="q-foot"><span>📎 ${ids.length} RP record${ids.length===1?'':'s'}</span></div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderScore() {
+    const body = $('#score-body');
+    let rows = PARTNERS.slice();
+
+    if (filter !== 'all') {
+      if (filter.startsWith('health-')) {
+        const f = filter.slice(7);
+        rows = rows.filter(r => r.health === f);
+      } else if (filter === 'sunset-candidate') {
+        rows = rows.filter(r => r.sunsetCandidate);
+      } else if (filter === 'has-overdue') {
+        rows = rows.filter(r => r.overdue > 0);
+      } else if (filter === 'stale-review') {
+        rows = rows.filter(r => r.daysSinceReview > STALE_REVIEW_DAYS);
+      }
+    }
+
+    rows.sort((a, b) => {
+      let va, vb;
+      switch (sortCol) {
+        case 'name': va = a.name; vb = b.name; break;
+        case 'opTier': va = a.tier; vb = b.tier; break;
+        case 'health': va = a.health; vb = b.health; break;
+        case 'exec': va = a.committed ? a.sent/a.committed : 0; vb = b.committed ? b.sent/b.committed : 0; break;
+        case 'overdue': va = a.overdue; vb = b.overdue; break;
+        case 'mtg30': va = a.mtg30; vb = b.mtg30; break;
+        case 'committed': va = a.committed; vb = b.committed; break;
+        case 'sent': va = a.sent; vb = b.sent; break;
+        case 'daysSinceReview': va = a.daysSinceReview; vb = b.daysSinceReview; break;
+        case 'daysSince1on1': va = a.daysSince1on1; vb = b.daysSince1on1; break;
+        default: va = 0; vb = 0;
+      }
+      const mult = sortDir === 'desc' ? -1 : 1;
+      if (va < vb) return -1 * mult;
+      if (va > vb) return 1 * mult;
+      return 0;
+    });
+
+    if (!rows.length) { body.innerHTML = '<tr><td colspan="10" style="padding:20px;color:var(--muted);text-align:center;">No partners match this filter.</td></tr>'; return; }
+
+    body.innerHTML = rows.map(r => `
+      <tr onclick='openDrill("${r.id}")'>
+        <td class="partner-name">${r.sunsetCandidate ? '<span class="sunset-dot" title="Sunset candidate"></span>' : ''}<a href="${HUBRP}${r.id}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(r.name)}</a> <span class="caret">▸</span></td>
+        <td><span class="pill ${r.tier}">${TIER_LABEL[r.tier]||r.hsOpTier||r.hsTier||'—'}</span></td>
+        <td><span class="health ${r.health}">${HEALTH_LABEL[r.health]||'—'}</span></td>
+        <td class="n">${r.committed}</td>
+        <td class="n">${r.sent}</td>
+        <td class="n">${fmtPct(r.sent, r.committed)}</td>
+        <td class="n">${r.overdue > 0 ? `<span class="overdue-badge">${r.overdue}</span>` : '—'}</td>
+        <td class="n"><b>${r.mtg30}</b></td>
+        <td class="n ${r.daysSinceReview > STALE_REVIEW_DAYS ? '' : 'muted'}">${r.lastReviewed ? fmtAgo(r.lastReviewed) : '<span class="muted">never</span>'}</td>
+        <td class="n ${r.daysSince1on1 > 30 ? '' : 'muted'}">${r.last1on1 ? fmtAgo(r.last1on1) : '<span class="muted">—</span>'}</td>
+      </tr>
+    `).join('');
+
+    $$('#score-table th').forEach(th => {
+      th.classList.remove('sort-asc', 'sort-desc');
+      if (th.dataset.sort === sortCol) th.classList.add(sortDir === 'desc' ? 'sort-desc' : 'sort-asc');
+    });
+  }
+
+  // ----- Drill-in -----
+  window.openDrill = function(partnerId) {
+    openPartnerId = partnerId;
+    const p = PARTNERS.find(x => x.id === partnerId);
+    if (!p) return;
+    const d = $('#drill');
+    const execPct = fmtPct(p.sent, p.committed);
+    const sortedContacts = p.contacts.slice().sort((a, b) => {
+      const ao = a.commit != null && a.sent == null && (NOW - a.commit) > OVERDUE_DAYS*DAY;
+      const bo = b.commit != null && b.sent == null && (NOW - b.commit) > OVERDUE_DAYS*DAY;
+      if (ao !== bo) return bo - ao;
+      // Then by priority: Tier A, Tier B, blank, Not now
+      const pr = c => c.priority === 'Tier A' ? 0 : c.priority === 'Tier B' ? 1 : c.priority === 'Not now' ? 3 : 2;
+      const pDiff = pr(a) - pr(b);
+      if (pDiff !== 0) return pDiff;
+      return (b.commit||0) - (a.commit||0);
+    });
+
+    d.innerHTML = `
+      <div class="d-head">
+        <div>
+          <h3>${esc(p.name)} <span class="health ${p.health}">${HEALTH_LABEL[p.health]}</span>${p.sunsetCandidate ? ' <span class="pill sunset">Sunset candidate</span>' : ''}</h3>
+          <div class="d-sub">${esc(p.hsTier || '—')} · ${p.committed} committed · ${p.sent} sent (${execPct}) · ${p.overdue} overdue · ${p.mtg30} meetings in last 30d</div>
+          <div class="d-sub">Last reviewed: ${p.lastReviewed ? fmtAgo(p.lastReviewed) + ' ago' : 'never'} · Last 1:1: ${p.last1on1 ? fmtAgo(p.last1on1) + ' ago' : 'never'} · <a href="${HUBRP}${p.id}" target="_blank" rel="noopener">Open in HubSpot ↗</a></div>
+        </div>
+        <button class="d-close" onclick='closeDrill()'>×</button>
+      </div>
+      <div class="d-tier">
+        <span class="lbl">Change tier (writes to HubSpot):</span>
+        <button data-tier="invest"   class="${p.tier==='invest'?'current':''}"   onclick="changeTierSingle('${p.id}','invest')">Invest</button>
+        <button data-tier="validate" class="${p.tier==='validate'?'current':''}" onclick="changeTierSingle('${p.id}','validate')">Validate</button>
+        <button data-tier="sunset"   class="${p.tier==='sunset'?'current':''}"   onclick="changeTierSingle('${p.id}','sunset')">Sunset</button>
+      </div>
+      ${sortedContacts.length ? `
+        <table>
+          <thead><tr><th>Contact</th><th>Status</th><th>Committed</th><th>Due</th><th>Sent</th><th>Outcome</th></tr></thead>
+          <tbody>
+            ${sortedContacts.slice(0, 50).map(c => {
+              const isOverdue = c.commit != null && c.sent == null && (NOW - c.commit) > OVERDUE_DAYS*DAY;
+              const prPill = c.priority ? `<span class="priority-pill ${PRIORITY_LABEL[c.priority]||''}">${esc(c.priority)}</span>` : '';
+              return `<tr>
+                <td class="contact-name">${esc(c.name)}${prPill}</td>
+                <td>${esc(c.status) || '—'}</td>
+                <td>${fmtDate(c.commit)}</td>
+                <td>${fmtDate(c.due)} ${isOverdue ? '<span class="overdue-badge">OVERDUE</span>' : ''}</td>
+                <td>${fmtDate(c.sent)}</td>
+                <td>${esc(c.outcome) || '—'}</td>
+              </tr>`;
+            }).join('')}
+            ${sortedContacts.length > 50 ? `<tr><td colspan="6" style="text-align:center;color:var(--muted);">+ ${sortedContacts.length - 50} more</td></tr>` : ''}
+          </tbody>
+        </table>
+      ` : `<div style="font-size:12.5px;color:var(--muted);padding:12px;background:#f6f8f8;border-radius:8px;">No contacts tagged to this RP in Committed / Sent properties.</div>`}
+    `;
+    d.classList.add('open');
+    d.scrollIntoView({ behavior:'smooth', block:'start' });
+  };
+
+  window.closeDrill = function() {
+    $('#drill').classList.remove('open');
+    openPartnerId = null;
+  };
+
+  // ----- Tier change — writes to HubSpot -----
+  async function changeTier(partnerId, newTier) {
+    const p = PARTNERS.find(x => x.id === partnerId);
+    if (!p) return;
+    if (p.tier === newTier) {
+      toast(`<b>No change</b>${esc(p.name)} is already ${TIER_LABEL[newTier]}.`, 'ok');
+      return;
+    }
+    const oldTier = p.tier;
+    const hsRpTier = TIER_RP[newTier];
+    const hsOpTier = TIER_OP[newTier];
+    if (!hsRpTier || !hsOpTier) { toast('<b>Error</b>Unknown tier: ' + newTier, 'err'); return; }
+
+    // Optimistic UI
+    p.tier = newTier;
+    p.hsTier = hsRpTier;
+    p.hsOpTier = hsOpTier;
+    p.lastReviewed = NOW;
+    p.daysSinceReview = 0;
+    renderCounts();
+    renderScore();
+    if (openPartnerId === partnerId) openDrill(partnerId);
+
+    try {
+      const r = await window.cowork.callMcpTool('hubspot_update_custom_object', {
+            object_type: RP_OBJ,
+            object_id: String(partnerId),
+            properties: {
+              rp_tier: hsRpTier,
+              rp_operating_tier: hsOpTier,
+              rp_tier_last_reviewed_date: todayISO()
+            }
+          });
+      if (r && r.isError) throw new Error((r.content && r.content[0] && r.content[0].text) || 'Update failed');
+      toast(`<b>✓ Updated HubSpot</b>${esc(p.name)} · ${TIER_LABEL[oldTier]} → <b>${TIER_LABEL[newTier]}</b>`, 'ok');
+      logDecision(p.name, newTier, oldTier, 'ok');
+    } catch (e) {
+      // Roll back
+      p.tier = oldTier;
+      p.hsTier = TIER_RP[oldTier] || p.hsTier;
+      p.hsOpTier = TIER_OP[oldTier] || p.hsOpTier;
+      renderCounts();
+      renderScore();
+      if (openPartnerId === partnerId) openDrill(partnerId);
+      toast(`<b>HubSpot update failed</b>${esc(p.name)} · ${esc(e.message || String(e))}`, 'err');
+      logDecision(p.name, newTier, oldTier, 'fail');
+    }
+  }
+
+  window.changeTierSingle = function(id, tier) { changeTier(id, tier); };
+
+  window.bulkTier = async function(cardId, ids, tier) {
+    const card = document.getElementById(cardId);
+    if (card) $$('button', card).forEach(b => b.disabled = true);
+    for (const id of ids) await changeTier(id, tier);
+    if (card) $$('button', card).forEach(b => b.disabled = false);
+    renderQueue();
+  };
+
+  window.dismissCard = function(cardId) {
+    const el = document.getElementById(cardId);
+    if (el) el.classList.add('done');
+  };
+
+  function logDecision(partner, newTier, oldTier, result) {
+    decisionLog.unshift({ time: fmtTime(), partner, newTier, oldTier, result });
+    renderLog();
+  }
+
+  function renderLog() {
+    const el = $('#log');
+    if (!decisionLog.length) { el.innerHTML = '<div class="log-empty">No tier changes yet this session.</div>'; return; }
+    el.innerHTML = decisionLog.map(d => {
+      const icon = d.result === 'ok' ? '✓' : '✗';
+      const color = d.result === 'ok' ? 'var(--green)' : 'var(--red)';
+      return `<div class="log-row"><span class="t">${d.time}</span><span style="color:${color};font-weight:700;">${icon}</span> <b>${esc(d.partner)}</b> moved from <i>${TIER_LABEL[d.oldTier]}</i> → <b>${TIER_LABEL[d.newTier]}</b></div>`;
+    }).join('');
+  }
+
+  // ----- Wire-up -----
+  $$('#score-table th').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.dataset.sort;
+      if (sortCol === col) sortDir = sortDir === 'desc' ? 'asc' : 'desc';
+      else { sortCol = col; sortDir = 'desc'; }
+      renderScore();
+    });
+  });
+
+  $$('.chip').forEach(c => {
+    c.addEventListener('click', () => {
+      $$('.chip').forEach(x => x.classList.remove('active'));
+      c.classList.add('active');
+      filter = c.dataset.filter;
+      renderScore();
+    });
+  });
+
+  loadAll();
+}
+</script>
+</body></html>

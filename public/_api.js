@@ -161,6 +161,41 @@
     return out;
   }
 
+  // HubSpot UPDATE-by-id — PATCH a single record's properties.
+  // Used by the Accountability sub-view's tier-change buttons.
+  async function hubspotUpdateById(objectType, params) {
+    if (!window.netlifyIdentity) throw new Error('Netlify Identity widget not loaded.');
+    const user = window.netlifyIdentity.currentUser();
+    if (!user) throw new Error('Not authenticated. Please log in.');
+    const jwt = await user.jwt();
+    const p = params || {};
+    const body = {
+      object_type: p.object_type || objectType,
+      object_id: p.object_id || p.id,
+      properties: p.properties || {}
+    };
+    const response = await fetch('/api/hubspot-update', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${jwt}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!response.ok) {
+      let errData = {};
+      try { errData = await response.json(); } catch (e) {}
+      let detailMsg = '';
+      if (errData.detail) {
+        detailMsg = typeof errData.detail === 'string' ? errData.detail
+          : (errData.detail.message || JSON.stringify(errData.detail).slice(0, 200));
+      }
+      throw new Error(`HubSpot UPDATE failed (${response.status}): ${errData.error || response.statusText}${detailMsg ? ' — ' + detailMsg : ''}`);
+    }
+    const data = await response.json();
+    const envelopeText = JSON.stringify(data);
+    data.structuredContent = data;
+    data.content = [{ type: 'text', text: envelopeText }];
+    return data;
+  }
+
   // HubSpot GET-by-id — fetches a single record of any object type by ID.
   // Routes hubspot_get_contact, hubspot_get_deal, hubspot_get_custom_object to
   // the /api/hubspot-get Netlify Function. Normalizes the MCP tool param shape
@@ -343,6 +378,10 @@
       if (toolName.includes('hubspot_filter_contacts_by_property')) {
         return hubspotFilterContactsByProperty(params);
       }
+      // Tier change / property PATCH route for the Accountability sub-view.
+      if (toolName.includes('hubspot_update_custom_object') || toolName.includes('hubspot_update_contact') || toolName.includes('hubspot_update_deal')) {
+        return hubspotUpdateById(params && params.object_type, params);
+      }
       return Promise.reject(new Error('Unsupported MCP tool in Netlify build: ' + toolName));
     }
   };
@@ -352,6 +391,7 @@
   window.hubspotOwners = hubspotOwners;
   window.hubspotAssociations = hubspotAssociations;
   window.hubspotGetById = hubspotGetById;
+  window.hubspotUpdateById = hubspotUpdateById;
   window.hubspotFilterContactsByProperty = hubspotFilterContactsByProperty;
   window.gdriveExport = gdriveExport;
 
